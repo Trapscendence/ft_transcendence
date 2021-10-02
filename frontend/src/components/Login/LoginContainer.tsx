@@ -1,8 +1,8 @@
 import Login from "./Login";
 
-type LoginContainerProps = {
+interface LoginContainerProps {
   tmp: string;
-};
+}
 
 function LoginContainer({ tmp }: LoginContainerProps) {
   return <Login name="hello" mark="world" />;
