@@ -1,9 +1,9 @@
-FROM node
+FROM node:lts-alpine
 
-RUN mkdir /usr/src/front
-WORKDIR /usr/src/front
-COPY . /usr/src/front
-ENV PATH /usr/src/front/node_modules/.bin:$PATH
+RUN mkdir -p /usr/src/frontend
+WORKDIR /usr/src/frontend
+COPY . /usr/src/frontend
+ENV PATH /usr/src/frontend/node_modules/.bin:$PATH
 RUN npm install --silent
 
 CMD ["npm", "start"]

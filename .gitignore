@@ -1,4 +1,7 @@
-_*
-.env
+dist
 node_modules
+
+.env
 db/data
+
+_*

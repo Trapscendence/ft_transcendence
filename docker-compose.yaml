@@ -1,9 +1,9 @@
 version: "3"
 
 services:
-  front:
+  frontend:
     build:
-      context: ./front
+      context: ./frontend
     ports:
       - "3000:3000"
   db:
@@ -24,15 +24,15 @@ services:
       - ./db/data:/var/lib/postgresql/data
     ports:
       - "5432:${DB_PORT}"
-  back:
+  backend:
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_LOCAL_PORT=${DB_PORT}
-    build: ./back
+    build: ./backend
     ports:
       - "5000:5000"
     volumes:
-      - ./back/src:/app/src
+      - ./backend/src:/app/src
