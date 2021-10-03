@@ -6,13 +6,14 @@ services:
       context: ./frontend
     ports:
       - "3000:3000"
-  db:
+
+  database:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data
       DB_NAME: ${DB_NAME}
     build:
-      context: ./db
+      context: ./database
       dockerfile: Dockerfile
       args:
         DB_USER: ${DB_USER}
@@ -24,6 +25,7 @@ services:
       - ./db/data:/var/lib/postgresql/data
     ports:
       - "5432:${DB_PORT}"
+
   backend:
     environment:
       - POSTGRES_HOST=db
