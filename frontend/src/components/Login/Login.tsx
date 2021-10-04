@@ -3,7 +3,7 @@ interface LoginProps {
   onChangeId: (e: React.ChangeEvent<HTMLInputElement>) => void;
   password: string;
   onChangePassword: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onClickBtn: () => Promise<void>;
 }
 
 function Login({
@@ -11,19 +11,18 @@ function Login({
   onChangeId,
   password,
   onChangePassword,
-  onSubmit,
+  onClickBtn,
 }: LoginProps) {
   return (
     <div>
-      <form onSubmit={onSubmit}>
-        <input name="idTag" value={id} onChange={onChangeId} />
-        <input
-          name="passwordTag"
-          value={password}
-          onChange={onChangePassword}
-        />
-        <button>Sign In</button>
-      </form>
+      <input name="id" placeholder="id" value={id} onChange={onChangeId} />
+      <input
+        name="password"
+        placeholder="password"
+        value={password}
+        onChange={onChangePassword}
+      />
+      <button onClick={onClickBtn}>Sign In</button>
     </div>
   );
 }
