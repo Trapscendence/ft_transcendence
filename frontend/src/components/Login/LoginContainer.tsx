@@ -11,7 +11,7 @@ const POST_SIGNIN = gql`
   }
 `;
 
-function LoginContainer() {
+function LoginContainer(): JSX.Element {
   const [id, setId, onChangeId] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
 

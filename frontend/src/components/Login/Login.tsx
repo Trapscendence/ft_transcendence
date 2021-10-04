@@ -12,7 +12,7 @@ function Login({
   password,
   onChangePassword,
   onClickBtn,
-}: LoginProps) {
+}: LoginProps): JSX.Element {
   return (
     <div>
       <input name="id" placeholder="id" value={id} onChange={onChangeId} />
