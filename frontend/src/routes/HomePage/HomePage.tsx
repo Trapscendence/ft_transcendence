@@ -1,5 +1,7 @@
+import { Redirect } from 'react-router';
+
 function HomePage(): JSX.Element {
-  return <div>I'm HomePage!</div>;
+  return <Redirect to="/game" />;
 }
 
 export default HomePage;

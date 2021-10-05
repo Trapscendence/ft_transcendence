@@ -14,11 +14,8 @@ const POST_SIGNIN = gql`
 function LoginContainer(): JSX.Element {
   const [id, setId, onChangeId] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
-
   const [postSignin, { loading, error }] = useMutation(POST_SIGNIN);
-
   const onClickBtn = async (): Promise<void> => {
-    console.log(id, password);
     try {
       await postSignin({ variables: { id, password } });
     } catch (e) {
