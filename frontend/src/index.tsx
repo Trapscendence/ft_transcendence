@@ -8,6 +8,7 @@ import {
   // gql,
 } from '@apollo/client';
 import App from './App';
+import { CssBaseline } from '@mui/material';
 
 const client = new ApolloClient({
   uri: 'https://localhost:4000',
@@ -17,6 +18,7 @@ const client = new ApolloClient({
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
+      <CssBaseline />
       <App />
     </ApolloProvider>
   </React.StrictMode>,

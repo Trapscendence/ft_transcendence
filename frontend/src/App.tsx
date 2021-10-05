@@ -12,10 +12,10 @@ function App(): JSX.Element {
         <Switch>
           <Route path="/" exact component={HomePage} />
           <Route path="/login" exact component={LoginPage} />
-          <Route path="/game" exact component={LoginPage} />
-          <Route path="/game/:id" exact component={LoginPage} />
-          <Route path="/chat" exact component={LoginPage} />
-          <Route path="/chat/:id" exact component={LoginPage} />
+          <Route path="/game" exact component={HomePage} />
+          <Route path="/game/:id" exact component={HomePage} />
+          <Route path="/chat" exact component={HomePage} />
+          <Route path="/chat/:id" exact component={HomePage} />
         </Switch>
       </Box>
     </BrowserRouter>

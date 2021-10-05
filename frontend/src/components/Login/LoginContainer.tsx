@@ -28,13 +28,18 @@ function LoginContainer(): JSX.Element {
     setPassword('');
   };
 
-  if (loading) return <span>loading...</span>;
-
   return (
-    <>
-      <Login {...{ id, onChangeId, password, onChangePassword, onClickBtn }} />
-      {error ? <span>error!</span> : ''}
-    </>
+    <Login
+      {...{
+        id,
+        onChangeId,
+        password,
+        onChangePassword,
+        onClickBtn,
+        loading,
+        error,
+      }}
+    />
   );
 }
 
