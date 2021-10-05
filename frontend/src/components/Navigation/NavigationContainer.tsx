@@ -1,20 +1,28 @@
-// import Tabs from '@mui/material/Tabs';
-// import Tab from '@mui/material/Tab';
-// import Box from '@mui/material/Box';
-// import TabPanel from '@mui/lab/TabPanel';
-/*
+import { useState } from 'react';
+import { useHistory } from 'react-router';
+import Navigation from './Navigation';
+
 function NavigationContainer(): JSX.Element {
-  // const tabBar = new MDCTabBar(document.querySelector('.mdc-tab-bar'));
+  const [tabValue, setTabValue] = useState(0);
+  const handleChange = (e: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+  const history = useHistory();
+  const onClickGame = () => history.push('/game');
+  const onClickChat = () => history.push('/chat');
+  const onClickDM = () => history.push('/dm');
 
   return (
-    <div>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }} />
-    </div>
+    <Navigation
+      {...{ tabValue, handleChange, onClickGame, onClickChat, onClickDM }}
+    />
   );
 }
-*/
 
-import * as React from 'react';
+export default NavigationContainer;
+
+/*
+import React from 'react';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
@@ -62,7 +70,12 @@ function NavigationContainer() {
 
   return (
     <Box
-      sx={{ flexGrow: 1, bgcolor: 'background.paper', display: 'flex', height :'100vh' }}
+      sx={{
+        flexGrow: 1,
+        bgcolor: 'background.paper',
+        display: 'flex',
+        height: '100vh',
+      }}
     >
       <Tabs
         orientation="vertical"
@@ -103,3 +116,4 @@ function NavigationContainer() {
 }
 
 export default NavigationContainer;
+*/
