@@ -3,6 +3,9 @@ import HomePage from './routes/HomePage';
 import LoginPage from './routes/LoginPage';
 import Navigation from './components/Navigation';
 import { Box } from '@mui/system';
+import GameListPage from './routes/GameListPage';
+import ChatListPage from './routes/ChatListPage';
+import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
   return (
@@ -10,12 +13,12 @@ function App(): JSX.Element {
       <Box sx={{ display: 'flex', flexDirection: 'row' }}>
         <Navigation />
         <Switch>
-          <Route path="/" exact component={HomePage} />
-          <Route path="/login" exact component={LoginPage} />
-          <Route path="/game" exact component={HomePage} />
-          <Route path="/game/:id" exact component={HomePage} />
-          <Route path="/chat" exact component={HomePage} />
-          <Route path="/chat/:id" exact component={HomePage} />
+          <Route exact path="/login" component={LoginPage} />
+          <Route exact path="/" component={HomePage} />
+          <RestrictRoute exact path="/game" component={GameListPage} />
+          <RestrictRoute exact path="/game/:id" component={GameListPage} />
+          <RestrictRoute exact path="/chat" component={ChatListPage} />
+          <RestrictRoute exact path="/chat/:id" component={ChatListPage} />
         </Switch>
       </Box>
     </BrowserRouter>
