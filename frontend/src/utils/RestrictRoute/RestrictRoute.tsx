@@ -18,7 +18,8 @@ function RestrictRoute({
     <Route
       {...rest}
       render={(props) => {
-        return isLogin ? <Component {...props} /> : <Redirect to="/login" />;
+        // return isLogin ? <Component {...props} /> : <Redirect to="/login" />;
+        return <Component {...props} />;
       }}
     />
   );

@@ -5,16 +5,22 @@ import Navigation from './Navigation';
 function NavigationContainer(): JSX.Element {
   const [tabValue, setTabValue] = useState(0);
   const handleChange = (e: React.SyntheticEvent, newValue: number) => {
+    console.log(newValue);
+    // console.log(e.target);
+    const example: string | null = e.currentTarget.getAttribute('aria-label');
+
+    history.push('/' + (example as string));
     setTabValue(newValue);
   };
   const history = useHistory();
-  const onClickGame = () => history.push('/game');
-  const onClickChat = () => history.push('/chat');
-  const onClickDM = () => history.push('/dm');
+  // const onClickGame = () => history.push('/game');
+  // const onClickChat = () => history.push('/chat');
+  // const onClickDM = () => history.push('/dm');
 
   return (
     <Navigation
-      {...{ tabValue, handleChange, onClickGame, onClickChat, onClickDM }}
+      // {...{ tabValue, handleChange, onClickGame, onClickChat, onClickDM }}
+      {...{ tabValue, handleChange }}
     />
   );
 }
