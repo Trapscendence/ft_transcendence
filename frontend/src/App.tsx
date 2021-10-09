@@ -9,12 +9,13 @@ import ChatListPage from './routes/ChatListPage';
 import RestrictRoute from './utils/RestrictRoute';
 import GamePage from './routes/GamePage';
 import ChatPage from './routes/ChatPage';
+import SocialDrawer from './components/SocialDrawer/SocialDrawer';
 
 function App(): JSX.Element {
   return (
     <BrowserRouter>
-      <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-        <Navigation /> {/* DM 모달 */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Navigation />
         <Switch>
           <Route exact path="/" component={HomePage} />
           <Route exact path="/login" component={LoginPage} />
@@ -31,11 +32,10 @@ function App(): JSX.Element {
             component={ProfilePage}
           />
         </Switch>
+        <SocialDrawer />
       </Box>
     </BrowserRouter>
   );
 }
-
-// dm은 냅바에 있는 버튼의 모달로 구현
 
 export default App;

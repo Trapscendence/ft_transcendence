@@ -44,8 +44,8 @@ NavigationProps): JSX.Element {
         }}
       >
         <Tab aria-label="game" icon={<VideogameAssetRoundedIcon />} />
-        <Tab aria-label="profile/my" icon={<PersonPinIcon />} />
         <Tab aria-label="chat" icon={<ForumRoundedIcon />} />
+        <Tab aria-label="profile/my" icon={<PersonPinIcon />} />
       </Tabs>
       <Tab aria-label="DM" icon={<MailRoundedIcon />} />
     </Box>
