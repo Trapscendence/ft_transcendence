@@ -1,10 +1,11 @@
 import {
   AccountCircle,
   Forum,
-  Send,
+  Home,
+  MoreHoriz,
   VideogameAsset,
 } from '@mui/icons-material';
-import { Box,Fab, Tab, Tabs } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import React from 'react';
 
 interface NavigationProps {
@@ -25,21 +26,21 @@ function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
         borderRight: '1px solid #e0e0e0',
       }}
     >
-      <Tabs
-        value={tabValue}
-        onChange={handleChange}
-        orientation="vertical"
-        textColor="secondary"
-        indicatorColor="secondary"
-      >
-        <Tab aria-label="game" icon={<VideogameAsset />} />
-        <Tab aria-label="chat" icon={<Forum />} />
-        <Tab aria-label="profile/my" icon={<AccountCircle />} />
-      </Tabs>
-      {/* <Fab color="secondary" size="medium">
-        <Send />
-      </Fab> */}
-      <Tab icon={<Send />} />
+      <Box>
+        <Tabs
+          value={tabValue}
+          onChange={handleChange}
+          orientation="vertical"
+          textColor="secondary"
+          indicatorColor="secondary"
+        >
+          <Tab aria-label="home" icon={<Home />} />
+          <Tab aria-label="profile/my" icon={<AccountCircle />} />
+          <Tab aria-label="channel" icon={<Forum />} />
+        </Tabs>
+        <Tab icon={<VideogameAsset />} />
+      </Box>
+      <Tab icon={<MoreHoriz />} />
     </Box>
   );
 }
