@@ -5,7 +5,7 @@ import {
   MoreHoriz,
   VideogameAsset,
 } from '@mui/icons-material';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Divider, Tab, Tabs } from '@mui/material';
 import React from 'react';
 
 interface NavigationProps {
@@ -16,7 +16,7 @@ interface NavigationProps {
 function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
   return (
     <Box
-      py={2}
+      py={1}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -38,6 +38,7 @@ function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
           <Tab aria-label="profile/my" icon={<AccountCircle />} />
           <Tab aria-label="channel" icon={<Forum />} />
         </Tabs>
+        <Divider />
         <Tab icon={<VideogameAsset />} />
       </Box>
       <Tab icon={<MoreHoriz />} />
