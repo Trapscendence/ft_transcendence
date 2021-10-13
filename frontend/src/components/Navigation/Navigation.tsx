@@ -1,12 +1,11 @@
-import React from 'react';
-
-import { Fab, Tab, Tabs, Box } from '@mui/material';
 import {
   AccountCircle,
   Forum,
   Send,
   VideogameAsset,
 } from '@mui/icons-material';
+import { Box,Fab, Tab, Tabs } from '@mui/material';
+import React from 'react';
 
 interface NavigationProps {
   tabValue: number;

@@ -1,4 +1,5 @@
 import { Box } from '@mui/system';
+
 import Login from '../../components/Login';
 
 function LoginPage(): JSX.Element {

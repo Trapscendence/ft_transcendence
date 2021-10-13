@@ -1,15 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import {
   ApolloClient,
-  InMemoryCache,
   ApolloProvider,
+  InMemoryCache,
   makeVar,
   // useQuery,
   // gql,
 } from '@apollo/client';
-import App from './App';
 import { CssBaseline } from '@mui/material';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import App from './App';
 
 const client = new ApolloClient({
   uri: 'https://localhost:4000',

@@ -1,5 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { Redirect, Route, RouteComponentProps } from 'react-router';
+
 import { isLoginVar } from '../..';
 
 interface RestrictRouteProps {

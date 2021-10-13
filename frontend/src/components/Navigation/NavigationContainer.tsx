@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useHistory } from 'react-router';
+
 import Navigation from './Navigation';
 
 function NavigationContainer(): JSX.Element {
