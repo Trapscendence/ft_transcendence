@@ -1,28 +1,45 @@
-import { Tab, Tabs } from '@mui/material';
-import { Box } from '@mui/system';
+import {
+  AccountCircle,
+  Forum,
+  Send,
+  VideogameAsset,
+} from '@mui/icons-material';
+import { Box,Fab, Tab, Tabs } from '@mui/material';
+import React from 'react';
 
 interface NavigationProps {
   tabValue: number;
   handleChange: (e: React.SyntheticEvent, newValue: number) => void;
-  onClickGame: () => void;
-  onClickChat: () => void;
-  onClickDM: () => void;
 }
 
-function Navigation({
-  tabValue,
-  handleChange,
-  onClickGame,
-  onClickChat,
-  onClickDM,
-}: NavigationProps): JSX.Element {
+function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
   return (
-    <Box>
-      <Tabs value={tabValue} onChange={handleChange} orientation="vertical">
-        <Tab label="Home" onClick={onClickGame} />
-        <Tab label="Chat" onClick={onClickChat} />
-        <Tab label="DM" onClick={onClickDM} />
+    <Box
+      py={2}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: '100vh',
+        borderRight: '1px solid #e0e0e0',
+      }}
+    >
+      <Tabs
+        value={tabValue}
+        onChange={handleChange}
+        orientation="vertical"
+        textColor="secondary"
+        indicatorColor="secondary"
+      >
+        <Tab aria-label="game" icon={<VideogameAsset />} />
+        <Tab aria-label="chat" icon={<Forum />} />
+        <Tab aria-label="profile/my" icon={<AccountCircle />} />
       </Tabs>
+      {/* <Fab color="secondary" size="medium">
+        <Send />
+      </Fab> */}
+      <Tab icon={<Send />} />
     </Box>
   );
 }

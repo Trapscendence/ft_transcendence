@@ -1,5 +1,6 @@
 import { useReactiveVar } from '@apollo/client';
 import { Redirect, Route, RouteComponentProps } from 'react-router';
+
 import { isLoginVar } from '../..';
 
 interface RestrictRouteProps {
@@ -18,7 +19,8 @@ function RestrictRoute({
     <Route
       {...rest}
       render={(props) => {
-        return isLogin ? <Component {...props} /> : <Redirect to="/login" />;
+        // return isLogin ? <Component {...props} /> : <Redirect to="/login" />;
+        return <Component {...props} />;
       }}
     />
   );
