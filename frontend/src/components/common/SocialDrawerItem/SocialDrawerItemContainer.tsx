@@ -5,6 +5,7 @@ interface SocialDrawerItemContainerProps {
   nickname: string;
   statusMessage?: string;
 }
+
 function SocialDrawerItemContainer({
   avatar,
   nickname,

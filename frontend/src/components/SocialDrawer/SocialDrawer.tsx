@@ -1,7 +1,7 @@
 import { ChevronRight, PermContactCalendar } from '@mui/icons-material';
 import { Box, Divider, Drawer, Fab, IconButton, List } from '@mui/material';
 
-import SocialDrawerItem from '../SocialDrawerItem';
+import SocialDrawerItem from '../common/SocialDrawerItem';
 
 interface SocialDrawerProps {
   open: boolean;
