@@ -1,17 +1,15 @@
 import { ChevronRight, PermContactCalendar } from '@mui/icons-material';
 import { Box, Divider, Drawer, Fab, IconButton, List } from '@mui/material';
+import { useState } from 'react';
 
 import SocialDrawerItem from '../common/SocialDrawerItem';
 
-interface SocialDrawerProps {
-  open: boolean;
-  toggleDrawer: (openBool: boolean) => () => void;
-}
+export default function SocialDrawer(): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const toggleDrawer = (openBool: boolean) => () => {
+    setOpen(openBool);
+  };
 
-export default function SocialDrawer({
-  open,
-  toggleDrawer,
-}: SocialDrawerProps): JSX.Element {
   return (
     <Box>
       <Fab onClick={toggleDrawer(true)} size="medium" sx={{ margin: '20px' }}>

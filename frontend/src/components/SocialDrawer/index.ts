@@ -1,3 +1,3 @@
-import SocialDrawerContainer from './SocialDrawerContainer';
+import SocialDrawer from './SocialDrawer';
 
-export default SocialDrawerContainer;
+export default SocialDrawer;

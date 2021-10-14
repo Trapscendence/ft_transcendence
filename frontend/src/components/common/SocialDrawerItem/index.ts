@@ -1,3 +1,3 @@
-import SocialDrawerItemContainer from './SocialDrawerItemContainer';
+import SocialDrawerItem from './SocialDrawerItem';
 
-export default SocialDrawerItemContainer;
+export default SocialDrawerItem;
