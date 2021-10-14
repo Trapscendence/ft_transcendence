@@ -1,21 +1,26 @@
 import {
   AccountCircle,
   Forum,
-  Send,
+  Home,
+  MoreHoriz,
   VideogameAsset,
 } from '@mui/icons-material';
-import { Box,Fab, Tab, Tabs } from '@mui/material';
-import React from 'react';
+import { Box, Divider, Tab, Tabs } from '@mui/material';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router';
 
-interface NavigationProps {
-  tabValue: number;
-  handleChange: (e: React.SyntheticEvent, newValue: number) => void;
-}
+function Navigation(): JSX.Element {
+  const [tabValue, setTabValue] = useState(0);
+  const history = useHistory();
+  const handleChange = (e: React.SyntheticEvent, newValue: number) => {
+    const path: string | null = e.currentTarget.getAttribute('aria-label');
+    history.push('/' + (path as string));
+    setTabValue(newValue);
+  }; // @mui/lab 에서 제공하는 페이지 이동 api가 있음. 어느게 성능이 더 좋을지 모르겠다. https://mui.com/components/tabs/#experimental-api 참고
 
-function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
   return (
     <Box
-      py={2}
+      py={1}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -25,21 +30,22 @@ function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
         borderRight: '1px solid #e0e0e0',
       }}
     >
-      <Tabs
-        value={tabValue}
-        onChange={handleChange}
-        orientation="vertical"
-        textColor="secondary"
-        indicatorColor="secondary"
-      >
-        <Tab aria-label="game" icon={<VideogameAsset />} />
-        <Tab aria-label="chat" icon={<Forum />} />
-        <Tab aria-label="profile/my" icon={<AccountCircle />} />
-      </Tabs>
-      {/* <Fab color="secondary" size="medium">
-        <Send />
-      </Fab> */}
-      <Tab icon={<Send />} />
+      <Box>
+        <Tabs
+          value={tabValue}
+          onChange={handleChange}
+          orientation="vertical"
+          textColor="secondary"
+          indicatorColor="secondary"
+        >
+          <Tab aria-label="home" icon={<Home />} />
+          <Tab aria-label="profile/my" icon={<AccountCircle />} />
+          <Tab aria-label="channel" icon={<Forum />} />
+        </Tabs>
+        <Divider />
+        <Tab icon={<VideogameAsset />} />
+      </Box>
+      <Tab icon={<MoreHoriz />} />
     </Box>
   );
 }
