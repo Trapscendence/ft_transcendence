@@ -1,6 +1,7 @@
 import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
+import DirectMessage from './components/DirectMessage';
 import Navigation from './components/Navigation';
 import SocialDrawer from './components/SocialDrawer';
 import AdminPage from './routes/AdminPage';
@@ -37,6 +38,7 @@ function App(): JSX.Element {
           <RestrictRoute exact path="/admin" component={AdminPage} />
         </Switch>
         <SocialDrawer />
+        <DirectMessage />
       </Box>
     </BrowserRouter>
   );
