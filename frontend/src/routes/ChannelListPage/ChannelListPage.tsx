@@ -17,6 +17,8 @@ function ChannelListPage(): JSX.Element {
         <ChannelCard />
         <ChannelCard />
         <ChannelCard />
+        <ChannelCard />
+        <ChannelCard />
       </Grid>
     </Box>
   );

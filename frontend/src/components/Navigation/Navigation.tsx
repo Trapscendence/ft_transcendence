@@ -26,6 +26,10 @@ function Navigation(): JSX.Element {
     <Box
       py={1}
       sx={{
+        position: 'fixed',
+        zIndex: 1,
+        bgcolor: 'white',
+        // width: '90px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -76,6 +80,7 @@ function Navigation(): JSX.Element {
           )}
         </Box>
       </Box>
+
       <Tab icon={<MoreHoriz />} />
     </Box>
   );
