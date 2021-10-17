@@ -1,3 +1,4 @@
+import { darkScrollbar, GlobalStyles } from '@mui/material';
 import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
@@ -17,26 +18,32 @@ import RestrictRoute from './utils/RestrictRoute';
 function App(): JSX.Element {
   return (
     <BrowserRouter>
+      <GlobalStyles
+        // styles={{ html: { overflowY: 'scroll' }, body: darkScrollbar() }}
+        styles={{ html: { overflowY: 'scroll' } }}
+      />
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Navigation />
-        <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/login" component={LoginPage} />
-          <RestrictRoute exact path="/channel" component={ChannelListPage} />
-          <RestrictRoute
-            exact
-            path="/channel/:channelid"
-            component={ChannelPage}
-          />
-          <RestrictRoute exact path="/rank" component={RankPage} />
-          <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
-          <RestrictRoute
-            exact
-            path="/profile/:userid"
-            component={ProfilePage}
-          />
-          <RestrictRoute exact path="/admin" component={AdminPage} />
-        </Switch>
+        <Box sx={{ ml: '90px' }}>
+          <Switch>
+            <Route exact path="/" component={HomePage} />
+            <Route exact path="/login" component={LoginPage} />
+            <RestrictRoute exact path="/channel" component={ChannelListPage} />
+            <RestrictRoute
+              exact
+              path="/channel/:channelid"
+              component={ChannelPage}
+            />
+            <RestrictRoute exact path="/rank" component={RankPage} />
+            <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
+            <RestrictRoute
+              exact
+              path="/profile/:userid"
+              component={ProfilePage}
+            />
+            <RestrictRoute exact path="/admin" component={AdminPage} />
+          </Switch>
+        </Box>
         <SocialDrawer />
         <DirectMessage />
       </Box>
