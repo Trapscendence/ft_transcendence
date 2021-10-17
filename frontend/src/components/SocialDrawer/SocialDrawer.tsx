@@ -5,17 +5,18 @@ import { useState } from 'react';
 import SocialDrawerItem from '../common/SocialDrawerItem';
 
 export default function SocialDrawer(): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const toggleDrawer = (openBool: boolean) => () => {
-    setOpen(openBool);
-  };
+  // const [open, setOpen] = useState(false);
+  // const toggleDrawer = (openBool: boolean) => () => {
+  //   setOpen(openBool);
+  // };
 
   return (
     <Box>
-      <Fab onClick={toggleDrawer(true)} size="medium" sx={{ margin: '20px' }}>
+      {/* <Fab onClick={toggleDrawer(true)} size="medium" sx={{ margin: '20px' }}>
         <PermContactCalendar />
-      </Fab>
-      <Drawer variant="persistent" anchor="right" open={open}>
+      </Fab> */}
+      {/* <Drawer variant="persistent" anchor="right" open={open}> */}
+      <Drawer variant="permanent" anchor="right">
         <Box
           sx={{
             minWidth: '200px',
@@ -24,7 +25,8 @@ export default function SocialDrawer(): JSX.Element {
           }}
         >
           {/* 닫기 버튼 */}
-          <IconButton onClick={toggleDrawer(false)}>
+          {/* <IconButton onClick={toggleDrawer(false)}> */}
+          <IconButton>
             <ChevronRight />
           </IconButton>
           <Divider />
