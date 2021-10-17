@@ -15,13 +15,25 @@ export default function SocialDrawer(): JSX.Element {
         <PermContactCalendar />
       </Fab> */}
       {/* <Drawer variant="persistent" anchor="right" open={open}> */}
-      <Drawer variant="permanent" anchor="right">
+      <Drawer
+        variant="permanent"
+        anchor="right"
+        sx={{
+          // flexShrink: 0,
+          width: '200px',
+          '& .MuiDrawer-paper': {
+            width: '200px',
+            boxSizing: 'border-box',
+            bgcolor: 'grey.100',
+          },
+        }}
+      >
         <Box
-          sx={{
-            minWidth: '200px',
-            bgcolor: 'grey.200',
-            height: '100vh',
-          }}
+        // sx={{
+        //   minWidth: '200px',
+        //   bgcolor: 'grey.200',
+        //   height: '100vh',
+        // }}
         >
           {/* 닫기 버튼 */}
           {/* <IconButton onClick={toggleDrawer(false)}> */}
