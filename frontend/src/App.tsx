@@ -20,11 +20,15 @@ function App(): JSX.Element {
     <BrowserRouter>
       <GlobalStyles
         // styles={{ html: { overflowY: 'scroll' }, body: darkScrollbar() }}
-        styles={{ html: { overflowY: 'scroll' } }}
+        styles={{
+          html: { overflowY: 'scroll' },
+          // html: { overflowY: 'hidden' },
+        }}
       />
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Navigation />
         <Box sx={{ ml: '90px' }}>
+          {/* <Box sx={{ ml: '90px', overflowY: 'scroll' }}> */}
           <Switch>
             <Route exact path="/" component={HomePage} />
             <Route exact path="/login" component={LoginPage} />

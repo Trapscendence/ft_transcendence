@@ -1,13 +1,17 @@
 import {
   Avatar,
   Badge,
+  ClickAwayListener,
   ListItem,
   ListItemAvatar,
   ListItemText,
   Menu,
   MenuItem,
+  MenuList,
+  Paper,
+  Popper,
 } from '@mui/material';
-import { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 interface SocialDrawerItemProps {
   avatar?: string;
@@ -29,7 +33,7 @@ function SocialDrawerItem({
     setAnchorEl(null);
   };
 
-  // 상태에 따라 다르게 나타나야 하는데... 어떻게 해야? 뱃지랑 메뉴가 달라야함
+  // 상태에 따라 다르게 나타나야... 뱃지랑 메뉴가 달라야함
   return (
     <ListItem>
       <ListItemAvatar>
@@ -46,20 +50,38 @@ function SocialDrawerItem({
           primary={nickname}
           secondary={statusMessage}
           onClick={handleClick}
+          // ref={anchorRef}
           sx={{ cursor: 'pointer' }}
         />
       ) : (
         <ListItemText
           primary={nickname}
           onClick={handleClick}
+          // ref={anchorRef}
           sx={{ cursor: 'pointer' }}
         />
       )}
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>DM</MenuItem>
-        <MenuItem>Observe the match</MenuItem>
-        <MenuItem>Ask a match</MenuItem>
+        {/* <Popper
+        // anchorEl={anchorRef.current}
+        anchorEl={anchorEl}
+        open={open}
+        // placement="bottom-start"
+        transition
+        disablePortal
+      >
+        <Paper> */}
+        {/* <ClickAwayListener onClickAway={handleClose}> */}
+        {/* <MenuList autoFocusItem={open} sx={{ py: 0 }}> */}
+        <MenuList autoFocusItem={open}>
+          <MenuItem>Profile</MenuItem>
+          <MenuItem>DM</MenuItem>
+          <MenuItem>Observe the match</MenuItem>
+          <MenuItem>Ask a match</MenuItem>
+        </MenuList>
+        {/* </ClickAwayListener> */}
+        {/* </Paper> */}
+        {/* </Popper> */}
       </Menu>
     </ListItem>
   );
