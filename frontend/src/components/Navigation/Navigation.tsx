@@ -4,7 +4,7 @@ import {
   Send,
   VideogameAsset,
 } from '@mui/icons-material';
-import { Box,Fab, Tab, Tabs } from '@mui/material';
+import { Box, Fab, Tab, Tabs } from '@mui/material';
 import React from 'react';
 
 interface NavigationProps {
@@ -33,7 +33,7 @@ function Navigation({ tabValue, handleChange }: NavigationProps): JSX.Element {
         indicatorColor="secondary"
       >
         <Tab aria-label="game" icon={<VideogameAsset />} />
-        <Tab aria-label="chat" icon={<Forum />} />
+        <Tab aria-label="channel" icon={<Forum />} />
         <Tab aria-label="profile/my" icon={<AccountCircle />} />
       </Tabs>
       {/* <Fab color="secondary" size="medium">
