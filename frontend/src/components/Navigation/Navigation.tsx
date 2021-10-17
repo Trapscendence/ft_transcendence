@@ -42,7 +42,7 @@ function Navigation(): JSX.Element {
           textColor="secondary"
           indicatorColor="secondary"
         >
-          <Tab aria-label="home" icon={<Home />} />
+          <Tab aria-label="" icon={<Home />} />
           <Tab aria-label="profile/my" icon={<AccountCircle />} />
           <Tab aria-label="channel" icon={<Forum />} />
         </Tabs>
