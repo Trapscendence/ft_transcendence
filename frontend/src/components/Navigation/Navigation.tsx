@@ -9,6 +9,9 @@ import { Box, CircularProgress, Divider, Tab, Tabs } from '@mui/material';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
 
+// TODO
+// 아이콘에 Tooltip mui 추가하면 좋을 듯
+
 function Navigation(): JSX.Element {
   const [tabValue, setTabValue] = useState(0);
   const history = useHistory();
@@ -21,6 +24,9 @@ function Navigation(): JSX.Element {
   const onClickPlay = () => {
     setLoading((value) => !value); // loading을 사용하는 toggle... 상태를 어떻게 잘 작성하지?
   };
+
+  // TODO
+  // 역시나 폴더 내 하위 컴포넌트들로 분리 필요
 
   return (
     <Box

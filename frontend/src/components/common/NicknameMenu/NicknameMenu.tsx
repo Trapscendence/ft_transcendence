@@ -11,6 +11,7 @@ export default function NicknameMenu({
   open,
   handleClose,
 }: NicknameMenuProps): JSX.Element {
+  // NOTE
   // 이게 common 컴포넌트가 맞을까?
   // 참가자 닉네임 클릭시는 친구창 닉네임 클릭시랑 다른 메뉴가 뜰텐데...
   // 그냥 따로 구현하는게 편할까?
