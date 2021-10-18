@@ -98,8 +98,9 @@ export default function DirectMessage(): JSX.Element {
                             <Typography variant="h4" gutterBottom component="div" sx={{bottom: '0%'}}>
                               선택된 쪽지가 없습니다.
                               <Typography variant="h6" gutterBottom component="div">
+                                <br />
                                 기존 쪽지 중 하나를 선택하거나<br />
-                                새 쪽지를 작성하세요.
+                                  새 쪽지를 작성하세요.
                               </Typography>
                             </Typography>
                             </Box>
