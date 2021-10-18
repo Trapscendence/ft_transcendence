@@ -24,7 +24,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "PORT=3000 react-scripts --max_old_space_size=8128 start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"

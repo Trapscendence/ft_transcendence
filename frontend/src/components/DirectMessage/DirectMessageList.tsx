@@ -1,8 +1,8 @@
 import {
   Avatar,
   Badge,
-  ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText} from '@mui/material';
 import { useState } from 'react';
 
@@ -10,7 +10,7 @@ import { useState } from 'react';
 interface DirectMessageListProps {
     avatar?: string;
     nickname: string;
-    lastMessageDate: number;
+    ID: number;
     userStatus?: string;
     selectedIndex: number;
     setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -19,7 +19,7 @@ interface DirectMessageListProps {
 function DirectMessageList({
     avatar,
     nickname,
-    lastMessageDate,
+    ID,
     userStatus,
     selectedIndex,
     setSelectedIndex
@@ -32,7 +32,7 @@ function DirectMessageList({
     };
 
   return (
-    <ListItem selected={selectedIndex === lastMessageDate} onClick={() => handleListItemClick(lastMessageDate)}>
+    <ListItemButton selected={selectedIndex === ID} onClick={() => handleListItemClick(ID)}>
       <ListItemAvatar>
           <Badge variant="dot" overlap="circular" color="secondary">
           {avatar ? (
@@ -43,7 +43,7 @@ function DirectMessageList({
         </Badge>
       </ListItemAvatar>
       <ListItemText primary={nickname} sx={{textOverflow: 'ellipsis',}}/>
-    </ListItem>
+    </ListItemButton>
   );
       }
 
