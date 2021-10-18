@@ -34,7 +34,7 @@ function DirectMessageList({
   return (
     <ListItemButton selected={selectedIndex === ID} onClick={() => handleListItemClick(ID)}>
       <ListItemAvatar>
-          <Badge variant="dot" overlap="circular" color="secondary">
+          <Badge variant="dot" overlap="circular" color="success">
           {avatar ? (
             <Avatar src={avatar} />
           ) : (

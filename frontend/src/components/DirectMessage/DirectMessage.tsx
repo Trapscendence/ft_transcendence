@@ -1,6 +1,6 @@
 import { Send } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Box,  Divider,Fab, List, ListItem,Paper, Popper, PopperPlacementType } from '@mui/material';
+import { Badge, Box,  Divider,Fab, List, Paper, Popper, PopperPlacementType } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
@@ -74,7 +74,9 @@ export default function DirectMessage(): JSX.Element {
   return (
     <Box>
       <Fab onClick={handleButtonClick('top-end')} size="medium" sx={{ position: 'absolute' as const, margin: '20px',  boxShadow: 0, bottom: '0%',  right: '0%',}}>
-        <Send />
+        <Badge variant="dot" badgeContent={4} overlap="circular" color="primary">
+         <Send />
+        </Badge>
       </Fab>
       <Popper open={open} anchorEl={anchorEl} placement={placement} >
               <Paper elevation={4} sx={style} style={{outline: 'none', padding: '0'}}>
@@ -87,23 +89,24 @@ export default function DirectMessage(): JSX.Element {
                           </Box>
                       )}
                     </List>
-                  <Box sx={{position: 'absolute' as const, width:'70%', right:'0%', height: '100%', padding: '10px', 
-                  // display:'flex', alignItems: 'center'
-                }}>
+                  <Paper elevation={0} square sx={{position: 'absolute' as const, width:'70%', right:'0%', height: '100%', padding: '10px', }}>
                       {
                       // 삼항연산자 중첩으로 코드가 거지같습니다. 해결방법이 없을까요?
                         selectedIndex ? (<DirectMessageContent messages={dm[selectedIndex - 1].messages} />) :
-                        <Typography variant="h4" gutterBottom component="div" sx={{bottom: '0%'}}>
-                          선택된 쪽지가 없습니다.
-                          <Typography variant="h5" gutterBottom component="div">
-                            기존 쪽지 중 하나를 선택하거나<br />
-                            새 쪽지를 작성하세요.
-                          </Typography>
-
-                        </Typography>
+                        (
+                          <Box sx={{ height:'100%', display:'flex', alignItems: 'center', padding: '5%'}}>
+                            <Typography variant="h4" gutterBottom component="div" sx={{bottom: '0%'}}>
+                              선택된 쪽지가 없습니다.
+                              <Typography variant="h6" gutterBottom component="div">
+                                기존 쪽지 중 하나를 선택하거나<br />
+                                새 쪽지를 작성하세요.
+                              </Typography>
+                            </Typography>
+                            </Box>
                         // 여기다가 '선택된 쪽지가 없음' 컴포넌트 삽입하기. [새 쪽지] 버튼 포함.
+                        )
                       }
-                  </Box >
+                  </Paper >
                 <Divider orientation='vertical'/>
               </Paper>
       </Popper>
