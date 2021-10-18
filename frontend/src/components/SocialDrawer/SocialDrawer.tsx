@@ -1,13 +1,16 @@
 import { ChevronRight } from '@mui/icons-material';
 import { Box, Divider, Drawer, IconButton, List } from '@mui/material';
 
-import SocialDrawerItem from '../common/SocialDrawerItem';
+import UserSummary from '../common/UserSummary';
 
 export default function SocialDrawer(): JSX.Element {
   // const [open, setOpen] = useState(false);
   // const toggleDrawer = (openBool: boolean) => () => {
   //   setOpen(openBool);
   // };
+
+  // 충분히 분리가 가능... 하지만 일단은 놔둔다.
+  // 실제 데이터가 확정됐을 때! 컴포넌트를 어떤 식으로 나눌지, 상태는 어디에 주입할지 생각해보자.
 
   return (
     <Box>
@@ -28,13 +31,7 @@ export default function SocialDrawer(): JSX.Element {
           },
         }}
       >
-        <Box
-        // sx={{
-        //   minWidth: '200px',
-        //   bgcolor: 'grey.200',
-        //   height: '100vh',
-        // }}
-        >
+        <Box>
           {/* 닫기 버튼 */}
           {/* <IconButton onClick={toggleDrawer(false)}> */}
           <IconButton>
@@ -42,13 +39,13 @@ export default function SocialDrawer(): JSX.Element {
           </IconButton>
           <Divider />
           {/* 내 정보 */}
-          <SocialDrawerItem nickname="tmpMy" statusMessage="hello~" />
+          <UserSummary nickname="tmpMy" statusMessage="hello~" />
           <Divider />
           {/* 친구 정보 */}
           <List>
-            <SocialDrawerItem nickname="friend1" />
-            <SocialDrawerItem nickname="friend2" />
-            <SocialDrawerItem nickname="friend3" />
+            <UserSummary nickname="friend1" />
+            <UserSummary nickname="friend2" />
+            <UserSummary nickname="friend3" />
           </List>
         </Box>
       </Drawer>

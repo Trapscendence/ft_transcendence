@@ -1,29 +1,28 @@
 import {
   Avatar,
   Badge,
-  ClickAwayListener,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Menu,
-  MenuItem,
-  MenuList,
-  Paper,
-  Popper,
 } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 
-interface SocialDrawerItemProps {
+import NicknameMenu from '../NicknameMenu';
+
+interface UserSummaryProps {
   avatar?: string;
   nickname: string;
   statusMessage?: string;
 }
 
-function SocialDrawerItem({
+function UserSummary({
   avatar,
   nickname,
   statusMessage,
-}: SocialDrawerItemProps): JSX.Element {
+}: UserSummaryProps): JSX.Element {
+  // 상태를 SocialDrawer에서 관리할 수는 없을까? (옮길 수 없을까?)
+  // common component에 상태가 있는게 조금 불편하다!
+  // anchorEl에 대한 공부가 필요
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -50,41 +49,18 @@ function SocialDrawerItem({
           primary={nickname}
           secondary={statusMessage}
           onClick={handleClick}
-          // ref={anchorRef}
           sx={{ cursor: 'pointer' }}
         />
       ) : (
         <ListItemText
           primary={nickname}
           onClick={handleClick}
-          // ref={anchorRef}
           sx={{ cursor: 'pointer' }}
         />
       )}
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        {/* <Popper
-        // anchorEl={anchorRef.current}
-        anchorEl={anchorEl}
-        open={open}
-        // placement="bottom-start"
-        transition
-        disablePortal
-      >
-        <Paper> */}
-        {/* <ClickAwayListener onClickAway={handleClose}> */}
-        {/* <MenuList autoFocusItem={open} sx={{ py: 0 }}> */}
-        <MenuList autoFocusItem={open}>
-          <MenuItem>Profile</MenuItem>
-          <MenuItem>DM</MenuItem>
-          <MenuItem>Observe the match</MenuItem>
-          <MenuItem>Ask a match</MenuItem>
-        </MenuList>
-        {/* </ClickAwayListener> */}
-        {/* </Paper> */}
-        {/* </Popper> */}
-      </Menu>
+      <NicknameMenu {...{ anchorEl, open, handleClose }} />
     </ListItem>
   );
 }
 
-export default SocialDrawerItem;
+export default UserSummary;
