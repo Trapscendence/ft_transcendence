@@ -1,5 +1,6 @@
 import {
   AccountCircle,
+  Analytics,
   Forum,
   Home,
   MoreHoriz,
@@ -54,6 +55,7 @@ function Navigation(): JSX.Element {
         >
           <Tab aria-label="" icon={<Home />} />
           <Tab aria-label="profile/my" icon={<AccountCircle />} />
+          <Tab aria-label="rank" icon={<Analytics />} />
           <Tab aria-label="channel" icon={<Forum />} />
         </Tabs>
         <Divider />

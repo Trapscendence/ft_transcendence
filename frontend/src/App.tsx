@@ -13,9 +13,14 @@ import LoginPage from './routes/LoginPage';
 import MyProfilePage from './routes/MyProfilePage';
 import ProfilePage from './routes/ProfilePage';
 import RankPage from './routes/RankPage';
+import UserRankPage from './routes/UserRankPage';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
+  // FIXME
+  // 메뉴가 스크롤 여부를 바뀌게 한다...
+  // 스크롤 여부에 따라 들쑥날쑥한 현상을 없애려면 어떻게 해야할까?
+
   return (
     <BrowserRouter>
       <GlobalStyles
@@ -39,6 +44,11 @@ function App(): JSX.Element {
               component={ChannelPage}
             />
             <RestrictRoute exact path="/rank" component={RankPage} />
+            <RestrictRoute
+              exact
+              path="/rank/:userid"
+              component={UserRankPage}
+            />
             <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
             <RestrictRoute
               exact
