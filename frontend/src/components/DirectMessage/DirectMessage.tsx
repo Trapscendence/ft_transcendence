@@ -1,6 +1,6 @@
 import { Send } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
-import { Badge, Box,  Divider,Fab, List, Paper, Popper, PopperPlacementType } from '@mui/material';
+import { Badge, Box,  Button, Divider,Fab, List, Paper, Popper, PopperPlacementType } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
@@ -41,7 +41,7 @@ interface Dm {
 export default function DirectMessage(): JSX.Element {
   //message에서 received가 참이면 받은 DM이고 아니면 보낸 DM임
     const dm: Dm[] = [
-      { name: 'hola1', id: 1, lastMessageDate: 14, messages: [{received: true, content:"받은메시지14", date: 20211018}, {received: false, content:"보낸메세지14", date: 20211018}]},
+      { name: 'hola1', id: 1, lastMessageDate: 14, messages: [{received: true, content:"받은메시지14", date: 20211018},{received: true, content:"받은메시지14-2", date: 20211018}, {received: false, content:"보낸메세지14", date: 20211018}, {received: false, content:"보낸메세지14-2", date: 20211018}]},
       { name: 'hola2', id: 2, lastMessageDate: 13, messages: [{received: true, content:"받은메시지13", date: 20211018}, {received: false, content:"보낸메세지13", date: 20211018}]},
       { name: 'hola3', id: 3, lastMessageDate: 12, messages: [{received: true, content:"받은메시지12", date: 20211018}, {received: false, content:"보낸메세지12", date: 20211018}]},
       { name: 'hola4', id: 4, lastMessageDate: 11, messages: [{received: true, content:"받은메시지11", date: 20211018}, {received: false, content:"보낸메세지11", date: 20211018}]},
@@ -96,12 +96,12 @@ export default function DirectMessage(): JSX.Element {
                         (
                           <Box sx={{ height:'100%', display:'flex', alignItems: 'center', padding: '5%'}}>
                             <Typography variant="h4" gutterBottom component="div" sx={{bottom: '0%'}}>
-                              선택된 쪽지가 없습니다.
+                              선택된 쪽지가 없습니다.<br />
                               <Typography variant="h6" gutterBottom component="div">
-                                <br />
                                 기존 쪽지 중 하나를 선택하거나<br />
                                   새 쪽지를 작성하세요.
                               </Typography>
+                              <Button variant="outlined" size="medium">새 쪽지</Button>
                             </Typography>
                             </Box>
                         // 여기다가 '선택된 쪽지가 없음' 컴포넌트 삽입하기. [새 쪽지] 버튼 포함.
