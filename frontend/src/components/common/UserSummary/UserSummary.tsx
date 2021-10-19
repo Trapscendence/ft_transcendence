@@ -4,22 +4,27 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Menu,
-  MenuItem,
 } from '@mui/material';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
-interface SocialDrawerItemProps {
+import NicknameMenu from '../NicknameMenu';
+
+interface UserSummaryProps {
   avatar?: string;
   nickname: string;
   statusMessage?: string;
 }
 
-function SocialDrawerItem({
+function UserSummary({
   avatar,
   nickname,
   statusMessage,
-}: SocialDrawerItemProps): JSX.Element {
+}: UserSummaryProps): JSX.Element {
+  // NOTE
+  // 상태를 SocialDrawer에서 관리할 수는 없을까? (옮길 수 없을까?)
+  // common component에 상태가 있는게 조금 불편하다!
+  // anchorEl에 대한 공부가 필요
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -29,7 +34,10 @@ function SocialDrawerItem({
     setAnchorEl(null);
   };
 
-  // 상태에 따라 다르게 나타나야 하는데... 어떻게 해야? 뱃지랑 메뉴가 달라야함
+  // TODO
+  // 상태에 따라 다르게 나타나야... 뱃지랑 메뉴가 달라야함
+  // 당연히 나누기도 나눠야
+
   return (
     <ListItem>
       <ListItemAvatar>
@@ -55,14 +63,9 @@ function SocialDrawerItem({
           sx={{ cursor: 'pointer' }}
         />
       )}
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>DM</MenuItem>
-        <MenuItem>Observe the match</MenuItem>
-        <MenuItem>Ask a match</MenuItem>
-      </Menu>
+      <NicknameMenu {...{ anchorEl, open, handleClose }} />
     </ListItem>
   );
 }
 
-export default SocialDrawerItem;
+export default UserSummary;
