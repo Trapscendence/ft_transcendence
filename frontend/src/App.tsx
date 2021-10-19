@@ -1,4 +1,4 @@
-import { darkScrollbar, GlobalStyles } from '@mui/material';
+import { GlobalStyles } from '@mui/material';
 import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
@@ -58,8 +58,8 @@ function App(): JSX.Element {
             <RestrictRoute exact path="/admin" component={AdminPage} />
           </Switch>
         </Box>
-        <SocialDrawer />
         <DirectMessage />
+        <SocialDrawer />
       </Box>
     </BrowserRouter>
   );
