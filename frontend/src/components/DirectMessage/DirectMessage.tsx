@@ -23,8 +23,8 @@ const style = {
   // bottom: '-10%',
   // right: '-10%',
   // transform: 'translate(-50px, -50px)',
-  width: '600px',
-  maxWidth: '80vw',
+  width: '500px',
+  maxWidth: '60vw',
   height: '500px',
   maxHeight: '50vh',
   // border: '1px solid #000',
@@ -52,7 +52,7 @@ export default function DirectMessage(): JSX.Element {
   //message에서 received가 참이면 받은 DM이고 아니면 보낸 DM임
   const dm: Dm[] = [
     {
-      name: 'hola1',
+      name: 'seohchoi',
       id: 1,
       lastMessageDate: 14,
       messages: [
@@ -63,7 +63,7 @@ export default function DirectMessage(): JSX.Element {
       ],
     },
     {
-      name: 'hola2',
+      name: 'aaa_seohchoi',
       id: 2,
       lastMessageDate: 13,
       messages: [
@@ -225,7 +225,7 @@ export default function DirectMessage(): JSX.Element {
 
         <Popper open={open} anchorEl={anchorEl} placement={placement}>
           <Paper
-            elevation={4}
+            variant="outlined"
             sx={style}
             style={{ outline: 'none', padding: '0' }}
           >
@@ -233,7 +233,7 @@ export default function DirectMessage(): JSX.Element {
               sx={{
                 position: 'absolute' as const,
                 overflowX: 'hidden',
-                width: '30%',
+                width: '35%',
                 maxWidth: '300px',
                 maxHeight: '100%',
                 height: '100%',
@@ -250,15 +250,18 @@ export default function DirectMessage(): JSX.Element {
                 </Box>
               ))}
             </List>
-            <Paper
-              elevation={0}
-              square
+            <Box
+              // elevation={0}
+              // square
               sx={{
                 position: 'absolute' as const,
-                width: '70%',
-                right: '0%',
-                height: '100%',
+                width: '65%',
+                right: '1px',
+                borderRadius: '0rem 0.2rem 0.2rem 0rem',
+                height: '99.2%',
                 padding: '10px',
+                backgroundColor: 'white',
+                overflowX: 'hidden',
               }}
             >
               {
@@ -277,7 +280,7 @@ export default function DirectMessage(): JSX.Element {
                     }}
                   >
                     <Typography
-                      variant="h4"
+                      variant="h5"
                       gutterBottom
                       component="div"
                       sx={{ bottom: '0%' }}
@@ -296,7 +299,7 @@ export default function DirectMessage(): JSX.Element {
                   // 여기다가 '선택된 쪽지가 없음' 컴포넌트 삽입하기. [새 쪽지] 버튼 포함.
                 )
               }
-            </Paper>
+            </Box>
             <Divider orientation="vertical" />
           </Paper>
         </Popper>
