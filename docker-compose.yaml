@@ -26,11 +26,12 @@ services:
 
   backend:
     environment:
-      - POSTGRES_HOST=db
+      - POSTGRES_HOST=database
       - POSTGRES_LOCAL_PORT=5432
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
     build: ./backend
     ports:
       - "5000:5000"
