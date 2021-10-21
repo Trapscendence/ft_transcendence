@@ -6,6 +6,9 @@ services:
       context: ./front
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend/src:/usr/src/frontend/src
+
   db:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -24,6 +27,7 @@ services:
       - ./db/data:/var/lib/postgresql/data
     ports:
       - "5432:${DB_PORT}"
+
   back:
     environment:
       - POSTGRES_HOST=db
