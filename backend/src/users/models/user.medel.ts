@@ -1,7 +1,6 @@
-import { forwardRef, Inject } from '@nestjs/common';
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { Achivement } from '../../achivements/models/achivements.model';
-import { Match } from '../../matchs/models/matchs.model';
+import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Achivement } from '../../achivements/models/achivement.model';
+import { Match } from '../../matchs/models/match.model';
 
 enum UserStatus {
   ONLINE,
@@ -15,6 +14,14 @@ enum UserRole {
   MODERATOR,
   OWNER,
 }
+
+registerEnumType(UserStatus, {
+  name: 'UserStatus',
+});
+
+registerEnumType(UserRole, {
+  name: 'UserRole',
+});
 
 @ObjectType()
 export class User {
@@ -30,10 +37,10 @@ export class User {
   @Field()
   avatar: string;
 
-  @Field()
+  @Field({ nullable: true })
   status_message: string;
 
-  @Field()
+  @Field((type) => UserStatus) // TODO enum? 수정 필요한가?
   status: UserStatus;
 
   @Field((type) => [User])
@@ -54,6 +61,6 @@ export class User {
   @Field((type) => [Achivement])
   achivements: Achivement[];
 
-  @Field()
+  @Field((type) => UserRole, { nullable: true })
   role: UserRole;
 }
