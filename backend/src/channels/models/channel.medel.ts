@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { User } from 'src/users/models/channel.medel';
+import { User } from 'src/users/models/users.medel';
 
 @ObjectType()
 export class Channel {
