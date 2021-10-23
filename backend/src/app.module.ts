@@ -5,6 +5,8 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
 import { GraphQLModule } from '@nestjs/graphql';
+import { MatchsModule } from './matchs/matchs.module';
+import { AchivementsModule } from './achivements/achivements.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { GraphQLModule } from '@nestjs/graphql';
     DatabaseModule,
     UsersModule,
     ChannelsModule,
+    MatchsModule,
+    AchivementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

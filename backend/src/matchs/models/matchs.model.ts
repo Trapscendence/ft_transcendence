@@ -1,6 +1,6 @@
 import { forwardRef, ForwardReference, Inject } from '@nestjs/common';
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { User } from './users.medel';
+import { User } from '../../users/models/users.medel';
 
 enum MatchType {
   RANK,
@@ -14,16 +14,16 @@ export class Match {
 
   // @Inject(forwardRef(() => User))
   @Field()
-  winner: User;
-  // winner: string;
+  // winner: User;
+  winner: string;
 
   @Field((type) => Int)
   winner_point: number;
 
   // @Inject(forwardRef(() => User))
   @Field()
-  loser: User;
-  // loser: string;
+  // loser: User;
+  loser: string;
 
   @Field((type) => Int)
   loser_point: number;

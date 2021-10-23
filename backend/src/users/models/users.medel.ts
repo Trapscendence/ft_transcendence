@@ -1,7 +1,7 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { Achivement } from './achivements.model';
-import { Match } from './matchs.model';
+import { Achivement } from '../../achivements/models/achivements.model';
+import { Match } from '../../matchs/models/matchs.model';
 
 enum UserStatus {
   ONLINE,
@@ -48,7 +48,6 @@ export class User {
   @Field((type) => Int)
   rank: number;
 
-  // @Inject(forwardRef(() => Match))
   @Field((type) => [Match])
   match_history: Match[];
 
