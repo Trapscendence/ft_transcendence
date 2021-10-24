@@ -8,6 +8,24 @@ import { resolve } from 'path/posix';
 export class UsersService {
   constructor(private databaseService: DatabaseService) {}
 
+  getFriend(id: string): Promise<User[]> {
+    return this.databaseService.executeQuery(`
+SELECT
+id,
+nickname,
+avatar,
+status_message,
+rank_score,
+site_role
+FROM
+  trap.user
+WHERE
+  id = ${id}
+INNER JOIN id ON trap.user.id = trap.friend.my_id;
+    `);
+  }
+
+
   async getUser(id: string): Promise<any> {
     const user = await this.databaseService.executeQuery(`
 SELECT
@@ -20,41 +38,17 @@ SELECT
 FROM
   ${schema}.user
 WHERE
-  id = ${id};`)[0];
-
+  id = ${id};`);
     const friendArray = await this.databaseService.executeQuery(`
 SELECT
-  id,
-  nickname,
-  avatar,
-  status_message
+  ${schema}.user.id
 FROM
   ${schema}.user
-WHERE
-  id = ${id};
-INNER JOIN id ON ${schema}.user.id = ${schema}.friend.my_id;
+INNER JOIN ${schema}.user u ON u.id = ${id}
+INNER JOIN ${schema}.friend f ON u.id = f.my_id;
     `);
 
-    const userSchema = { ...user, friends: friendArray };
-
-    // TODO Promise.all 적용을 통한 병렬 실행 최적화
-
-    return userSchema;
-  }
-
-  getFriend(id: string): Promise<any[]> {
-    return this.databaseService.executeQuery(`
-SELECT
-  id,
-  avatar,
-  nickname,
-  status_message
-FROM
-  trap.user
-WHERE
-  id = ${id}
-INNER JOIN id ON trap.user.id = trap.friend.my_id;
-    `);
+    return user[0];
   }
 
 //   async getUsers(): Promise<User[]> {
@@ -64,8 +58,10 @@ INNER JOIN id ON trap.user.id = trap.friend.my_id;
 //   }
 
   async createUser(nickname: string): Promise<any> { // NOTE 일단 몰라서 Promise<any>로
-    return this.databaseService.executeQuery(`
-INSERT INTO ${schema}.user (id, nickname, rank_score, site_role) VALUES (tmpId, ${nickname}, DEFAULT, DEFAULT);
+    return await this.databaseService.executeQuery(`
+INSERT INTO ${schema}.user( nickname, oauth_id, oauth_type )
+VALUES ( '${nickname}', 'mock_id', 'FORTYTWO' )
+RETURNING *;
     `); // NOTE oauth_id, oauth_type, fta_secret는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
   }
 

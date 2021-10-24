@@ -4,6 +4,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    networks:
+      - internal
     ports:
       - "3000:3000"
     volumes:
@@ -23,6 +25,10 @@ services:
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         PGDATA: /var/lib/postgresql/data
         DB_NAME: ${DB_NAME}
+    networks:
+      - internal
+    ports:
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
 
@@ -35,10 +41,26 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
     build: ./backend
+    networks:
+      - internal
     ports:
       - "5000:5000"
     volumes:
       - ./backend/src:/app/src
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    networks:
+      - internal
+    ports:
+      - "5050:80"
+
 volumes:
   db_data:
+
+networks:
+  internal:
+    driver: local

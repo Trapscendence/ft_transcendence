@@ -44,10 +44,10 @@ export class User {
   @Field((type) => UserStatus) // TODO enum? 수정 필요한가?
   status: UserStatus;
 
-  @Field((type) => [User])
+  @Field((type) => [User], { nullable: true })
   friends: User[];
 
-  @Field((type) => [User])
+  @Field((type) => [User], { nullable: true })
   blacklist: User[];
 
   @Field((type) => Int)
@@ -62,6 +62,6 @@ export class User {
   @Field((type) => [Achivement])
   achivements: Achivement[];
 
-  @Field((type) => UserRole, { nullable: true })
+  @Field((type) => UserRole)
   role: UserRole;
 }

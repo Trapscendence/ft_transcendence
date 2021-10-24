@@ -1,4 +1,4 @@
-FROM  postgres:latest
+FROM  postgres:14
 LABEL maintainer="ezemango@gmail.com"
 ARG   DB_USER \
       DB_PASSWORD \
