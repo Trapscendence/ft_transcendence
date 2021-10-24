@@ -25,8 +25,6 @@ services:
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         PGDATA: /var/lib/postgresql/data
         DB_NAME: ${DB_NAME}
-    networks:
-      - default
     ports:
       - "5432:5432"
     volumes:

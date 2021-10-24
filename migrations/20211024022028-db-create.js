@@ -16,8 +16,12 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.runSql(`
+<<<<<<< HEAD
 DROP SCHEMA IF EXISTS ${process.env.DB_NAME} CASCADE;
 CREATE SCHEMA ${process.env.DB_NAME};
+=======
+CREATE SCHEMA trap;
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
 
 CREATE TYPE auth AS ENUM (
   'FORTYTWO',
@@ -35,7 +39,11 @@ CREATE TYPE role AS ENUM (
   'OWNER'
 );
 
+<<<<<<< HEAD
 CREATE TABLE ${process.env.DB_NAME}.channel (
+=======
+CREATE TABLE trap.channel (
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   id SERIAL,
   title VARCHAR ( 128 ) NOT NULL,
   password VARCHAR ( 64 ),
@@ -43,9 +51,15 @@ CREATE TABLE ${process.env.DB_NAME}.channel (
   PRIMARY KEY ( id )
 );
 
+<<<<<<< HEAD
 CREATE TABLE ${process.env.DB_NAME}.user (
   id SERIAL,
   channel_id INT,
+=======
+CREATE TABLE trap.user (
+  id SERIAL,
+  channel_id INT NOT NULL,
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   oauth_id VARCHAR ( 80 ) NOT NULL,
   oauth_type AUTH NOT NULL,
   nickname VARCHAR ( 20 ) UNIQUE NOT NULL,
@@ -56,20 +70,35 @@ CREATE TABLE ${process.env.DB_NAME}.user (
   avatar VARCHAR ( 128 ),
 
   PRIMARY KEY ( id ),
+<<<<<<< HEAD
   FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
 CREATE TABLE ${process.env.DB_NAME}.channel_user (
+=======
+  FOREIGN KEY ( channel_id ) REFERENCES trap.channel ( id )
+);
+
+CREATE TABLE trap.channel_user (
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   user_id INT NOT NULL,
   channel_id INT NOT NULL,
   channel_role ROLE NOT NULL,
 
   PRIMARY KEY ( user_id ),
+<<<<<<< HEAD
   FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
   FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
 CREATE TABLE ${process.env.DB_NAME}.article (
+=======
+  FOREIGN KEY ( user_id ) REFERENCES trap.user ( id ),
+  FOREIGN KEY ( channel_id ) REFERENCES trap.channel ( id )
+);
+
+CREATE TABLE trap.article (
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   id SERIAL,
   user_id INT UNIQUE NOT NULL,
   title VARCHAR ( 256 ) NOT NULL,
@@ -78,21 +107,36 @@ CREATE TABLE ${process.env.DB_NAME}.article (
   use_for USE DEFAULT 'NOTICE',
 
   PRIMARY KEY ( id ),
+<<<<<<< HEAD
   FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
 CREATE TABLE ${process.env.DB_NAME}.dm (
+=======
+  FOREIGN KEY ( user_id ) REFERENCES trap.user ( id )
+);
+
+CREATE TABLE trap.dm (
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   id SERIAL,
   sender_id INT NOT NULL,
   receiver_id INT NOT NULL,
   check_date INT NOT NULL,
 
   PRIMARY KEY ( id ),
+<<<<<<< HEAD
   FOREIGN KEY ( sender_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
   FOREIGN KEY ( receiver_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
 CREATE TABLE ${process.env.DB_NAME}.message (
+=======
+  FOREIGN KEY ( sender_id ) REFERENCES trap.user ( id ),
+  FOREIGN KEY ( receiver_id ) REFERENCES trap.user ( id )
+);
+
+CREATE TABLE trap.message (
+>>>>>>> d1b9bec (feat: db-migration 시스템 적용)
   id SERIAL,
   dm_id INT NOT NULL,
   dm_text VARCHAR ( 1024 ) NOT NULL,
