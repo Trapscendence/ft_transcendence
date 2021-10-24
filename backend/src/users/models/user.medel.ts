@@ -1,4 +1,4 @@
-import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { Directive, Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
@@ -23,6 +23,7 @@ registerEnumType(UserRole, {
   name: 'UserRole',
 });
 
+@Directive('@key(fields: "id")')
 @ObjectType()
 export class User {
   @Field((type) => ID)
