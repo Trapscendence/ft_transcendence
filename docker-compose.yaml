@@ -52,7 +52,7 @@ services:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
+      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
     networks:
       - default
     ports:
@@ -62,5 +62,5 @@ volumes:
   db_data:
 
 networks:
-  default:
-    name: internal
+  internal:
+    driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요

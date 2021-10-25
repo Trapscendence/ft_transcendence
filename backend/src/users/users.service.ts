@@ -106,21 +106,36 @@ WHERE f.my_id = ${id};
   async addToBlackList(user_id: string, black_id: string): Promise<any> {
     // const black = await this.user.getBlackList.findOne({ black_id });
     // if (black) {
-      // return { ok: false, error: 'this user is already added' };
+    // return { ok: false, error: 'this user is already added' };
     // }
     // const exists = await this.user.findOne({ black_id });
     // if (!exists) {
-      // return { ok: false, error: 'this user does not exist' };
+    // return { ok: false, error: 'this user does not exist' };
     // }
-    return (new Promise(() => {}));
+
+    return new Promise(() => {});
   }
 
   async deleteFromBlackList(user_id: string, black_id: string): Promise<any> {
     // const black = await this.user.getBlackList.findOne({ black_id });
     // if (!black) {
-      // return { ok: false, error: 'black user not found' };
+    // return { ok: false, error: 'black user not found' };
     // }
-    return (new Promise(() => {}));
+
+    return new Promise(() => {});
+  }
+
+  /*
+   ** ANCHOR: ResolveField
+   */
+
+  getFriend(id: string): Promise<User[]> {
+    return this.databaseService.executeQuery(`
+      SELECT id, nickname, avatar, status_message, rank_score, site_role
+      FROM ${schema}.user
+      WHERE id = ${id}
+      INNER JOIN id ON ${schema}.user.id = ${schema}.friend.my_id;
+    `);
   }
 
 

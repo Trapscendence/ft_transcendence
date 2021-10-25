@@ -1,6 +1,13 @@
-import { Query, Args, Int, Resolver, Mutation, ID, Info, ResolveField, Parent } from '@nestjs/graphql';
-import { identity } from 'rxjs';
-import { Match } from 'src/matchs/models/match.model';
+import {
+  Query,
+  Args,
+  Int,
+  Resolver,
+  Mutation,
+  ID,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { User } from './models/user.medel';
 import { UsersService } from './users.service';
 
@@ -8,12 +15,17 @@ import { UsersService } from './users.service';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
+  /*
+   ** ANCHOR: User
+   */
+
   @Query((returns) => User)
   async user(@Args('id', { type: () => ID }) id: string): Promise<any> {
     return await this.usersService.getUser(id);
   }
 
-  @Query((returns) => [User], { nullable: true }) // 이렇게 하나?
+  // NOTE: [User!]! 반환하게 수정했습니다. 확인 후 코멘트 삭제해주세요. -gmoon
+  @Query((returns) => [User])
   async users(
     @Args('ladder') ladder: boolean,
     @Args('offset', { type: () => Int }) offset: number,
@@ -28,8 +40,10 @@ export class UsersResolver {
     return users[0];
   }
 
-  // SECTION
-  // 친구 관리... 여기서 하나?
+  /*
+   ** ANCHOR: Social
+   */
+  // NOTE: 나중에 분리할 수도...?
 
   @Mutation((returns) => Boolean)
   async addFriend(
@@ -42,7 +56,7 @@ export class UsersResolver {
   @Mutation((returns) => User)
   async deleteFriend(
     @Args('user_id', { type: () => ID }) user_id: string,
-    @Args('frined_id', { type: () => ID }) friend_id: string
+    @Args('friend_id', { type: () => ID }) friend_id: string
     ): Promise<boolean> {
     return await this.usersService.deleteFriend(user_id, friend_id)
   }
@@ -62,6 +76,10 @@ export class UsersResolver {
     ): Promise<User> { // NOTE 여기서 할것인가?
     return await this.usersService.deleteFromBlackList(user_id, black_id)
   }
+
+  /*
+   ** ANCHOR: ResolveField
+   */
 
   @ResolveField('friends', (returns) => [User])
   async getFriends(@Parent() user: User): Promise<User[]> {
