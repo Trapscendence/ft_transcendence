@@ -16,8 +16,8 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.runSql(`
-DROP SCHEMA IF EXISTS trap CASCADE;
-CREATE SCHEMA trap;
+DROP SCHEMA IF EXISTS ${process.env.DB_NAME} CASCADE;
+CREATE SCHEMA ${process.env.DB_NAME};
 
 CREATE TYPE auth AS ENUM (
   'FORTYTWO',
@@ -35,7 +35,7 @@ CREATE TYPE role AS ENUM (
   'OWNER'
 );
 
-CREATE TABLE trap.channel (
+CREATE TABLE ${process.env.DB_NAME}.channel (
   id SERIAL,
   title VARCHAR ( 128 ) NOT NULL,
   password VARCHAR ( 64 ),
@@ -43,7 +43,7 @@ CREATE TABLE trap.channel (
   PRIMARY KEY ( id )
 );
 
-CREATE TABLE trap.user (
+CREATE TABLE ${process.env.DB_NAME}.user (
   id SERIAL,
   channel_id INT,
   oauth_id VARCHAR ( 80 ) NOT NULL,
@@ -56,20 +56,20 @@ CREATE TABLE trap.user (
   avatar VARCHAR ( 128 ),
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( channel_id ) REFERENCES trap.channel ( id )
+  FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
-CREATE TABLE trap.channel_user (
+CREATE TABLE ${process.env.DB_NAME}.channel_user (
   user_id INT NOT NULL,
   channel_id INT NOT NULL,
   channel_role ROLE NOT NULL,
 
   PRIMARY KEY ( user_id ),
-  FOREIGN KEY ( user_id ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( channel_id ) REFERENCES trap.channel ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
-CREATE TABLE trap.article (
+CREATE TABLE ${process.env.DB_NAME}.article (
   id SERIAL,
   user_id INT UNIQUE NOT NULL,
   title VARCHAR ( 256 ) NOT NULL,
@@ -78,52 +78,52 @@ CREATE TABLE trap.article (
   use_for USE DEFAULT 'NOTICE',
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( user_id ) REFERENCES trap.user ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
-CREATE TABLE trap.dm (
+CREATE TABLE ${process.env.DB_NAME}.dm (
   id SERIAL,
   sender_id INT NOT NULL,
   receiver_id INT NOT NULL,
   check_date INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( sender_id ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( receiver_id ) REFERENCES trap.user ( id )
+  FOREIGN KEY ( sender_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( receiver_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
-CREATE TABLE trap.message (
+CREATE TABLE ${process.env.DB_NAME}.message (
   id SERIAL,
   dm_id INT NOT NULL,
   dm_text VARCHAR ( 1024 ) NOT NULL,
   time_stamp INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( dm_id ) REFERENCES trap.dm ( id )
+  FOREIGN KEY ( dm_id ) REFERENCES ${process.env.DB_NAME}.dm ( id )
 );
 
-CREATE TABLE trap.friend (
+CREATE TABLE ${process.env.DB_NAME}.friend (
   id SERIAL,
   my_id INT NOT NULL,
   friend_id INT NOT NULL,
   memo VARCHAR ( 64 ),
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( my_id ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( friend_id ) REFERENCES trap.user ( id )
+  FOREIGN KEY ( my_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( friend_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
-CREATE TABLE trap.block (
+CREATE TABLE ${process.env.DB_NAME}.block (
   id SERIAL,
   blocker_id INT NOT NULL,
   blocked_id INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( blocker_id ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( blocked_id ) REFERENCES trap.user ( id )
+  FOREIGN KEY ( blocker_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( blocked_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
-CREATE TABLE trap.match (
+CREATE TABLE ${process.env.DB_NAME}.match (
   id SERIAL,
   winner INT NOT NULL,
   loser INT NOT NULL,
@@ -133,12 +133,12 @@ CREATE TABLE trap.match (
   ladder BOOLEAN NOT NULL DEFAULT false,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( winner ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( loser ) REFERENCES trap.user ( id )
+  FOREIGN KEY ( winner ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( loser ) REFERENCES ${process.env.DB_NAME}.user ( id )
 );
 
 
-CREATE TABLE trap.achievement (
+CREATE TABLE ${process.env.DB_NAME}.achievement (
   id SERIAL,
   name VARCHAR ( 128 ) NOT NULL,
   icon VARCHAR ( 128 ),
@@ -146,22 +146,22 @@ CREATE TABLE trap.achievement (
   PRIMARY KEY ( id )
 );
 
-CREATE TABLE trap.achieved (
+CREATE TABLE ${process.env.DB_NAME}.achieved (
   id SERIAL,
   user_id SERIAL NOT NULL,
   achievement_id SERIAL NOT NULL,
   date INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( user_id ) REFERENCES trap.user ( id ),
-  FOREIGN KEY ( achievement_id ) REFERENCES trap.achievement ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
+  FOREIGN KEY ( achievement_id ) REFERENCES ${process.env.DB_NAME}.achievement ( id )
 );
   `);
 };
 
 exports.down = function(db) {
   return runSql(`
-DROP SCHEMA IF EXISTS trap CASCADE;
+DROP SCHEMA IF EXISTS ${process.env.DB_NAME} CASCADE;
   `);
 };
 

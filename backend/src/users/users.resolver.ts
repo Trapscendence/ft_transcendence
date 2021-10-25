@@ -1,5 +1,6 @@
 import { Query, Args, Int, Resolver, Mutation, ID, Info, ResolveField, Parent } from '@nestjs/graphql';
 import { identity } from 'rxjs';
+import { Match } from 'src/matchs/models/match.model';
 import { User } from './models/user.medel';
 import { UsersService } from './users.service';
 
@@ -18,7 +19,7 @@ export class UsersResolver {
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number
     ): Promise<any> {
-      return new Promise(()=>{}); // NOTE 임시
+      return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
   @Mutation((returns) => User)
@@ -30,11 +31,11 @@ export class UsersResolver {
   // SECTION
   // 친구 관리... 여기서 하나?
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
   async addFriend(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string
-    ): Promise<User> { // NOTE 여기서 할것인가?
+    ): Promise<boolean> { // NOTE 여기서 할것인가?
     return this.usersService.addFriend(user_id, friend_id)
   }
 
@@ -43,7 +44,7 @@ export class UsersResolver {
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('frined_id', { type: () => ID }) friend_id: string
     ): Promise<boolean> {
-    return this.usersService.deleteFriend(user_id, friend_id)
+    return await this.usersService.deleteFriend(user_id, friend_id)
   }
 
   @Mutation((returns) => User)
@@ -51,7 +52,7 @@ export class UsersResolver {
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string
     ): Promise<User> {
-    return this.usersService.addToBlackList(user_id, black_id)
+    return await this.usersService.addToBlackList(user_id, black_id)
   }
 
   @Mutation((returns) => User)
@@ -59,13 +60,25 @@ export class UsersResolver {
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string
     ): Promise<User> { // NOTE 여기서 할것인가?
-    return this.usersService.deleteFromBlackList(user_id, black_id)
+    return await this.usersService.deleteFromBlackList(user_id, black_id)
   }
 
   @ResolveField('friends', (returns) => [User])
-  async getFriends(@Parent() user: User) {
+  async getFriends(@Parent() user: User): Promise<User[]> {
     const { id } = user;
-    return this.usersService.getFriend(id);
+    return await this.usersService.getFriends(id);
   }
+
+  @ResolveField('blacklist', (returns) => [User])
+  async getBlackList(@Parent() user: User): Promise<User[]> {
+    const { id } = user;
+    return await this.usersService.getBlackList(id);
+  }
+
+  // @ResolveField('match_history', (returns) => [Match])
+  // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
+  //   const { id } = user;
+  //   return await this.matchService
+  // }
 
 }
