@@ -17,6 +17,7 @@ import { useState } from 'react';
 
 import DirectMessageContent from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
+import NewDirectMessage from './NewDirectMessage';
 
 const style = {
   // position: 'absolute' as const,
@@ -197,6 +198,10 @@ export default function DirectMessage(): JSX.Element {
     setOpen(false);
   };
 
+  const [newDm, setNewDm] = useState(false);
+  const newDmHandler = () => {
+    setNewDm(!newDm);
+  };
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
@@ -208,7 +213,7 @@ export default function DirectMessage(): JSX.Element {
           sx={{
             position: 'fixed',
             margin: '20px',
-            boxShadow: 0,
+            // boxShadow: 0,
             bottom: '0%',
             right: '200px',
           }}
@@ -225,7 +230,7 @@ export default function DirectMessage(): JSX.Element {
 
         <Popper open={open} anchorEl={anchorEl} placement={placement}>
           <Paper
-            variant="outlined"
+            elevation={5}
             sx={style}
             style={{ outline: 'none', padding: '0' }}
           >
@@ -242,7 +247,7 @@ export default function DirectMessage(): JSX.Element {
               {dm.map((dm) => (
                 <Box>
                   <DirectMessageList
-                    {...{ selectedIndex, setSelectedIndex }}
+                    {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={dm.name}
                     ID={dm.id}
                   />
@@ -258,49 +263,52 @@ export default function DirectMessage(): JSX.Element {
                 width: '65%',
                 right: '1px',
                 borderRadius: '0rem 0.2rem 0.2rem 0rem',
-                height: '99.2%',
+                // height: '99.2%',
+                height: '100%',
                 padding: '10px',
                 backgroundColor: 'white',
                 overflowX: 'hidden',
               }}
             >
-              {
-                // 삼항연산자 중첩으로 코드가 거지같습니다. 해결방법이 없을까요?
-                selectedIndex ? (
-                  <DirectMessageContent
-                    messages={dm[selectedIndex - 1].messages}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '5%',
-                    }}
+              {newDm && <NewDirectMessage />}
+
+              {selectedIndex ? (
+                <DirectMessageContent
+                  messages={dm[selectedIndex - 1].messages}
+                />
+              ) : (
+                <Box
+                  id="DM-nonselected"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '5%',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    component="div"
+                    sx={{ bottom: '0%' }}
                   >
-                    <Typography
-                      variant="h5"
-                      gutterBottom
-                      component="div"
-                      sx={{ bottom: '0%' }}
-                    >
-                      선택된 쪽지가 없습니다.
-                      <br />
-                      <Typography variant="h6" gutterBottom component="div">
-                        기존 쪽지 중 하나를 선택하거나
-                        <br />새 쪽지를 작성하세요.
-                      </Typography>
-                      <Button variant="outlined" size="medium">
-                        새 쪽지
-                      </Button>
+                    선택된 쪽지가 없습니다.
+                    <br />
+                    <Typography variant="h6" gutterBottom component="div">
+                      기존 쪽지 중 하나를 선택하거나
+                      <br />새 쪽지를 작성하세요.
                     </Typography>
-                  </Box>
-                  // 여기다가 '선택된 쪽지가 없음' 컴포넌트 삽입하기. [새 쪽지] 버튼 포함.
-                )
-              }
+                    <Button
+                      variant="outlined"
+                      size="medium"
+                      onClick={newDmHandler}
+                    >
+                      새 쪽지
+                    </Button>
+                  </Typography>
+                </Box>
+              )}
             </Box>
-            <Divider orientation="vertical" />
           </Paper>
         </Popper>
       </Box>
