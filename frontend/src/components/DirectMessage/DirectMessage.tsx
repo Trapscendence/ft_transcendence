@@ -64,7 +64,7 @@ export default function DirectMessage(): JSX.Element {
       ],
     },
     {
-      name: 'aaa_seohchoi',
+      name: 'qwer',
       id: 2,
       lastMessageDate: 13,
       messages: [
@@ -88,96 +88,6 @@ export default function DirectMessage(): JSX.Element {
       messages: [
         { received: true, content: '받은메시지11', date: 20211018 },
         { received: false, content: '보낸메세지11', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola5',
-      id: 5,
-      lastMessageDate: 10,
-      messages: [
-        { received: true, content: '받은메시지10', date: 20211018 },
-        { received: false, content: '보낸메세지10', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola6',
-      id: 6,
-      lastMessageDate: 9,
-      messages: [
-        { received: true, content: '받은메시지9', date: 20211018 },
-        { received: false, content: '보낸메세지9', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola7',
-      id: 7,
-      lastMessageDate: 8,
-      messages: [
-        { received: true, content: '받은메시지8', date: 20211018 },
-        { received: false, content: '보낸메세지8', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola8',
-      id: 8,
-      lastMessageDate: 7,
-      messages: [
-        { received: true, content: '받은메시지7', date: 20211018 },
-        { received: false, content: '보낸메세지7', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola9',
-      id: 9,
-      lastMessageDate: 6,
-      messages: [
-        { received: true, content: '받은메시지6', date: 20211018 },
-        { received: false, content: '보낸메세지6', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola10',
-      id: 10,
-      lastMessageDate: 5,
-      messages: [
-        { received: true, content: '받은메시지5', date: 20211018 },
-        { received: false, content: '보낸메세지5', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola11',
-      id: 11,
-      lastMessageDate: 4,
-      messages: [
-        { received: true, content: '받은메시지4', date: 20211018 },
-        { received: false, content: '보낸메세지4', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola12',
-      id: 12,
-      lastMessageDate: 3,
-      messages: [
-        { received: true, content: '받은메시지3', date: 20211018 },
-        { received: false, content: '보낸메세지3', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola13',
-      id: 13,
-      lastMessageDate: 2,
-      messages: [
-        { received: true, content: '받은메시지2', date: 20211018 },
-        { received: false, content: '보낸메세지2', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola14',
-      id: 14,
-      lastMessageDate: 1,
-      messages: [
-        { received: true, content: '받은메시지1', date: 20211018 },
-        { received: false, content: '보낸메세지1', date: 20211018 },
       ],
     },
   ];
@@ -294,14 +204,15 @@ export default function DirectMessage(): JSX.Element {
                   >
                     선택된 쪽지가 없습니다.
                     <br />
-                    <Typography variant="h6" gutterBottom component="div">
+                    <Typography variant="body2" component="div">
                       기존 쪽지 중 하나를 선택하거나
                       <br />새 쪽지를 작성하세요.
                     </Typography>
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       size="medium"
                       onClick={newDmHandler}
+                      sx={{ margin: '20px 0px 0px 0px' }}
                     >
                       새 쪽지
                     </Button>
