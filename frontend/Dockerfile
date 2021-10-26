@@ -1,4 +1,4 @@
-FROM node:fermium-alpine
+FROM node:17-alpine3.12
 
 WORKDIR /usr/src/frontend
 
