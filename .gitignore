@@ -1,6 +1,8 @@
 dist
 node_modules
 backend/**/schema.gql
+db-migrate
+db-migrate-pg
 
 .env
 

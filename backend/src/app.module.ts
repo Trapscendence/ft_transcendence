@@ -15,7 +15,7 @@ import { join } from 'path';
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       subscriptions: {
-        'graphql-ws': true
+        'graphql-ws': true,
       },
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
     }),
