@@ -4,6 +4,8 @@ services:
   frontend:
     build:
       context: ./frontend
+    networks:
+      - default
     ports:
       - "3000:3000"
     volumes:
@@ -18,13 +20,16 @@ services:
       context: ./database
       dockerfile: Dockerfile
       args:
+        DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        PGDATA: /var/lib/postgresql/data
-        DB_NAME: ${DB_NAME}
+    ports:
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+    # networks:
+    #   - default
 
   backend:
     environment:
@@ -35,10 +40,53 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
     build: ./backend
+    networks:
+      - default
     ports:
       - "5000:5000"
     volumes:
       - ./backend/src:/app/src
+    # networks:
+    #   - default
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
+    # networks:
+    #   - default
+    ports:
+      - "5050:80"
+
+  migration:
+    build:
+      context: ./migration
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+    depends_on:
+      - database
+    volumes:
+      - ./migration/migrations:/mitrations
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+      - "5050:80"
 
 volumes:
   db_data:
+
+networks:
+  internal:
+    driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요

@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "apollo-server-express": "^3.4.0",
     "graphql": "^15.6.1",
+    "graphql-ws": "^5.5.3",
     "passport-42": "^1.2.6",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",

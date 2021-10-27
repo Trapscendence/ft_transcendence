@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Message } from './DirectMessage';
 
 interface DirectMessageListProps {
-  messages: Message[];
+  messages?: Message[];
 }
 
 function DirectMessageContent({
@@ -75,7 +75,7 @@ function DirectMessageContent({
         }}
       >
         <Divider light />
-        <TextField fullWidth margin="dense"></TextField>
+        <TextField size="small" fullWidth margin="dense"></TextField>
         <LoadingButton
           onClick={handleClick}
           endIcon={<Send />}
@@ -84,7 +84,7 @@ function DirectMessageContent({
           variant="contained"
           sx={{
             boxShadow: 0,
-            margin: '10px',
+            margin: '5px 0px 5px 8px',
           }}
         >
           Send
