@@ -16,8 +16,7 @@ exports.setup = function(options, seedLink) {
 
 exports.up = function(db) {
   return db.runSql(`
-DROP SCHEMA IF EXISTS ${process.env.DB_NAME} CASCADE;
-CREATE SCHEMA ${process.env.DB_NAME};
+CREATE SCHEMA ${process.env.DB_SCHEMA};
 
 CREATE TYPE auth AS ENUM (
   'FORTYTWO',
@@ -35,7 +34,7 @@ CREATE TYPE role AS ENUM (
   'OWNER'
 );
 
-CREATE TABLE ${process.env.DB_NAME}.channel (
+CREATE TABLE ${process.env.DB_SCHEMA}.channel (
   id SERIAL,
   title VARCHAR ( 128 ) NOT NULL,
   password VARCHAR ( 64 ),
@@ -43,9 +42,8 @@ CREATE TABLE ${process.env.DB_NAME}.channel (
   PRIMARY KEY ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.user (
+CREATE TABLE ${process.env.DB_SCHEMA}.user (
   id SERIAL,
-  channel_id INT,
   oauth_id VARCHAR ( 80 ) NOT NULL,
   oauth_type AUTH NOT NULL,
   nickname VARCHAR ( 20 ) UNIQUE NOT NULL,
@@ -59,7 +57,7 @@ CREATE TABLE ${process.env.DB_NAME}.user (
   FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.channel_user (
+CREATE TABLE ${process.env.DB_SCHEMA}.channel_user (
   user_id INT NOT NULL,
   channel_id INT NOT NULL,
   channel_role ROLE NOT NULL,
@@ -69,7 +67,7 @@ CREATE TABLE ${process.env.DB_NAME}.channel_user (
   FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.article (
+CREATE TABLE ${process.env.DB_SCHEMA}.article (
   id SERIAL,
   user_id INT UNIQUE NOT NULL,
   title VARCHAR ( 256 ) NOT NULL,
@@ -78,52 +76,52 @@ CREATE TABLE ${process.env.DB_NAME}.article (
   use_for USE DEFAULT 'NOTICE',
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.dm (
+CREATE TABLE ${process.env.DB_SCHEMA}.dm (
   id SERIAL,
   sender_id INT NOT NULL,
   receiver_id INT NOT NULL,
   check_date INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( sender_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( receiver_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
+  FOREIGN KEY ( sender_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( receiver_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.message (
+CREATE TABLE ${process.env.DB_SCHEMA}.message (
   id SERIAL,
   dm_id INT NOT NULL,
   dm_text VARCHAR ( 1024 ) NOT NULL,
   time_stamp INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( dm_id ) REFERENCES ${process.env.DB_NAME}.dm ( id )
+  FOREIGN KEY ( dm_id ) REFERENCES ${process.env.DB_SCHEMA}.dm ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.friend (
+CREATE TABLE ${process.env.DB_SCHEMA}.friend (
   id SERIAL,
   my_id INT NOT NULL,
   friend_id INT NOT NULL,
   memo VARCHAR ( 64 ),
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( my_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( friend_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
+  FOREIGN KEY ( my_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( friend_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.block (
+CREATE TABLE ${process.env.DB_SCHEMA}.block (
   id SERIAL,
   blocker_id INT NOT NULL,
   blocked_id INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( blocker_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( blocked_id ) REFERENCES ${process.env.DB_NAME}.user ( id )
+  FOREIGN KEY ( blocker_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( blocked_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.match (
+CREATE TABLE ${process.env.DB_SCHEMA}.match (
   id SERIAL,
   winner INT NOT NULL,
   loser INT NOT NULL,
@@ -133,12 +131,12 @@ CREATE TABLE ${process.env.DB_NAME}.match (
   ladder BOOLEAN NOT NULL DEFAULT false,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( winner ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( loser ) REFERENCES ${process.env.DB_NAME}.user ( id )
+  FOREIGN KEY ( winner ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( loser ) REFERENCES ${process.env.DB_SCHEMA}.user ( id )
 );
 
 
-CREATE TABLE ${process.env.DB_NAME}.achievement (
+CREATE TABLE ${process.env.DB_SCHEMA}.achievement (
   id SERIAL,
   name VARCHAR ( 128 ) NOT NULL,
   icon VARCHAR ( 128 ),
@@ -146,22 +144,22 @@ CREATE TABLE ${process.env.DB_NAME}.achievement (
   PRIMARY KEY ( id )
 );
 
-CREATE TABLE ${process.env.DB_NAME}.achieved (
+CREATE TABLE ${process.env.DB_SCHEMA}.achieved (
   id SERIAL,
   user_id SERIAL NOT NULL,
   achievement_id SERIAL NOT NULL,
   date INT NOT NULL,
 
   PRIMARY KEY ( id ),
-  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( achievement_id ) REFERENCES ${process.env.DB_NAME}.achievement ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( achievement_id ) REFERENCES ${process.env.DB_SCHEMA}.achievement ( id )
 );
   `);
 };
 
 exports.down = function(db) {
   return runSql(`
-DROP SCHEMA IF EXISTS ${process.env.DB_NAME} CASCADE;
+DROP SCHEMA IF EXISTS ${process.env.DB_SCHEMA} CASCADE;
   `);
 };
 

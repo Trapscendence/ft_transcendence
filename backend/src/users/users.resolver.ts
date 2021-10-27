@@ -19,9 +19,16 @@ export class UsersResolver {
    ** ANCHOR: User
    */
 
-  @Query((returns) => User)
-  async user(@Args('id', { type: () => ID }) id: string): Promise<any> {
-    return await this.usersService.getUser(id);
+  @Query((returns) => User,  { nullable: true })
+  async user(
+    @Args('id', { type: () => ID, nullable: true }) id?: string,
+    @Args('nickname', { nullable: true }) nickname?: string
+  ): Promise<User | null> {
+    if ((id && nickname) || !(id || nickname))
+      throw new Error ('You must put exactly one parameter to the query.');
+    if (id)
+      return await this.usersService.getUserById(id);
+    return await this.usersService.getUserByNickname(nickname);
   }
 
   // NOTE: [User!]! 반환하게 수정했습니다. 확인 후 코멘트 삭제해주세요. -gmoon
@@ -30,14 +37,13 @@ export class UsersResolver {
     @Args('ladder') ladder: boolean,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number
-    ): Promise<any> {
+    ): Promise<User[]> {
       return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
   @Mutation((returns) => User)
   async createUser(@Args('nickname') nickname: string): Promise<User> {
-    const users = await this.usersService.createUser(nickname);
-    return users[0];
+    return await this.usersService.createUser(nickname);
   }
 
   /*

@@ -1,11 +1,30 @@
 import { Directive, Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.medel';
 
+@Directive('@key(fields: "user_id other_user { id }")')
+@ObjectType()
+export class DM {
+  @Field((type) => ID)
+  user_id: string;
+
+  @Field((type) => ID)
+  other_id: string;
+
+  @Field((type) => User, { nullable: true })
+  other_user: User;
+
+  @Field((type) => [Message])
+  messages: [Message];
+
+  @Field((type) => Int)
+  checked_date: number;
+}
+
 @Directive('@key(field: "id")')
 @ObjectType()
 export class Message {
   @Field((type) => ID)
-  id: number;
+  id: string;
 
   @Field()
   received: boolean;
@@ -20,21 +39,3 @@ export class Message {
   date: number;
 }
 
-@Directive('@key(fields: "id other_user { id }")')
-@ObjectType()
-export class DM {
-  @Field((type) => Int)
-  user_id: number;
-
-  @Field((type) => User)
-  other_user: User;
-
-  @Field()
-  content: string;
-
-  @Field((type) => [Message])
-  messages: [Message];
-
-  @Field((type) => Int)
-  checked_date: number;
-}
