@@ -53,7 +53,9 @@ RETURNING *;
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
-    const array = await this.databaseService.executeQuery(`
+    if (user_id === friend_id)
+      throw new Error('One cannot be their\'s own friend');
+    const array: Array<User> = await this.databaseService.executeQuery(`
 INSERT INTO ${schema}.friend( my_id, friend_id )
 VALUES
   (
@@ -68,20 +70,23 @@ ON CONFLICT
   ON CONSTRAINT friend_pk
 DO NOTHING
 RETURNING *;
-    `)
+    `);
     return array.length === 0 ? false : true;
   }
 
   async deleteFriend(user_id: string, friend_id: string): Promise<any> {
-    return await this.databaseService.executeQuery(`
+    if (user_id === friend_id)
+      throw new Error ('One cannot have themself as a friend');
+    const array: Array<User> = await this.databaseService.executeQuery(`
 DELETE FROM
   ${schema}.friend f
 WHERE
-  ( f.user_id = ${user_id} AND f.friend_id = ${friend_id} )
+  ( f.my_id = ${user_id} AND f.friend_id = ${friend_id} )
   OR
-  ( f.user_id = ${friend_id} AND f.friend_id = ${user_id} )
+  ( f.my_id = ${friend_id} AND f.friend_id = ${user_id} )
 RETURNING *;
-    `)
+    `);
+    return array.length === 0 ? false : true;
   }
 
   async getFriends(id: string): Promise<User[]> {
@@ -103,38 +108,57 @@ WHERE f.my_id = ${id};
     `);
   }
 
-  async addToBlackList(user_id: string, black_id: string): Promise<any> {
-    // const black = await this.user.getBlackList.findOne({ black_id });
-    // if (black) {
-    // return { ok: false, error: 'this user is already added' };
-    // }
-    // const exists = await this.user.findOne({ black_id });
-    // if (!exists) {
-    // return { ok: false, error: 'this user does not exist' };
-    // }
-
-    return new Promise(() => {});
+  async addToBlackList(user_id: string, black_id: string): Promise<boolean> {
+    if (user_id === black_id)
+      throw new Error ('One cannot block themself');
+    const array: Array<User> = await this.databaseService.executeQuery(`
+INSERT INTO ${schema}.block( blocker_id, blocked_id )
+VALUES
+  (
+    ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
+    ( SELECT id from ${schema}.user WHERE id = ${black_id} )
+  )
+ON CONFLICT
+  ON CONSTRAINT block_pk
+DO NOTHING
+RETURNING *;
+    `);
+    return array.length === 0 ? false : true;
   }
 
-  async deleteFromBlackList(user_id: string, black_id: string): Promise<any> {
-    // const black = await this.user.getBlackList.findOne({ black_id });
-    // if (!black) {
-    // return { ok: false, error: 'black user not found' };
-    // }
+  async deleteFromBlackList(user_id: string, black_id: string): Promise<boolean> {
+    if (user_id === black_id)
+      throw new Error ('One cannot block themself');
+    const array: Array<User> = await this.databaseService.executeQuery(`
+DELETE FROM
+  ${schema}.friend f
+WHERE
+  ( f.user_id = ${user_id} AND f.friend_id = ${black_id} )
+RETURNING *;
+    `);
 
-    return new Promise(() => {});
+    return array.length === 0 ? false : true;
   }
 
   /*
    ** ANCHOR: ResolveField
    */
 
-  getFriend(id: string): Promise<User[]> {
-    return this.databaseService.executeQuery(`
-      SELECT id, nickname, avatar, status_message, rank_score, site_role
-      FROM ${schema}.user
-      WHERE id = ${id}
-      INNER JOIN id ON ${schema}.user.id = ${schema}.friend.my_id;
+  async getFriend(id: string): Promise<User[]> {
+    return await this.databaseService.executeQuery(`
+SELECT
+  id,
+  nickname,
+  avatar,
+  status_message,
+  rank_score,
+  site_role
+FROM
+  ${schema}.user
+WHERE
+  id = ${id}
+INNER JOIN
+  id ON ${schema}.user.id = ${schema}.friend.my_id;
     `);
   }
 

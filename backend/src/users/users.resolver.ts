@@ -53,7 +53,7 @@ export class UsersResolver {
     return this.usersService.addFriend(user_id, friend_id)
   }
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
   async deleteFriend(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string
@@ -61,19 +61,19 @@ export class UsersResolver {
     return await this.usersService.deleteFriend(user_id, friend_id)
   }
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
   async addToBlackLIst(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string
-    ): Promise<User> {
+    ): Promise<boolean> {
     return await this.usersService.addToBlackList(user_id, black_id)
   }
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
   async deleteFromBlackList(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string
-    ): Promise<User> { // NOTE 여기서 할것인가?
+    ): Promise<boolean> { // NOTE 여기서 할것인가?
     return await this.usersService.deleteFromBlackList(user_id, black_id)
   }
 
