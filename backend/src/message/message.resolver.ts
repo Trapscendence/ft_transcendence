@@ -7,8 +7,11 @@ export class DmResolver {
   constructor(private readonly messageService: MessageService) {}
 
   @Query((returns) => [DM])
-  async DM(@Args('id', { type: () => ID }) id: string): Promise<any> {
-    return this.messageService.getDm(id);
+  async DM(
+    @Args('user_id', { type: () => ID }) user_id: string,
+    @Args('other_id', { type: () => ID }) other_id: string
+  ): Promise<DM> {
+    return this.messageService.getDMs(user_id, other_id);
   }
 }
 

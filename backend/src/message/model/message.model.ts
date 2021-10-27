@@ -29,9 +29,6 @@ export class DM {
   @Field((type) => User)
   other_user: User;
 
-  @Field()
-  content: string;
-
   @Field((type) => [Message])
   messages: [Message];
 

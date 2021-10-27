@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from './models/user.medel';
 import { schema } from 'src/utils/envs';
+import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 
 @Injectable()
 export class UsersService {
   constructor(private databaseService: DatabaseService) {}
 
-  async getUser(id: string): Promise<User[]> {
-    return await this.databaseService.executeQuery(`
+  async getUserById(id: string): Promise<User | null> {
+    const array = await this.databaseService.executeQuery(`
 SELECT
   id,
   nickname,
@@ -20,6 +21,24 @@ FROM
   ${schema}.user
 WHERE
   id = ${id};`);
+    return array.length ? array[0] : null;
+  }
+
+  async getUserByNickname(nickname: string): Promise<User | null> {
+    nickname = sqlEscaper(nickname);
+    const array = await this.databaseService.executeQuery(`
+SELECT
+  id,
+  nickname,
+  avatar,
+  status_message,
+  rank_score,
+  site_role
+FROM
+  ${schema}.user
+WHERE
+  nickname = '${nickname}';`);
+    return array.length ? array[0] : null;
   }
 
   async getUsers(ladder: boolean, offset: number, limit: number): Promise<User[]> {
@@ -44,12 +63,13 @@ ${
     `);
   }
 
-  async createUser(nickname: string): Promise<any> { // NOTE 일단 몰라서 Promise<any>로
-    return await this.databaseService.executeQuery(`
+  async createUser(nickname: string): Promise<User> { // NOTE 일단 몰라서 Promise<any>로
+    const users = await this.databaseService.executeQuery(`
 INSERT INTO ${schema}.user( nickname, oauth_id, oauth_type )
 VALUES ( '${nickname}', 'mock_id', 'FORTYTWO' )
 RETURNING *;
     `); // NOTE oauth_id, oauth_type, fta_secret는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
+    return users[0]
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
@@ -74,7 +94,7 @@ RETURNING *;
     return array.length === 0 ? false : true;
   }
 
-  async deleteFriend(user_id: string, friend_id: string): Promise<any> {
+  async deleteFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new Error ('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
