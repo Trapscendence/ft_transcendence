@@ -29,7 +29,7 @@ exports.down = function(db) {
 ALTER TABLE ${process.env.DB_SCHEMA}.dm
   ADD COLUMN id SERIAL;
 ALTER TABLE ${process.env.DB_SCHEMA}.dm
-  DROP COLUMN dm_pk;`);
+  DROP CONTRAINT dm_pk;`);
 };
 
 exports._meta = {
