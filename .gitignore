@@ -1,7 +1,6 @@
 dist
 node_modules
-db-migrate
-db-migrate-pg
+schema.gql
 
 .env
 

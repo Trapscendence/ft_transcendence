@@ -67,13 +67,18 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
-
+    depends_on:
+      - database
+    volumes:
+      - ./migration/migrations:/mitrations
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
+    depends_on:
+      - database
     networks:
       - default
     ports:

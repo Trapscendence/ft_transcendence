@@ -17,19 +17,15 @@ exports.setup = function(options, seedLink) {
 exports.up = function(db) {
   return db.runSql(`
 ALTER TABLE ${process.env.DB_SCHEMA}.dm
-  ADD CONSTRAINT dm_pk
-    UNIQUE ( sender_id, receiver_id );
-ALTER TABLE ${process.env.DB_SCHEMA}.dm
-  DROP COLUMN IF EXISTS id CASCADE;
+  ADD COLUMN id SERIAL;
   `);
 };
 
 exports.down = function(db) {
   return db.runSql(`
 ALTER TABLE ${process.env.DB_SCHEMA}.dm
-  ADD COLUMN id SERIAL;
-ALTER TABLE ${process.env.DB_SCHEMA}.dm
-  DROP COLUMN dm_pk;`);
+  DROP COLUMN id CASCADE;
+  `);
 };
 
 exports._meta = {
