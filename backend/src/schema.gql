@@ -85,7 +85,7 @@ type Query {
   users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
   DM(other_user: ID!, user_id: ID!): [DM!]
   DmUsers(limit: Float!, offset: Float!, user_id: ID!): [User!]!
-  channel(id: String!): Channel!
+  channel(id: ID!): Channel!
   channels(isPrivate: Boolean): [Channel!]!
 }
 
