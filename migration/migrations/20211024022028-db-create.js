@@ -53,8 +53,7 @@ CREATE TABLE ${process.env.DB_SCHEMA}.user (
   site_role ROLE NOT NULL DEFAULT 'USER',
   avatar VARCHAR ( 128 ),
 
-  PRIMARY KEY ( id ),
-  FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
+  PRIMARY KEY ( id )
 );
 
 CREATE TABLE ${process.env.DB_SCHEMA}.channel_user (
@@ -63,8 +62,8 @@ CREATE TABLE ${process.env.DB_SCHEMA}.channel_user (
   channel_role ROLE NOT NULL,
 
   PRIMARY KEY ( user_id ),
-  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_NAME}.user ( id ),
-  FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_NAME}.channel ( id )
+  FOREIGN KEY ( user_id ) REFERENCES ${process.env.DB_SCHEMA}.user ( id ),
+  FOREIGN KEY ( channel_id ) REFERENCES ${process.env.DB_SCHEMA}.channel ( id )
 );
 
 CREATE TABLE ${process.env.DB_SCHEMA}.article (

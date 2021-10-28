@@ -69,8 +69,8 @@ services:
       - DB_SCHEMA=${DB_SCHEMA}
     depends_on:
       - database
-    volumes:
-      - ./migration/migrations:/mitrations
+    # volumes:
+    #   - ./migration/migrations:/mitrations
 
   pgadmin:
     image: dpage/pgadmin4
