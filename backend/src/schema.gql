@@ -1,0 +1,98 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Achivement {
+  id: ID!
+  title: String!
+  content: String!
+  date: Int!
+}
+
+type Match {
+  id: ID!
+  winner: User!
+  winner_point: Int!
+  loser: User!
+  loser_point: Int!
+  type: MatchType!
+  time: Int!
+}
+
+enum MatchType {
+  RANK
+  CUSTOM
+}
+
+type User {
+  id: ID!
+  intra_id: String!
+  nickname: String!
+  avatar: String!
+  status_message: String
+  status: UserStatus!
+  friends: [User!]!
+  blacklist: [User!]!
+  rank_score: Int!
+  rank: Int!
+  match_history: [Match!]!
+  achivements: [Achivement!]!
+  role: UserRole!
+}
+
+enum UserStatus {
+  ONLINE
+  IN_RANK_GAME
+  IN_NORMAL_GAME
+  OFFLINE
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  OWNER
+}
+
+type Channel {
+  id: ID!
+  title: String!
+  private: Boolean!
+  owner: User!
+  administrators: [User!]!
+  participants: [User!]!
+  bannedUsers: [User!]!
+  mutedUsers: [User!]!
+}
+
+type DM {
+  user_id: ID!
+  other_id: ID!
+  other_user: User!
+  messages(limit: Float!, offset: Float!): [Message!]!
+  checked_date: Int!
+}
+
+type Message {
+  id: ID!
+  received: Boolean!
+  content: String!
+  checked: Boolean!
+  date: Int!
+}
+
+type Query {
+  user(nickname: String, id: ID): User
+  users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
+  DM(other_user: ID!, user_id: ID!): [DM!]
+  DmUsers(limit: Float!, offset: Float!, user_id: ID!): [User!]!
+  channel(id: ID!): Channel!
+  channels(isPrivate: Boolean): [Channel!]!
+}
+
+type Mutation {
+  createUser(nickname: String!): User!
+  addFriend(friend_id: ID!, user_id: ID!): Boolean!
+  deleteFriend(friend_id: ID!, user_id: ID!): Boolean!
+  addToBlackLIst(black_id: ID!, user_id: ID!): Boolean!
+  deleteFromBlackList(black_id: ID!, user_id: ID!): Boolean!
+}
