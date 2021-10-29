@@ -51,46 +51,46 @@ interface Dm {
 
 export default function DirectMessage(): JSX.Element {
   //message에서 received가 참이면 받은 DM이고 아니면 보낸 DM임
-  const dm: Dm[] = [
-    {
-      name: 'seohchoi',
-      id: 1,
-      lastMessageDate: 14,
-      messages: [
-        { received: true, content: '받은메시지14', date: 20211018 },
-        { received: true, content: '받은메시지14-2', date: 20211018 },
-        { received: false, content: '보낸메세지14', date: 20211018 },
-        { received: false, content: '보낸메세지14-2', date: 20211018 },
-      ],
-    },
-    {
-      name: 'qwer',
-      id: 2,
-      lastMessageDate: 13,
-      messages: [
-        { received: true, content: '받은메시지13', date: 20211018 },
-        { received: false, content: '보낸메세지13', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola3',
-      id: 3,
-      lastMessageDate: 12,
-      messages: [
-        { received: true, content: '받은메시지12', date: 20211018 },
-        { received: false, content: '보낸메세지12', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola4',
-      id: 4,
-      lastMessageDate: 11,
-      messages: [
-        { received: true, content: '받은메시지11', date: 20211018 },
-        { received: false, content: '보낸메세지11', date: 20211018 },
-      ],
-    },
-  ];
+  // const dm: Dm[] = [
+  //   {
+  //     name: 'seohchoi',
+  //     id: 1,
+  //     lastMessageDate: 14,
+  //     messages: [
+  //       { received: true, content: '받은메시지14', date: 20211018 },
+  //       { received: true, content: '받은메시지14-2', date: 20211018 },
+  //       { received: false, content: '보낸메세지14', date: 20211018 },
+  //       { received: false, content: '보낸메세지14-2', date: 20211018 },
+  //     ],
+  //   },
+  //   {
+  //     name: 'qwer',
+  //     id: 2,
+  //     lastMessageDate: 13,
+  //     messages: [
+  //       { received: true, content: '받은메시지13', date: 20211018 },
+  //       { received: false, content: '보낸메세지13', date: 20211018 },
+  //     ],
+  //   },
+  //   {
+  //     name: 'hola3',
+  //     id: 3,
+  //     lastMessageDate: 12,
+  //     messages: [
+  //       { received: true, content: '받은메시지12', date: 20211018 },
+  //       { received: false, content: '보낸메세지12', date: 20211018 },
+  //     ],
+  //   },
+  //   {
+  //     name: 'hola4',
+  //     id: 4,
+  //     lastMessageDate: 11,
+  //     messages: [
+  //       { received: true, content: '받은메시지11', date: 20211018 },
+  //       { received: false, content: '보낸메세지11', date: 20211018 },
+  //     ],
+  //   },
+  // ];
 
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] = useState<PopperPlacementType>();
@@ -154,7 +154,7 @@ export default function DirectMessage(): JSX.Element {
                 height: '100%',
               }}
             >
-              {dm.map((dm) => (
+              {dms.map((dm) => (
                 <Box>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
@@ -180,12 +180,13 @@ export default function DirectMessage(): JSX.Element {
                 overflowX: 'hidden',
               }}
             >
-              {newDm && <NewDirectMessage />}
-
+              {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
               {selectedIndex ? (
                 <DirectMessageContent
-                  messages={dm[selectedIndex - 1].messages}
+                  messages={dms[selectedIndex - 1].messages}
                 />
+              ) : newDm ? (
+                <NewDirectMessage />
               ) : (
                 <Box
                   id="DM-nonselected"

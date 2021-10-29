@@ -13,21 +13,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useState } from 'react';
 
 import UseSearchUser from '../../hooks/useSearchUser';
-import { UsersData, UsersDataVars } from '../Apollo/User';
-import { GET_USERS } from '../Apollo/UserQuery';
+import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
+import { GET_USERS } from '../../utils/Apollo/UserQuery';
 
 // NOTE 여기까지는 가능하면 다른 파일에 export로 내보내둘것
 
 function NewDirectMessage(): JSX.Element {
   //ANCHOR 전체 유저리스트 받아오는 쿼리
-  const { loading, error, data } = useQuery<UsersData, UsersDataVars>(
-    GET_USERS,
-    {
-      variables: { ladder: false, offset: 0, limit: 0 },
-    }
-  );
+  const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
+    variables: { ladder: false, offset: 0, limit: 0 },
+  });
 
-  const [buttonActive, setButtonActive] = useState(false);
+  const [buttonActive, setButtonActive] = useState(true);
 
   if (data || error)
     return (
@@ -56,7 +53,7 @@ function NewDirectMessage(): JSX.Element {
           sx={{ width: '100%' }}
         >
           <SearchIcon sx={{ paddingTop: '5px' }} color="primary" />
-          <UseSearchUser {...{ data, buttonActive, setButtonActive }} />
+          <UseSearchUser {...{ users: data, setButtonActive }} />
         </Stack>
       </Box>
     );

@@ -9,9 +9,9 @@ export const GET_USERS = gql`
   }
 `;
 
-export const GET_USER = gql`
-  query getUsers($id: String!, $nickname: String!) {
-    user(id: $id, nickname: $nickname) {
+export const GET_USER_BY_NICKNAME = gql`
+  query getUser($nickname: String) {
+    user(nickname: $nickname) {
       id
       nickname
     }
