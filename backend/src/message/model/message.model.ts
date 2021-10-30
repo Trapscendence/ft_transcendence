@@ -36,5 +36,5 @@ export class Message {
   checked: boolean;
 
   @Field((type) => Int)
-  date: number;
+  time_stamp: number;
 }

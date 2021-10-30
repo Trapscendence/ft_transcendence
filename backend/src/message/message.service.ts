@@ -54,7 +54,8 @@ export class MessageService {
             AS received,
           m.dm_text
             AS content,
-          m.time_stamp,
+          m.time_stamp
+            AS time_stamp,
           true AS checked
         FROM
           ${schema}.message m,
