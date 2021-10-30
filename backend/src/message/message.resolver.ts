@@ -6,11 +6,21 @@ import {
   Query,
   ResolveField,
   Resolver,
+  Subscription,
 } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.medel';
 import { UsersService } from 'src/users/users.service';
 import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
+import { PostgresPubSub } from 'graphql-postgres-subscriptions';
+
+export const pubsub: PostgresPubSub = new PostgresPubSub({
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
+  port: +process.env.POSTGRES_LOCAL_PORT,
+});
 
 @Resolver((of) => DM)
 export class MessageResolver {
@@ -20,19 +30,19 @@ export class MessageResolver {
   ) {}
 
   /*
-   ** ANCHOR: DM
+   ** ANCHOR: DM query
    */
 
   @Query((returns) => [DM], { nullable: true })
   async DM(
     @Args('user_id', { type: () => ID }) user_id: string,
-    @Args('other_user', { type: () => ID }) other_user: string,
+    @Args('other_id', { type: () => ID }) other_id: string,
   ): Promise<DM[]> {
-    return await this.messageService.getDM(user_id, other_user);
+    return await this.messageService.getDM(user_id, other_id);
   }
 
   /*
-   ** ANCHOR: ResolveField
+   ** ANCHOR: DM resolveField
    */
 
   @ResolveField('messages', (returns) => [Message])
@@ -61,7 +71,7 @@ export class MessageResolver {
    */
 
   @Query((returns) => [User])
-  async DmUsers(
+  async dmUsers(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('offset') offset: number,
     @Args('limit') limit: number,
@@ -70,20 +80,32 @@ export class MessageResolver {
   }
 
   /*
-   ** ANCHOR: Mutation
+   ** ANCHOR: DM mutation
    */
 
   @Mutation((returns) => Boolean)
-  async SendMessage(
+  async sendMessage(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('other_id', { type: () => ID }) other_id: string,
     @Args('text') text: string,
   ): Promise<boolean> {
     return await this.messageService.insertMessage(user_id, other_id, text);
   }
+
+  /*
+   ** ANCHOR: DM subscription
+   */
+
+  @Subscription((returns) => Message, {
+    filter: (payload, variables) =>
+      payload.receiveMessage.user_id === variables.user_id &&
+      payload.receiveMessage.other_id === variables.other_id,
+  })
+  receiveMessage() {
+    return pubsub.asyncIterator('receiveMessage');
+  }
 }
 
 // @Resolver((of) => Message)
 // export class MessageResolver {
 //   constructor(private readonly messageService: MessageService) {}
-// }

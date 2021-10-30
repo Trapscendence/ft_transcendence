@@ -13,7 +13,7 @@ export class DM {
   @Field((type) => User, { nullable: true })
   other_user: User;
 
-  @Field((type) => [Message])
+  @Field((type) => [Message], { nullable: true })
   messages: [Message];
 
   @Field((type) => Int)
@@ -38,4 +38,3 @@ export class Message {
   @Field((type) => Int)
   date: number;
 }
-

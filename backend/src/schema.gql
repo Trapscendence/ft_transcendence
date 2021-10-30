@@ -68,7 +68,7 @@ type DM {
   user_id: ID!
   other_id: ID!
   other_user: User!
-  messages(limit: Float!, offset: Float!): [Message!]!
+  messages(limit: Float!, offset: Float!): [Message!]
   checked_date: Int!
 }
 
@@ -83,8 +83,8 @@ type Message {
 type Query {
   user(nickname: String, id: ID): User
   users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
-  DM(other_user: ID!, user_id: ID!): [DM!]
-  DmUsers(limit: Float!, offset: Float!, user_id: ID!): [User!]!
+  DM(other_id: ID!, user_id: ID!): [DM!]
+  dmUsers(limit: Float!, offset: Float!, user_id: ID!): [User!]!
   channel(id: String!): Channel!
   channels(isPrivate: Boolean): [Channel!]!
 }
@@ -95,5 +95,9 @@ type Mutation {
   deleteFriend(friend_id: ID!, user_id: ID!): Boolean!
   addToBlackLIst(black_id: ID!, user_id: ID!): Boolean!
   deleteFromBlackList(black_id: ID!, user_id: ID!): Boolean!
-  SendMessage(text: String!, other_id: ID!, user_id: ID!): Boolean!
+  sendMessage(text: String!, other_id: ID!, user_id: ID!): Boolean!
+}
+
+type Subscription {
+  receiveMessage: Message!
 }
