@@ -16,8 +16,8 @@ export class DM {
   @Field((type) => [Message], { nullable: true })
   messages: [Message];
 
-  @Field((type) => Int)
-  checked_date: number;
+  @Field()
+  checked_date: string;
 }
 
 @Directive('@key(field: "id")')
@@ -35,6 +35,6 @@ export class Message {
   @Field()
   checked: boolean;
 
-  @Field((type) => Int)
-  time_stamp: number;
+  @Field()
+  time_stamp: string;
 }

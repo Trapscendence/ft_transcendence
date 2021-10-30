@@ -218,4 +218,11 @@ export class MessageService {
     `);
     return array.length === 0 ? false : true;
   }
+
+  async listenMessage(user_id: string, other_id: string) {
+    return await this.databaseService.executeQuery(`
+      LISTEN
+        message_from_${user_id}_to_${other_id};
+    `);
+  }
 }

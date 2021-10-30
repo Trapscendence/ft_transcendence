@@ -1,6 +1,7 @@
 import {
   Args,
   ID,
+  Int,
   Mutation,
   Parent,
   Query,
@@ -73,8 +74,8 @@ export class MessageResolver {
   @Query((returns) => [User])
   async dmUsers(
     @Args('user_id', { type: () => ID }) user_id: string,
-    @Args('offset') offset: number,
-    @Args('limit') limit: number,
+    @Args('offset', { type: () => Int }) offset: number,
+    @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
     return await this.messageService.getDmUsers(user_id, offset, limit);
   }
@@ -96,13 +97,15 @@ export class MessageResolver {
    ** ANCHOR: DM subscription
    */
 
-  @Subscription((returns) => Message, {
-    filter: (payload, variables) =>
-      payload.receiveMessage.user_id === variables.user_id &&
-      payload.receiveMessage.other_id === variables.other_id,
-  })
-  receiveMessage() {
-    return pubsub.asyncIterator('receiveMessage');
+  @Subscription((returns) => Message)
+  // filter: (payload, variables) =>
+  //   payload.receiveMessage.user_id === variables.user_id &&
+  //   payload.receiveMessage.other_id === variables.other_id,
+  async receiveMessage(
+    @Args('user_id', { type: () => ID }) user_id: string,
+    @Args('other_id', { type: () => ID }) other_id: string,
+  ) {
+    return await this.messageService.listenMessage(user_id, other_id);
   }
 }
 
