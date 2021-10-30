@@ -10,6 +10,23 @@ export class MessageService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async getDM(user_id: string, other_id: string): Promise<DM[]> {
+    this.databaseService.executeQuery(`
+      INSERT INTO
+        ${schema}.dm ( sender_id, receiver_id, check_date )
+      VALUES ( ${user_id}, ${other_id}, 0 )
+        ON CONFLICT
+          ON CONSTRAINT
+            dm_pk
+      DO NOTHING;
+
+      INSERT INTO
+        ${schema}.dm ( sender_id, receiver_id, check_date )
+      VALUES ( ${other_id}, ${user_id}, 0 )
+        ON CONFLICT
+          ON CONSTRAINT
+            dm_pk
+      DO NOTHING;
+    `);
     return await this.databaseService.executeQuery(`
       SELECT
         sender_id AS user_id,
@@ -30,23 +47,6 @@ export class MessageService {
     offset: number,
     limit: number,
   ): Promise<Message[]> {
-    this.databaseService.executeQuery(`
-      INSERT INTO
-        ${schema}.dm ( sender_id, receiver_id, check_date )
-      VALUES ( ${user_id}, ${other_id}, ${new Date().getTime()} )
-        ON CONFLICT
-          ON CONSTRAINT
-            dm_pk
-      DO NOTHING;
-
-      INSERT INTO
-        ${schema}.dm ( sender_id, receiver_id, check_date )
-      VALUES ( ${other_id}, ${user_id}, ${new Date().getTime()} )
-        ON CONFLICT
-          ON CONSTRAINT
-            dm_pk
-      DO NOTHING;
-    `);
     return await this.databaseService.executeQuery(`
         SELECT
           m.id,
