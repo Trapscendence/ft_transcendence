@@ -2,7 +2,7 @@ import { useLazyQuery } from '@apollo/client';
 import { Autocomplete, TextField } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
 
-import { User, UserData, UsersData } from '../utils/Apollo/User';
+import { NickName, UserData, UsersData } from '../utils/Apollo/User';
 import { GET_USER_BY_NICKNAME } from '../utils/Apollo/UserQuery';
 
 interface UseSearchUserProps {
@@ -19,7 +19,7 @@ export default function UseSearchUser({
   setButtonActive,
 }: UseSearchUserProps): JSX.Element {
   // ANCHOR 이 유저가 존재하는지 확인하는 쿼리
-  const [getUser, { data }] = useLazyQuery<UserData, User>(
+  const [getUser, { data }] = useLazyQuery<UserData, NickName>(
     GET_USER_BY_NICKNAME
   );
   const filterOptions = createFilterOptions({
@@ -53,7 +53,6 @@ export default function UseSearchUser({
           fullWidth
           onChange={(event) =>
             //ANCHOR TextField 인풋값이 변경될때마다 DB에있는 닉네임과 비교해서 닉네임이 존재할 경우 '다음'버튼을 활성화시켜주는 부분
-            //구현필요
             getUser({ variables: { nickname: event.target.value } })
           }
         />

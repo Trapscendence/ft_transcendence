@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client';
 import { Send } from '@mui/icons-material';
 // import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -15,24 +16,11 @@ import {
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
+import { DmUsersData, DmUsersVars } from '../../utils/Apollo/Message';
+import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
 import DirectMessageContent from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
 import NewDirectMessage from './NewDirectMessage';
-
-const style = {
-  // position: 'absolute' as const,
-  // bottom: '-10%',
-  // right: '-10%',
-  // transform: 'translate(-50px, -50px)',
-  width: '500px',
-  maxWidth: '60vw',
-  height: '500px',
-  maxHeight: '50vh',
-  // border: '1px solid #000',
-  bgcolor: 'grey.200',
-  // boxShadow: 24,
-  p: 4,
-};
 
 export interface Message {
   id?: number;
@@ -50,48 +38,30 @@ interface Dm {
 }
 
 export default function DirectMessage(): JSX.Element {
-  //message에서 received가 참이면 받은 DM이고 아니면 보낸 DM임
-  // const dm: Dm[] = [
-  //   {
-  //     name: 'seohchoi',
-  //     id: 1,
-  //     lastMessageDate: 14,
-  //     messages: [
-  //       { received: true, content: '받은메시지14', date: 20211018 },
-  //       { received: true, content: '받은메시지14-2', date: 20211018 },
-  //       { received: false, content: '보낸메세지14', date: 20211018 },
-  //       { received: false, content: '보낸메세지14-2', date: 20211018 },
-  //     ],
-  //   },
-  //   {
-  //     name: 'qwer',
-  //     id: 2,
-  //     lastMessageDate: 13,
-  //     messages: [
-  //       { received: true, content: '받은메시지13', date: 20211018 },
-  //       { received: false, content: '보낸메세지13', date: 20211018 },
-  //     ],
-  //   },
-  //   {
-  //     name: 'hola3',
-  //     id: 3,
-  //     lastMessageDate: 12,
-  //     messages: [
-  //       { received: true, content: '받은메시지12', date: 20211018 },
-  //       { received: false, content: '보낸메세지12', date: 20211018 },
-  //     ],
-  //   },
-  //   {
-  //     name: 'hola4',
-  //     id: 4,
-  //     lastMessageDate: 11,
-  //     messages: [
-  //       { received: true, content: '받은메시지11', date: 20211018 },
-  //       { received: false, content: '보낸메세지11', date: 20211018 },
-  //     ],
-  //   },
-  // ];
+  const style = {
+    // position: 'absolute' as const,
+    // bottom: '-10%',
+    // right: '-10%',
+    // transform: 'translate(-50px, -50px)',
+    width: '500px',
+    maxWidth: '60vw',
+    height: '500px',
+    maxHeight: '50vh',
+    // border: '1px solid #000',
+    bgcolor: 'grey.200',
+    // boxShadow: 24,
+    p: 4,
+  };
 
+  //ANCHOR userId를  '자신의 닉네임'으로 수정할 것
+  const userId = '1';
+  //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
+  const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
+    GET_DM_USERS,
+    {
+      variables: { limit: 10, offset: 0, user_id: userId },
+    }
+  );
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] = useState<PopperPlacementType>();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -112,7 +82,7 @@ export default function DirectMessage(): JSX.Element {
   const newDmHandler = () => {
     setNewDm(!newDm);
   };
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState('0');
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
@@ -154,12 +124,12 @@ export default function DirectMessage(): JSX.Element {
                 height: '100%',
               }}
             >
-              {dms.map((dm) => (
+              {data?.dmUsers.map((user) => (
                 <Box>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
-                    nickname={dm.name}
-                    ID={dm.id}
+                    nickname={user.nickname}
+                    ID={user.id}
                   />
                   <Divider light />
                 </Box>
@@ -181,9 +151,11 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
-              {selectedIndex ? (
+              {selectedIndex != '0' ? (
                 <DirectMessageContent
-                  messages={dms[selectedIndex - 1].messages}
+                  user_id={userId}
+                  other_id={selectedIndex}
+                  // messages={dms[selectedIndex - 1].messages}
                 />
               ) : newDm ? (
                 <NewDirectMessage />

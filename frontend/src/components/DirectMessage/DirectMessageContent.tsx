@@ -1,17 +1,21 @@
+import { useQuery } from '@apollo/client';
 import { Send } from '@mui/icons-material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Box, Divider, TextField } from '@mui/material';
 import { useState } from 'react';
 
-import { Message } from './DirectMessage';
+import { DmsData, DmVars } from '../../utils/Apollo/Message';
+import { GET_DM } from '../../utils/Apollo/MessageQuery';
 
-interface DirectMessageListProps {
-  messages?: Message[];
+interface DirectMessageContentProps {
+  user_id: string;
+  other_id: string;
 }
 
 function DirectMessageContent({
-  messages,
-}: DirectMessageListProps): JSX.Element {
+  user_id,
+  other_id,
+}: DirectMessageContentProps): JSX.Element {
   const friendDmStyle = {
     background: '#262626',
     borderRadius: '0.1rem 0.9rem 0.9rem 0.9rem',
@@ -33,11 +37,16 @@ function DirectMessageContent({
     margin: '0.12rem 0.5rem',
   };
 
-  const [loading, setLoading] = useState(false);
+  const [loadingState, setLoadingState] = useState(false);
   const handleClick = () => {
-    setLoading(true);
+    setLoadingState(true);
   };
 
+  const { error, loading, data } = useQuery<DmsData, DmVars>(GET_DM, {
+    variables: { user_id: '1', other_id: '2', offset: 0, limit: 5 },
+  });
+
+  // console.log(data?.DM[0]);
   return (
     <Box
       sx={{
@@ -48,7 +57,8 @@ function DirectMessageContent({
         // alignItems: 'flex-end'
       }}
     >
-      {messages?.map((message) =>
+      {data?.DM[0].messages.map((message) =>
+        // ANCHOR 어째서 2중배열?
         message.received ? (
           <Box id="friend-DM" style={friendDmStyle}>
             {message.content}
@@ -79,7 +89,7 @@ function DirectMessageContent({
         <LoadingButton
           onClick={handleClick}
           endIcon={<Send />}
-          loading={loading}
+          loading={loadingState}
           loadingPosition="end"
           variant="contained"
           sx={{

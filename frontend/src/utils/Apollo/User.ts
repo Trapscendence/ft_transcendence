@@ -1,6 +1,10 @@
 export interface User {
   nickname: string;
-  id?: number;
+  id: string;
+}
+
+export interface NickName {
+  nickname: string;
 }
 
 export interface UserData {
