@@ -110,7 +110,7 @@ export class MessageService {
         WHERE
           m.dm_id = d.id
       ORDER BY
-        time_stamp ASC
+        time_stamp DESC
       OFFSET
         ${offset} ROWS
       FETCH NEXT
@@ -136,17 +136,26 @@ export class MessageService {
       FROM
       (
         SELECT
-          DISTINCT ON (t.my_id) my_id,
-          t.other_id other_id,
-          t.time_stamp time_stamp,
-          t.checked checked
+          DISTINCT ON ( t.other_id )
+          t.my_id
+            AS my_id,
+          t.other_id
+            AS other_id,
+          t.time_stamp
+            AS time_stamp,
+          t.checked
+            AS checked
         FROM
         (
             SELECT
-              d.sender_id my_id,
-              d.receiver_id other_id,
-              GREATEST(m.time_stamp) time_stamp,
-              true checked
+              d.sender_id
+                AS my_id,
+              d.receiver_id
+                AS other_id,
+              m.time_stamp
+                AS time_stamp,
+              true
+                AS checked
             FROM
               ${schema}.dm d
             INNER JOIN
@@ -157,9 +166,12 @@ export class MessageService {
               d.sender_id = ${user_id}
           UNION
             SELECT
-              d.receiver_id my_id,
-              d.sender_id other_id,
-              GREATEST(m.time_stamp) time_stamp,
+              d.receiver_id
+                AS my_id,
+              d.sender_id
+                AS other_id,
+              m.time_stamp
+                AS time_stamp,
               CASE
                 WHEN
                   m.time_stamp > d.check_date
@@ -178,7 +190,7 @@ export class MessageService {
               d.receiver_id = ${user_id}
         ) t
         ORDER BY
-          t.my_id,
+          t.other_id,
           t.time_stamp DESC
       ) s
       INNER JOIN
@@ -187,7 +199,7 @@ export class MessageService {
             u.id = s.other_id
       ORDER BY
         s.checked DESC,
-        s.time_stamp ASC;
+        s.time_stamp DESC
       OFFSET
         ${offset} ROWS
       FETCH NEXT
