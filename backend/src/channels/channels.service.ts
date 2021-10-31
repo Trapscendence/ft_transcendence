@@ -23,50 +23,69 @@ export class ChannelsService {
    ** ANCHOR: Query
    */
 
-  // TODO: 메모리상의 cache도 구현해서 성능 더 빠르게 개선할 수도?
-  // TODO: await를 병렬처리해서 성능 개선해야
+  // TODO: 메모리상의 cache도 구현해서 성능 더 빠르게 개선할 수도...?
+  // TODO: await를 병렬처리해서 성능 개선해야!
   async getChannel(channel_id: string): Promise<Channel> {
-    const array = await this.databaseService.executeQuery(`
-      SELECT
-        c.id
-          AS id,
-        c.title
-          AS title,
-        CASE
-          WHEN
-            c.password IS NULL
-          THEN
-            false
-          ELSE
-            true
-        END
-          AS is_private
-      FROM
-        ${schema}.channel c
-      WHERE
-        c.id = ${channel_id};
+    const [selectedChannel] = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.channel
+        WHERE id = ${channel_id}
     `);
 
-    return !array.length ? null : array[0];
+    if (!selectedChannel) return null;
+
+    const { id, title, password } = selectedChannel;
+
+    const [owner] = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_user cu
+          ON u.id = cu.user_id
+        WHERE cu.channel_id = ${channel_id} AND cu.channel_role = 'OWNER'
+    `);
+
+    const administrators = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_user cu
+          ON u.id = cu.user_id
+        WHERE cu.channel_id = ${channel_id} AND cu.channel_role = 'ADMIN'
+    `);
+
+    const participants = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_user cu
+          ON u.id = cu.user_id
+        WHERE cu.channel_id = ${channel_id} AND cu.channel_role = 'USER'
+    `);
+
+    const bannedUsers = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_ban cb
+          ON u.id = cb.banned_user
+        WHERE cb.channel_id = ${channel_id}
+    `); // TODO: 이 부분 전혀 모르겠다... 나중에 무조건 확인 필요...
+
+    return {
+      id,
+      title,
+      private: password ? true : false,
+      owner,
+      administrators,
+      participants,
+      bannedUsers,
+      mutedUsers: this.mutedUsers,
+    };
   }
 
-  async getChannels(offset: number, limit: number): Promise<Channel[]> {
+  async getChannels(isPrivate: boolean): Promise<Channel[]> {
+    // TODO: 임시임... 구현 아직 안함!
+
     return await this.databaseService.executeQuery(`
-      SELECT
-        id,
-        title,
-        CASE
-          WHEN
-            password IS NULL
-          THEN
-            false
-          ELSE
-            true
-        END
-          AS is_private
+      SELECT *
         FROM ${schema}.channel
-      OFFSET ${offset} ROWS
-      LIMIT ${!limit ? 'ALL' : `${limit}`};
     `);
   }
 

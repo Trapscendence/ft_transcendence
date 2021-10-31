@@ -189,4 +189,72 @@ export class ChannelsResolver {
   subscribeChannelUpdate() {
     return this.pubSub.asyncIterator('new_channel');
   }
+
+  /*
+   ** ANCHOR: Mutation
+   */
+
+  @Mutation((returns) => Channel)
+  async addChannel(
+    @Args('title') title: string,
+    @Args('password', { nullable: true }) password: string,
+    @Args('owner_user_id') owner_user_id: string,
+  ) {
+    return await this.channelsService.addChannel(
+      title,
+      password,
+      owner_user_id,
+    );
+  }
+
+  @Mutation((returns) => Channel)
+  async editChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('title') title: string,
+    @Args('password', { nullable: true }) password: string,
+  ) {
+    return await this.channelsService.editChannel(channel_id, title, password);
+  }
+
+  @Mutation((returns) => Boolean)
+  async deleteChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+  ) {
+    return await this.channelsService.deleteChannel(channel_id);
+  }
+
+  @Mutation((returns) => User) // TODO: User 여기서 어떻게 쓰는지 알아보기
+  async muteUserFromChannel(
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('mute_time', { type: () => Int! }) mute_time: number,
+  ) {
+    return new Promise(() => {});
+  }
+
+  @Mutation((returns) => User)
+  async kickUserFromChannel(
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ) {
+    return new Promise(() => {});
+  }
+
+  @Mutation((returns) => User)
+  async banUserFromChannel(
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('ban_time', { type: () => Int! }) ban_time: number,
+  ) {
+    return new Promise(() => {});
+  }
+
+  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
+  async chatMessage(
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('message') message: string,
+  ) {
+    return new Promise(() => {});
+  }
+
+  /*
+   ** ANCHOR: ResolveField
+   */
 }
