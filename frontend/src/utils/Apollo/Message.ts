@@ -26,7 +26,7 @@ export interface DM {
 }
 
 export interface DmsData {
-  DM: DM[];
+  DM: DM;
 }
 
 export interface DmUsersVars {

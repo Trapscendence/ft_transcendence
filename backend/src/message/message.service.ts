@@ -110,7 +110,7 @@ export class MessageService {
         WHERE
           m.dm_id = d.id
       ORDER BY
-        time_stamp DESC
+        time_stamp
       OFFSET
         ${offset} ROWS
       FETCH NEXT

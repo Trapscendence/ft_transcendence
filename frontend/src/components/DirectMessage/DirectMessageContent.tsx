@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { Send } from '@mui/icons-material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { Box, Divider, TextField } from '@mui/material';
+import { Box, Divider, Stack, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
 import { DmsData, DmVars } from '../../utils/Apollo/Message';
@@ -40,13 +40,24 @@ function DirectMessageContent({
   const [loadingState, setLoadingState] = useState(false);
   const handleClick = () => {
     setLoadingState(true);
+    // goToBottom();
   };
 
   const { error, loading, data } = useQuery<DmsData, DmVars>(GET_DM, {
-    variables: { user_id: '1', other_id: '2', offset: 0, limit: 5 },
+    variables: { user_id: user_id, other_id: other_id, offset: 0, limit: 10 },
   });
 
-  // console.log(data?.DM[0]);
+  // const messagesEndRef = useRef();
+  // const scrollToBottom = () => {
+  //   window.HTMLElement.prototype.scrollIntoView = function() {};
+  // //   this.messagesEnd.current.scrollIntoView({ behavior: 'smooth' })
+  // }
+
+  // const goToBottom = () => {
+  //   window.scrollTo(0, document.body.scrollHeight);
+  //   console.log('흑흑 ');
+  // };
+
   return (
     <Box
       sx={{
@@ -57,31 +68,54 @@ function DirectMessageContent({
         // alignItems: 'flex-end'
       }}
     >
-      {data?.DM[0].messages.map((message) =>
-        // ANCHOR 어째서 2중배열?
-        message.received ? (
-          <Box id="friend-DM" style={friendDmStyle}>
-            {message.content}
-          </Box>
-        ) : (
-          <Box
-            id="mine-DM"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
-            <Box style={myDmStyle}>{message.content}</Box>
-          </Box>
-        )
-      )}
+      <Box
+        id="content-container"
+        sx={{
+          overflowY: 'scroll',
+        }}
+        // ref={messagesEndRef}
+      >
+        {data?.DM?.messages != undefined &&
+          data.DM.messages.map((message) =>
+            message.received ? (
+              <Stack
+                // direction="row"
+                // justifyContent="flex-start"
+                justifyContent="flex-end"
+                spacing={0}
+              >
+                <Box id="friend-DM" style={friendDmStyle}>
+                  {message.content}
+                </Box>
+                <Typography variant="caption" display="block" gutterBottom>
+                  {new Date(+message?.time_stamp).toLocaleString('ko-KR')}
+                </Typography>
+              </Stack>
+            ) : (
+              <Box
+                id="mine-DM"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                }}
+              >
+                <Box style={myDmStyle}>{message.content}</Box>
+                <Typography variant="caption" display="block" gutterBottom>
+                  {new Date(+message?.time_stamp).toLocaleString('ko-KR')}
+                </Typography>
+              </Box>
+            )
+          )}
+      </Box>
+
       <Box
         id="send-container"
         sx={{
           display: 'flex',
           alignItems: 'space-between',
           justifyContent: 'space-between',
+          bottom: '0',
         }}
       >
         <Divider light />
