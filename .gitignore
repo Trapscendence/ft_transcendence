@@ -1,6 +1,6 @@
 dist
 node_modules
-schema.gql
+backend/**/schema.gql
 
 .env
 
