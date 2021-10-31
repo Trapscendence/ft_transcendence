@@ -1,15 +1,22 @@
-import { Directive, Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import {
+  Directive,
+  Field,
+  ID,
+  Int,
+  ObjectType,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
-enum UserStatus {
+export enum UserStatus {
   ONLINE,
   IN_RANK_GAME,
   IN_NORMAL_GAME,
   OFFLINE,
 }
 
-enum UserRole {
+export enum UserRole {
   USER,
   MODERATOR,
   OWNER,
