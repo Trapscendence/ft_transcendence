@@ -1,15 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from 'src/users/models/user.medel';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { DM, Message } from './model/message.model';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub.module';
 
 @Injectable()
 export class MessageService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
-  async getDM(user_id: string, other_id: string): Promise<DM[]> {
+  async getDM(user_id: string, other_id: string): Promise<DM> {
     this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.dm ( sender_id, receiver_id, check_date )
@@ -27,7 +32,7 @@ export class MessageService {
             dm_pk
       DO NOTHING;
     `);
-    return await this.databaseService.executeQuery(`
+    const array = await this.databaseService.executeQuery(`
       SELECT
         sender_id AS user_id,
         ${other_id} AS other_id,
@@ -39,6 +44,7 @@ export class MessageService {
           AND
         receiver_id = ${other_id};
     `);
+    return array.length === 0 ? null : array[0];
   }
 
   async getMessages(
@@ -104,7 +110,7 @@ export class MessageService {
         WHERE
           m.dm_id = d.id
       ORDER BY
-        time_stamp DESC
+        time_stamp ASC
       OFFSET
         ${offset} ROWS
       FETCH NEXT
@@ -181,7 +187,11 @@ export class MessageService {
             u.id = s.other_id
       ORDER BY
         s.checked DESC,
-        s.time_stamp DESC;
+        s.time_stamp ASC;
+      OFFSET
+        ${offset} ROWS
+      FETCH NEXT
+        ${limit} ROWS ONLY;
     `);
   }
 
@@ -193,7 +203,7 @@ export class MessageService {
     text = sqlEscaper(text);
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.message(
+        ${schema}.message AS m(
           dm_id,
           dm_text,
           time_stamp
@@ -214,15 +224,20 @@ export class MessageService {
             d.receiver_id = ${other_id}
         ) d
       RETURNING
-        *;
+        m.id AS id,
+        false AS received,
+        m.dm_text AS content,
+        true AS checked,
+        m.time_stamp AS time_stamp;
     `);
-    return array.length === 0 ? false : true;
-  }
 
-  async listenMessage(user_id: string, other_id: string) {
-    return await this.databaseService.executeQuery(`
-      LISTEN
-        message_from_${user_id}_to_${other_id};
-    `);
+    if (array.length !== 0) {
+      array[0].received = true;
+      array[0].received = false;
+      this.pubSub.publish(`message_from_to_${other_id}`, {
+        receiveMessage: array[0],
+      });
+    }
+    return !(array.length === 0);
   }
 }

@@ -83,7 +83,7 @@ type Message {
 type Query {
   user(nickname: String, id: ID): User
   users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
-  DM(other_id: ID!, user_id: ID!): [DM!]
+  DM(other_id: ID!, user_id: ID!): DM
   dmUsers(limit: Int!, offset: Int!, user_id: ID!): [User!]!
   channel(id: String!): Channel!
   channels(isPrivate: Boolean): [Channel!]!
@@ -99,5 +99,5 @@ type Mutation {
 }
 
 type Subscription {
-  receiveMessage(other_id: ID!, user_id: ID!): Message!
+  receiveMessage(user_id: ID!): Message!
 }

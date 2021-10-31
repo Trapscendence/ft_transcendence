@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -9,36 +10,30 @@ import {
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
 import { User } from 'src/users/models/user.medel';
 import { UsersService } from 'src/users/users.service';
 import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
-import { PostgresPubSub } from 'graphql-postgres-subscriptions';
-
-export const pubsub: PostgresPubSub = new PostgresPubSub({
-  user: process.env.POSTGRES_USER,
-  host: process.env.POSTGRES_HOST,
-  database: process.env.POSTGRES_DB,
-  password: process.env.POSTGRES_PASSWORD,
-  port: +process.env.POSTGRES_LOCAL_PORT,
-});
+import { PUB_SUB } from '../pubsub.module';
 
 @Resolver((of) => DM)
 export class MessageResolver {
   constructor(
     private readonly messageService: MessageService,
     private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   /*
    ** ANCHOR: DM query
    */
 
-  @Query((returns) => [DM], { nullable: true })
+  @Query((returns) => DM, { nullable: true })
   async DM(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('other_id', { type: () => ID }) other_id: string,
-  ): Promise<DM[]> {
+  ): Promise<DM> {
     return await this.messageService.getDM(user_id, other_id);
   }
 
@@ -98,17 +93,7 @@ export class MessageResolver {
    */
 
   @Subscription((returns) => Message)
-  // filter: (payload, variables) =>
-  //   payload.receiveMessage.user_id === variables.user_id &&
-  //   payload.receiveMessage.other_id === variables.other_id,
-  async receiveMessage(
-    @Args('user_id', { type: () => ID }) user_id: string,
-    @Args('other_id', { type: () => ID }) other_id: string,
-  ) {
-    return await this.messageService.listenMessage(user_id, other_id);
+  async receiveMessage(@Args('user_id', { type: () => ID }) user_id: string) {
+    return this.pubSub.asyncIterator(`message_to_${user_id}`);
   }
 }
-
-// @Resolver((of) => Message)
-// export class MessageResolver {
-//   constructor(private readonly messageService: MessageService) {}
