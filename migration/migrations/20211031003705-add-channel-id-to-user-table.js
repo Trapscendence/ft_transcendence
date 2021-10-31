@@ -17,9 +17,9 @@ exports.setup = function (options, seedLink) {
 exports.up = function (db) {
   return db.runSql(`
     ALTER TABLE ${process.env.DB_SCHEMA}.user
-      ADD channel_id integer NOT NULL,
+      ADD channel_id integer,
       ADD CONSTRAINT fk FOREIGN KEY(channel_id) REFERENCES ${process.env.DB_SCHEMA}.channel(id);
-  `);
+`);
 };
 
 exports.down = function (db) {
