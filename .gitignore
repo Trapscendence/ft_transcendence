@@ -4,7 +4,7 @@ db-migrate
 db-migrate-pg
 log
 certs
-schema.gql
+schema.gql*
 
 .env
 
