@@ -34,7 +34,9 @@
   "eslintConfig": {
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
-      "project": "./tsconfig.json"
+      "project": "tsconfig.json",
+      "tsconfigRootDir": "frontend",
+      "sourceType": "module"
     },
     "plugins": [
       "simple-import-sort",
