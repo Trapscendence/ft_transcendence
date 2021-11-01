@@ -1,5 +1,15 @@
-import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  ID,
+  Int,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { User } from 'src/users/models/user.medel';
+import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel } from './models/channel.medel';
 
@@ -61,35 +71,50 @@ export class ChannelsResolver {
   @Mutation((returns) => User) // TODO: User 여기서 어떻게 쓰는지 알아보기
   async muteUserFromChannel(
     @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
   ) {
-    return new Promise(() => {});
+    return await this.channelsService.muteUserFromChannel(
+      user_id,
+      channel_id,
+      mute_time,
+    );
   }
 
   @Mutation((returns) => User)
   async kickUserFromChannel(
     @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
   ) {
-    return new Promise(() => {});
+    return await this.channelsService.kickUserFromChannel(user_id, channel_id);
   }
 
   @Mutation((returns) => User)
   async banUserFromChannel(
     @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('ban_time', { type: () => Int! }) ban_time: number,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    // @Args('ban_time', { type: () => Int! }) ban_time: number, // TODO: ban은 time 없게 하는게..?
   ) {
-    return new Promise(() => {});
+    return await this.channelsService.banUserFromChannel(user_id, channel_id);
   }
 
-  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
-  async chatMessage(
-    @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('message') message: string,
-  ) {
-    return new Promise(() => {});
-  }
+  // @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
+  // async chatMessage(
+  //   @Args('user_id', { type: () => ID! }) user_id: string,
+  //   @Args('message') message: string,
+  // ) {
+  //   return new Promise(() => {});
+  // }
 
   /*
    ** ANCHOR: ResolveField
    */
+
+  @ResolveField('administrators', (returns) => [User])
+  async getAdministrators(@Parent() channel: Channel) {
+    const { id } = channel; // TODO: 이게 뭔데!!!
+    return await this.channelsService.getAdministrators(id);
+  }
+
+  // NOTE: owner, admin 제외한 참가자. db role enum의 user을 participant로 바꾸는게 나을 듯
 }
