@@ -97,6 +97,7 @@ export class ChannelsResolver {
   muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
   ): boolean {
     return this.channelsService.muteUserOnChannel(
