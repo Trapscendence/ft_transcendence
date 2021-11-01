@@ -38,14 +38,44 @@ export class ChannelsService {
         WHERE cu.channel_id = ${channel_id} AND cu.channel_role = 'OWNER';
     `);
 
+    const administrators = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_user cu
+          ON u.id = cu.user_id
+        WHERE cu.channel_id = ${id} AND cu.channel_role = 'ADMIN';
+    `);
+
+    const participants = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_user cu
+          ON u.id = cu.user_id
+        WHERE cu.channel_id = ${id} AND cu.channel_role = 'USER';
+    `);
+
+    const bannedUsers = await this.databaseService.executeQuery(`
+      SELECT *
+        FROM ${schema}.user u
+        INNER JOIN ${schema}.channel_ban cb
+          ON u.id = cb.banned_user
+        WHERE cb.channel_id = ${id};
+    `);
+
     // TODO: 따로 안하고 sql 문에서 합쳐서 결과를 리턴하는걸로 수정중...
 
-    // return {
-    //   id,
-    //   title,
-    //   private: password ? true : false,
-    //   owner,
-    // };
+    return {
+      id,
+      title,
+      private: password ? true : false,
+      owner,
+      administrators,
+      participants,
+      bannedUsers,
+      mutedUsers: this.mutedUsers
+        .filter((val) => val.channel_id === channel_id)
+        .map((val) => val.user),
+    };
   }
 
   // TODO: 임시 구현. 성능 상의 문제로 getChannel, getChannel은 sql 쿼리 수정해야 할 듯
