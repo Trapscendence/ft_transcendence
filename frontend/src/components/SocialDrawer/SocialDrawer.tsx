@@ -1,7 +1,7 @@
 import { ChevronRight } from '@mui/icons-material';
 import { Box, Divider, Drawer, IconButton, List } from '@mui/material';
 
-import UserSummary from '../common/UserSummary';
+import UserSummary from '../commons/UserSummary';
 
 export default function SocialDrawer(): JSX.Element {
   // const [open, setOpen] = useState(false);
