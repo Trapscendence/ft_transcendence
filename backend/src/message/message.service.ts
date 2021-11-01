@@ -44,7 +44,7 @@ export class MessageService {
           AND
         receiver_id = ${other_id};
     `);
-    return array.length === 0 ? null : array[0];
+    return !(array.length === 0) ? null : array[0];
   }
 
   async getMessages(
@@ -245,7 +245,7 @@ export class MessageService {
 
     if (array.length !== 0) {
       array[0].received = true;
-      array[0].received = false;
+      array[0].checked = false;
       this.pubSub.publish(`message_from_to_${other_id}`, {
         receiveMessage: array[0],
       });

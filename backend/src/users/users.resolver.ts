@@ -100,7 +100,7 @@ export class UsersResolver {
     return await this.usersService.getBlackList(id);
   }
 
-  @ResolveField('status', (returns) => UserStatus)
+  @ResolveField('status', (returns) => UserStatus) // 임시로 오프라인 default
   getUserStatus(): UserStatus {
     return UserStatus.OFFLINE;
   }
