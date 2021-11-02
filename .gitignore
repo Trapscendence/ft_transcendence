@@ -3,6 +3,8 @@ node_modules
 backend/**/schema.gql
 db-migrate
 db-migrate-pg
+certbot/certs
+certbot/log
 
 .env
 
