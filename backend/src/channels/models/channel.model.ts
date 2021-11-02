@@ -41,7 +41,7 @@ export class Channel {
   @Field((type) => [User]!)
   bannedUsers: User[];
 
-  @Field((type) => [User]!)
+  @Field((type) => [User])
   mutedUsers: User[];
 }
 

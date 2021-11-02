@@ -340,6 +340,7 @@ export class ChannelsService {
     });
     return true;
   }
+  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
     channel_id: string,

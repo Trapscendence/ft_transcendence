@@ -9,8 +9,8 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
-import { PubSubModule } from './pubsub.module';
 import { SessionModule } from './session/session.module';
+import { PubSubModule } from './pubsub.module';
 
 @Module({
   imports: [
@@ -41,6 +41,7 @@ import { SessionModule } from './session/session.module';
     AchivementsModule,
     PubSubModule,
     SessionModule,
+    PubSubModule,
   ],
   controllers: [AppController],
   providers: [AppService],
