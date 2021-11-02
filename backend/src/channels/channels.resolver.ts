@@ -77,21 +77,28 @@ export class ChannelsResolver {
     return await this.channelsService.deleteChannel(channel_id);
   }
 
-  @Mutation((returns) => User) // TODO: User 여기서 어떻게 쓰는지 알아보기
-  async muteUserOnChannel(
+  @Mutation((returns) => Boolean) // TODO: User 여기서 어떻게 쓰는지 알아보기
+  muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
-  ): Promise<boolean> {
-    return await this.channelsService.muteUserOnChannel(
+  ): boolean {
+    return this.channelsService.muteUserOnChannel(
       channel_id,
       user_id,
       mute_time,
     );
   }
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
+  unmuteUserOnChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): boolean {
+    return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
+  }
+
+  @Mutation((returns) => Boolean)
   async kickUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
@@ -99,7 +106,7 @@ export class ChannelsResolver {
     return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
-  @Mutation((returns) => User)
+  @Mutation((returns) => Boolean)
   async banUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
@@ -141,6 +148,16 @@ export class ChannelsResolver {
   @ResolveField('participants', (returns) => [User])
   async participants(@Parent() channel: Channel): Promise<User[]> {
     return await this.channelsService.getParticipants(channel.id);
+  }
+
+  @ResolveField('bannedUsers', (returns) => [User])
+  async bannedUsers(@Parent() channel: Channel): Promise<User[]> {
+    return await this.channelsService.getBannedUsers(channel.id);
+  }
+
+  @ResolveField('mutedUsers', (returns) => [User])
+  async mutedUsers(@Parent() channel: Channel): Promise<User[]> {
+    return await this.channelsService.getMutedUsers(channel.id);
   }
 
   /*

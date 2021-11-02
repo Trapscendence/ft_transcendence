@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
-import { User } from 'src/users/models/user.medel';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
 import { Notify, ChannelNotify, Channel } from './models/channel.medel';
 import { PubSub } from 'graphql-subscriptions';
+import { MutedUsers } from './classes/mutedusers.class';
+import { User } from 'src/users/models/user.medel';
 
 @Injectable()
 export class ChannelsService {
@@ -13,8 +14,10 @@ export class ChannelsService {
     private databaseService: DatabaseService,
     private usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
-  ) {}
-  private mutedUsers: { channel_id: string; user: User }[] = []; // TODO: 이렇게? 아직 확신이 없다.
+  ) {
+    this.mutedUsers = new MutedUsers();
+  }
+  private mutedUsers: MutedUsers;
 
   /*
    ** ANCHOR: Query
@@ -60,7 +63,7 @@ export class ChannelsService {
           ELSE
             true
         END
-          as is_private
+          AS is_private
         FROM ${schema}.channel
       OFFSET ${offset} ROWS
       LIMIT ${!limit ? 'ALL' : `${limit}`};
@@ -220,6 +223,7 @@ export class ChannelsService {
       *
     `);
     if (array.length === 0) return false;
+    this.mutedUsers.popChannel(channel_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.DELETE,
@@ -231,20 +235,12 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
-  async muteUserOnChannel(
+  muteUserOnChannel(
     channel_id: string,
     user_id: string,
     mute_time: number,
-  ): Promise<boolean> {
-    const [{ db_id }] = await this.databaseService.executeQuery(`
-      SELECT
-        channel_id db_id,
-      FROM
-        ${schema}.channel_user
-      WHERE
-        user_id = ${user_id};
-    `);
-    if (channel_id !== db_id) return false;
+  ): boolean {
+    this.mutedUsers.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.MUTE,
@@ -253,27 +249,32 @@ export class ChannelsService {
         check: true,
       },
     });
+    setTimeout((): void => {
+      if (!this.mutedUsers.popUser(channel_id, user_id)) return;
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.MUTE,
+          participant: this.usersService.getUserById(user_id),
+          text: null,
+          check: false,
+        },
+      });
+    }, mute_time * 1000);
     return true;
   }
 
-  async muteUserFromChannel(
-    user_id: string,
-    channel_id: string,
-    mute_time: number,
-  ): Promise<User> {
-    const user = await this.usersService.getUserById(user_id);
-
-    this.mutedUsers.push({ channel_id, user });
-
-    setTimeout(() => {
-      this.mutedUsers = this.mutedUsers.filter(
-        (val) => val.channel_id !== channel_id && val.user.id !== user_id,
-      );
-    }, mute_time * 1000); // TODO: subscription도... 언젠가...
-
-    return user;
+  unmuteUserFromChannel(channel_id: string, user_id: string): boolean {
+    if (!this.mutedUsers.popUser(channel_id, user_id)) return false;
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.MUTE,
+        participant: this.usersService.getUserById(user_id),
+        text: null,
+        check: false,
+      },
+    });
+    return true;
   }
-  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
     channel_id: string,
@@ -289,11 +290,11 @@ export class ChannelsService {
       RETURNING
         *;
     `);
-    if (array.length === 0) return false;
+    if (!array.length) return false;
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.KICK,
-        participant: await this.usersService.getUserById(user_id),
+        participant: user_id,
         text: null,
         check: true,
       },
@@ -303,7 +304,6 @@ export class ChannelsService {
   async banUserFromChannel(
     channel_id: string,
     user_id: string,
-    ban_time: number,
   ): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
       WITH
@@ -345,27 +345,6 @@ export class ChannelsService {
         check: true,
       },
     });
-    setTimeout(async () => {
-      const array = await this.databaseService.executeQuery(`
-        DELETE FROM
-          ${schema}.channel_ban cb
-        WHERE
-          cb.channel_id = ${channel_id}
-            AND
-          cb.user_id = ${user_id}
-        RETURNING
-          *
-      `);
-      if (array.length && ban_time)
-        this.pubSub.publish(`to_channel_${channel_id}`, {
-          subscribeChannel: {
-            type: Notify.BAN,
-            participant: await this.usersService.getUserById(user_id),
-            text: null,
-            check: false,
-          },
-        });
-    }, ban_time);
     return true;
   }
 
@@ -407,7 +386,7 @@ export class ChannelsService {
    ** ANCHOR: ResolveField
    */
 
-  async getOwner(channel_id: string) {
+  async getOwner(channel_id: string): Promise<User> {
     const array = await this.databaseService.executeQuery(`
       SELECT
         u.id id,
@@ -430,7 +409,7 @@ export class ChannelsService {
     return array.length === 0 ? null : array[0];
   }
 
-  async getAdministrators(channel_id: string) {
+  async getAdministrators(channel_id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
     SELECT
       u.id,
@@ -452,7 +431,7 @@ export class ChannelsService {
     `);
   }
 
-  async getParticipants(channel_id: string) {
+  async getParticipants(channel_id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
       SELECT
         u.id,
@@ -470,5 +449,48 @@ export class ChannelsService {
       WHERE
         cu.channel_id = ${channel_id}
     `);
+  }
+
+  async getBannedUsers(channel_id: string): Promise<User[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        u.id id,
+        u.nickname nickname,
+        u.avatar avatar,
+        u.status_message status_message,
+        u.rank_score rank_score,
+        u.site_role site_role
+      FROM
+        ${schema}.user u
+        WHERE
+          u.id
+        IN (
+          SELECT
+            cb.banned_user
+          FROM
+            ${schema}.channel_ban cb
+          WHERE
+            cb.channel_id = ${channel_id}
+        );
+    `);
+  }
+
+  async getMutedUsers(channel_id: string): Promise<User[]> {
+    return await this.databaseService.executeQuery(
+      `
+      SELECT
+        u.id id,
+        u.nickname nickname,
+        u.avatar avatar,
+        u.status_message status_message,
+        u.rank_score rank_score,
+        u.site_role site_role
+      FROM
+        ${schema}.user u
+      WHERE
+        id = ANY ($1);
+        `,
+      [this.mutedUsers.getUserIds(channel_id)],
+    );
   }
 }
