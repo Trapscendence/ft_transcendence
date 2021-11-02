@@ -52,6 +52,56 @@ export class UsersService {
     return array.length ? array[0] : null;
   }
 
+  async getOrCreateUserByOAuth(
+    oauth_id: number,
+    oauth_type: string,
+  ): Promise<User | null> {
+    const selectQueryResult = await this.databaseService.executeQuery(`
+SELECT
+  id,
+  nickname,
+  avatar,
+  status_message,
+  rank_score,
+  site_role
+FROM
+  ${schema}.user
+WHERE
+  oauth_id = '${oauth_id}'
+AND
+  oauth_type = '${oauth_type}';
+    `);
+
+    if (selectQueryResult.length === 1) {
+      return selectQueryResult[0];
+    } else if (selectQueryResult.length === 0) {
+      const insertQueryResult = await this.databaseService.executeQuery(`
+INSERT INTO ${schema}.user(
+  nickname,
+  oauth_id,
+  oauth_type
+) VALUES (
+  '${oauth_type}-${oauth_id}',
+  '${oauth_id}',
+  '${oauth_type}'
+) RETURNING id, nickname, avatar, status_message, rank_score, site_role;
+      `);
+
+      if (insertQueryResult.length !== 1) {
+        console.error(
+          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
+        );
+      } else {
+        return insertQueryResult[0];
+      }
+    } else {
+      console.error(
+        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
+      );
+      return null;
+    }
+  }
+
   async getUsers(
     ladder: boolean,
     offset: number,
