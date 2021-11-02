@@ -9,13 +9,14 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
+import { SessionController } from './session/session.controller';
 
 @Module({
   imports: [
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       subscriptions: {
-        'graphql-ws': true
+        'graphql-ws': true,
       },
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
     }),
@@ -26,7 +27,7 @@ import { join } from 'path';
     MatchsModule,
     AchivementsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, SessionController],
   providers: [AppService],
 })
 export class AppModule {}
