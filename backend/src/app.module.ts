@@ -10,6 +10,7 @@ import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
+import { SessionController } from './session/session.controller';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { PubSubModule } from './pubsub.module';
     AchivementsModule,
     PubSubModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, SessionController],
   providers: [AppService],
 })
 export class AppModule {}
