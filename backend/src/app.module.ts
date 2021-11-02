@@ -10,6 +10,7 @@ import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { SessionController } from './session/session.controller';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
@@ -26,8 +27,9 @@ import { SessionController } from './session/session.controller';
     ChannelsModule,
     MatchsModule,
     AchivementsModule,
+    SessionModule,
   ],
-  controllers: [AppController, SessionController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

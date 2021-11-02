@@ -13,6 +13,13 @@ export class SessionController {
     session.uid = req.user.uid;
   }
 
+  @Get('logout')
+  deleteSession(@Session() session: Record<string, any>) {
+    session.destroy((err) => {
+      console.log(err);
+    });
+  }
+
   @Get('test')
   @UseGuards(SessionGuard)
   returnSessionOK() {
