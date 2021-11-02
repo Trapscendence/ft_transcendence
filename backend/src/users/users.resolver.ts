@@ -40,10 +40,10 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
-  // @Mutation((returns) => User)
-  // async createUser(@Args('nickname') nickname: string): Promise<User> {
-  //   return await this.usersService.createUser(nickname);
-  // }
+  @Mutation((returns) => User)
+  async createUser(@Args('nickname') nickname: string): Promise<User> {
+    return await this.usersService.createUser(nickname);
+  }
 
   /*
    ** ANCHOR: Social
