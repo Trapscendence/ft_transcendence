@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -7,18 +8,25 @@ import {
   Query,
   ResolveField,
   Resolver,
+  Subscription,
 } from '@nestjs/graphql';
+import { PUB_SUB } from 'src/pubsub.module';
 import { User } from 'src/users/models/user.medel';
 import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
-import { Channel } from './models/channel.medel';
+import { Channel, ChannelNotify } from './models/channel.medel';
+import { PubSub } from 'graphql-subscriptions';
 
 @Resolver((of) => Channel)
 export class ChannelsResolver {
-  constructor(private channelsService: ChannelsService) {}
+  constructor(
+    private readonly channelsService: ChannelsService,
+    private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   /*
-   ** ANCHOR: Query
+   ** ANCHOR: Channel Query
    */
 
   @Query((returns) => Channel, { name: 'channel', nullable: true })
@@ -28,18 +36,19 @@ export class ChannelsResolver {
     return await this.channelsService.getChannel(channel_id);
   }
 
-  @Query((returns) => [Channel], { name: 'channels' }) // TODO: 제대로 하려면 수정 필요할 듯? 필터링 부분...
+  @Query((returns) => [Channel], { name: 'channels', nullable: true }) // TODO: 제대로 하려면 수정 필요할 듯? 필터링 부분...
   async getChannels(
-    @Args('isPrivate', { nullable: true }) isPrivate?: boolean,
+    @Args('offset') offset: number,
+    @Args('limit') limit: number, // 0일 경우 모두 불러옴
   ) {
-    return await this.channelsService.getChannels(isPrivate);
+    return await this.channelsService.getChannels(offset, limit);
   }
 
   /*
-   ** ANCHOR: Mutation
+   ** ANCHOR: Channel Mutation
    */
 
-  @Mutation((returns) => Channel)
+  @Mutation((returns) => Channel, { nullable: true })
   async addChannel(
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
@@ -52,12 +61,12 @@ export class ChannelsResolver {
     );
   }
 
-  @Mutation((returns) => Channel)
+  @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
-  ) {
+  ): Promise<Channel> {
     return await this.channelsService.editChannel(channel_id, title, password);
   }
 
@@ -69,52 +78,79 @@ export class ChannelsResolver {
   }
 
   @Mutation((returns) => User) // TODO: User 여기서 어떻게 쓰는지 알아보기
-  async muteUserFromChannel(
+  async muteUserOnChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
-  ) {
-    return await this.channelsService.muteUserFromChannel(
-      user_id,
+  ): Promise<boolean> {
+    return await this.channelsService.muteUserOnChannel(
       channel_id,
+      user_id,
       mute_time,
     );
   }
 
   @Mutation((returns) => User)
   async kickUserFromChannel(
-    @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
-  ) {
-    return await this.channelsService.kickUserFromChannel(user_id, channel_id);
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
   @Mutation((returns) => User)
   async banUserFromChannel(
-    @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
-    // @Args('ban_time', { type: () => Int! }) ban_time: number, // TODO: ban은 time 없게 하는게..?
+    @Args('user_id', { type: () => ID! }) user_id: string,
   ) {
-    return await this.channelsService.banUserFromChannel(user_id, channel_id);
+    return await this.channelsService.banUserFromChannel(channel_id, user_id);
   }
 
-  // @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
-  // async chatMessage(
-  //   @Args('user_id', { type: () => ID! }) user_id: string,
-  //   @Args('message') message: string,
-  // ) {
-  //   return new Promise(() => {});
-  // }
+  @Mutation((returns) => Boolean)
+  async unbanUserFromChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    return await this.channelsService.unbanUserFromChannel(channel_id, user_id);
+  }
+
+  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
+  async chatMessage(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('message') message: string,
+  ) {
+    return await this.channelsService.chatMessage(channel_id, user_id, message);
+  }
 
   /*
-   ** ANCHOR: ResolveField
+   ** ANCHOR: Channel ResolveField
    */
 
-  @ResolveField('administrators', (returns) => [User])
-  async getAdministrators(@Parent() channel: Channel) {
-    const { id } = channel; // TODO: 이게 뭔데!!!
-    return await this.channelsService.getAdministrators(id);
+  @ResolveField('owner', (returns) => User)
+  async owner(@Parent() channel: Channel): Promise<User> {
+    return await this.channelsService.getOwner(channel.id);
   }
 
-  // NOTE: owner, admin 제외한 참가자. db role enum의 user을 participant로 바꾸는게 나을 듯
+  @ResolveField('administrators', (returns) => [User])
+  async administrators(@Parent() channel: Channel): Promise<User[]> {
+    return await this.channelsService.getAdministrators(channel.id);
+  }
+
+  @ResolveField('participants', (returns) => [User])
+  async participants(@Parent() channel: Channel): Promise<User[]> {
+    return await this.channelsService.getParticipants(channel.id);
+  }
+
+  /*
+   ** ANCHOR: Channel Subscription
+   */
+
+  @Subscription((returns) => ChannelNotify)
+  async subscribeChannel(
+    @Args('channel_id') channel_id: string,
+  ): Promise<AsyncIterator<string>> {
+    return this.pubSub.asyncIterator(`to_channel_${channel_id}`);
+  }
 }

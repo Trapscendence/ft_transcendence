@@ -40,8 +40,8 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
-  @Mutation((returns) => User)
-  async createUser(@Args('nickname') nickname: string): Promise<User> {
+  @Mutation((returns) => User, { nullable: true })
+  async createUser(@Args('nickname') nickname: string): Promise<User | null> {
     return await this.usersService.createUser(nickname);
   }
 
@@ -50,7 +50,7 @@ export class UsersResolver {
    */
   // NOTE: 나중에 분리할 수도...?
 
-  @Mutation((returns) => Boolean)
+  @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,

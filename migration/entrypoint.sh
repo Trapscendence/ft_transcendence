@@ -1,7 +1,6 @@
 #!/bin/sh
-apk add npm
-npm install -g db-migrate db-migrate-pg
-db-migrate up && exit ||
+sleep 3
+db-migrate $1 ||
   while [ true ]
     do echo 'Error on migration'
     sleep 5

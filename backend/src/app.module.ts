@@ -9,14 +9,16 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
+import { PubSubModule } from './pubsub.module';
 
 @Module({
   imports: [
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      subscriptions: {
-        'graphql-ws': true,
-      },
+      installSubscriptionHandlers: true,
+      // subscriptions: {
+      //   'graphql-ws': true,
+      // }, // production에선 켜야함
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
     }),
     DatabaseModule,
@@ -25,6 +27,7 @@ import { join } from 'path';
     ChannelsModule,
     MatchsModule,
     AchivementsModule,
+    PubSubModule,
   ],
   controllers: [AppController],
   providers: [AppService],

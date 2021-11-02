@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
+import { PUB_SUB } from 'src/pubsub.module';
 import { User } from 'src/users/models/user.medel';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
-import { Channel } from './models/channel.medel';
+import { Notify, ChannelNotify, Channel } from './models/channel.medel';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class ChannelsService {
   constructor(
     private databaseService: DatabaseService,
     private usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
   private mutedUsers: { channel_id: string; user: User }[] = []; // TODO: 이렇게? 아직 확신이 없다.
 
@@ -20,75 +23,48 @@ export class ChannelsService {
   // TODO: 메모리상의 cache도 구현해서 성능 더 빠르게 개선할 수도?
   // TODO: await를 병렬처리해서 성능 개선해야
   async getChannel(channel_id: string): Promise<Channel> {
-    const [selectedChannel] = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.channel
-        WHERE id = ${channel_id};
+    const array = await this.databaseService.executeQuery(`
+      SELECT
+        c.id
+          AS id
+        c.title
+          AS title
+        CASE
+          WHEN
+            c.password IS NULL
+          THEN
+            false
+          ELSE
+            true
+        END
+          AS is_private
+      FROM
+        ${schema}.channel
+      WHERE
+        c.id = ${channel_id};
     `);
 
-    if (!selectedChannel) return null;
-
-    const { id, title, password } = selectedChannel;
-
-    const [owner] = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_user cu
-          ON u.id = cu.user_id
-        WHERE cu.channel_id = ${channel_id} AND cu.channel_role = 'OWNER';
-    `);
-
-    const administrators = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_user cu
-          ON u.id = cu.user_id
-        WHERE cu.channel_id = ${id} AND cu.channel_role = 'ADMIN';
-    `);
-
-    const participants = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_user cu
-          ON u.id = cu.user_id
-        WHERE cu.channel_id = ${id} AND cu.channel_role = 'USER';
-    `);
-
-    const bannedUsers = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_ban cb
-          ON u.id = cb.banned_user
-        WHERE cb.channel_id = ${id};
-    `);
-
-    // TODO: 따로 안하고 sql 문에서 합쳐서 결과를 리턴하는걸로 수정중...
-
-    return {
-      id,
-      title,
-      private: password ? true : false,
-      owner,
-      administrators,
-      participants,
-      bannedUsers,
-      mutedUsers: this.mutedUsers
-        .filter((val) => val.channel_id === channel_id)
-        .map((val) => val.user),
-    };
+    return !array.length ? null : array[0];
   }
 
-  // TODO: 임시 구현. 성능 상의 문제로 getChannel, getChannel은 sql 쿼리 수정해야 할 듯
-  async getChannels(isPrivate: boolean): Promise<Channel[]> {
-    const channelIds: { id: number }[] = await this.databaseService
-      .executeQuery(`
-      SELECT id
-        FROM ${schema}.channel;
+  async getChannels(offset: number, limit: number): Promise<Channel[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        id,
+        title,
+        CASE
+          WHEN
+            password IS NULL
+          THEN
+            false
+          ELSE
+            true
+        END
+          as is_private
+        FROM ${schema}.channel
+      OFFSET ${offset} ROWS
+      LIMIT ${!limit ? 'ALL' : `${limit}`};
     `);
-
-    return Promise.all(
-      channelIds.map((val) => this.getChannel(val.id.toString())),
-    );
   }
 
   /*
@@ -100,65 +76,184 @@ export class ChannelsService {
     password: string,
     owner_user_id: string,
   ): Promise<Channel> {
+    const inChannel = await this.databaseService.executeQuery(`
+      SELECT
+        cu.user_id
+      FROM
+        ${schema}.channel_user cu
+      WHERE
+        cu.user_id = ${owner_user_id};
+    `);
+    if (inChannel.length > 0) return null;
+
     const [{ id }] = password
       ? await this.databaseService.executeQuery(`
-        INSERT INTO ${schema}.channel (title, password)
-          VALUES ('${title}', '${password}')
+        INSERT INTO
+          ${schema}.channel(
+            title,
+            password
+          )
+          VALUES (
+            '${title}',
+            '${password}'
+          )
           RETURNING id;
       `)
       : await this.databaseService.executeQuery(`
-        INSERT INTO ${schema}.channel (title, password)
-          VALUES ('${title}', NULL)
-          RETURNING id;
+        INSERT INTO
+          ${schema}.channel(
+            title,
+            password
+          )
+        VALUES (
+          '${title}',
+          NULL
+        )
+        RETURNING id;
       `);
 
     await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.channel_user (user_id, channel_id, channel_role)
-        VALUES (${owner_user_id}, ${id}, 'OWNER');
-    `);
-
-    const [owner] = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user
-        WHERE id = ${owner_user_id};
+      INSERT INTO
+        ${schema}.channel_user(
+          user_id,
+          channel_id,
+          channel_role
+        )
+      VALUES(
+        ${owner_user_id},
+        ${id},
+        'OWNER'
+      )
+      ON CONFLICT
+        ON CONSTRAINT
+          uniq_user_id
+      DO NOTHING;
     `);
 
     return {
       id,
       title,
-      private: password ? true : false,
-      owner,
+      is_private: password ? true : false,
+      owner: null,
       administrators: [],
-      participants: [],
+      participants: [], // NOTE: owner, admin 포함한 참가자로 하자...
       bannedUsers: [],
       mutedUsers: [],
     };
   }
 
-  async editChannel(channel_id: string, title: string, password: string) {}
+  async editChannel(
+    channel_id: string,
+    title: string,
+    password: string,
+  ): Promise<Channel> {
+    const array = await this.databaseService.executeQuery(`
+      UPDATE
+        ${schema}.channel c
+      SET (
+        c.title,
+        c.password
+      ) = (
+        ${title}
+        ${password === '' ? 'NULL' : password}
+      )
+      WHERE
+        c.id = ${channel_id}
+      RETURNING
+        c.id id,
+        c.title title,
+        ${password === '' ? 'false' : 'true'} is_private;
+    `);
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.EDIT,
+        participant: null,
+        text: array[0].title,
+        check: array[0].is_private,
+      },
+    });
+    return array[0];
+  }
 
   async deleteChannel(channel_id: string): Promise<boolean> {
     // TODO: 여러 쿼리를 아마 하나의 쿼리로 합칠 수 있을 듯
 
-    await this.databaseService.executeQuery(`
-      DELETE
-        FROM ${schema}.channel_user
-        WHERE channel_id = ${channel_id};
+    const array = await this.databaseService.executeQuery(`
+    WITH
+      del1
+        AS (
+          DELETE FROM
+            ${schema}.channel_ban cb
+          WHERE
+            cb.channel_id
+              IN (
+                SELECT
+                  c.id id
+                FROM
+                  ${schema}.channel c
+                WHERE
+                  c.id = ${channel_id}
+              )
+          RETURNING
+            cb.channel_id id
+        ),
+        del2
+          AS (
+            DELETE FROM
+              ${schema}.channel_user cu
+            WHERE
+              cu.channel_id
+              IN (
+                SELECT
+                  c.id id
+                FROM
+                  ${schema}.channel c
+                WHERE
+                  c.id = ${channel_id}
+              )
+          )
+    DELETE FROM
+      ${schema}.channel c
+    WHERE
+       c.id = ${channel_id}
+    RETURNING
+      *
     `);
+    if (array.length === 0) return false;
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.DELETE,
+        participant: null,
+        text: null,
+        check: null,
+      },
+    });
+    return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
+  }
 
-    await this.databaseService.executeQuery(`
-      DELETE
-        FROM ${schema}.channel_ban
-        WHERE channel_id = ${channel_id};
+  async muteUserOnChannel(
+    channel_id: string,
+    user_id: string,
+    mute_time: number,
+  ): Promise<boolean> {
+    const [{ db_id }] = await this.databaseService.executeQuery(`
+      SELECT
+        channel_id db_id,
+      FROM
+        ${schema}.channel_user
+      WHERE
+        user_id = ${user_id};
     `);
-
-    await this.databaseService.executeQuery(`
-      DELETE
-        FROM ${schema}.channel
-        WHERE id = ${channel_id};
-    `);
-
-    return true; // TODO: 임시로 true만 반환하도록 함. 오류가 발생하면 (쿼리 실패하면) false 반환하게 어떻게 하지?
+    if (channel_id !== db_id) return false;
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.MUTE,
+        participant: this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    });
+    return true;
   }
 
   async muteUserFromChannel(
@@ -178,86 +273,202 @@ export class ChannelsService {
 
     return user;
   }
+  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
-    user_id: string,
     channel_id: string,
-  ): Promise<User> {
-    const user = await this.usersService.getUserById(user_id);
-
-    await this.databaseService.executeQuery(`
-      DELETE
-        FROM ${schema}.channel_user
-        WHERE channel_id = ${channel_id} AND user_id = ${user_id};
+    user_id: string,
+  ): Promise<boolean> {
+    const array = await this.databaseService.executeQuery(`
+      DELETE FROM
+        ${schema}.channel_user
+      WHERE
+        channel_id = ${channel_id}
+          AND
+        user_id = ${user_id}
+      RETURNING
+        *;
     `);
-
-    // TODO: subscription...
-
-    return user;
+    if (array.length === 0) return false;
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.KICK,
+        participant: await this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    });
   }
 
-  async banUserFromChannel(user_id: string, channel_id: string): Promise<User> {
-    const user = await this.usersService.getUserById(user_id);
-
-    await this.databaseService.executeQuery(`
-      DELETE
-        FROM ${schema}.channel_user
-        WHERE channel_id = ${channel_id} AND user_id = ${user_id};
+  async banUserFromChannel(
+    channel_id: string,
+    user_id: string,
+    ban_time: number,
+  ): Promise<boolean> {
+    const array = await this.databaseService.executeQuery(`
+      WITH
+        banned
+          AS (
+            DELETE FROM
+              ${schema}.channel_user
+            WHERE
+              channel_id = ${channel_id}
+                AND
+              user_id = ${user_id}
+            RETURNING
+              channel_id,
+              user_id
+          )
+      INSERT INTO
+        ${schema}.channel_ban(
+          channel_id,
+          banned_user
+        )
+      VALUES (
+        banned.channel_id,
+        banned.user_id
+      )
+      ON CONSTRAINT
+        UNIQUE (
+          ${schema}.channel_ban.channel_id,
+          ${schema}.channel_ban.banned_user
+        )
+      RETURNING
+        *;
     `);
-
-    await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.channel_ban (channel_id, banned_user)
-        VALUES (${channel_id}, ${user_id});
-    `);
-    // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
-
-    return user;
+    if (!array.length) return false;
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.BAN,
+        participant: user_id,
+        text: null,
+        check: true,
+      },
+    });
+    setTimeout(async () => {
+      const array = await this.databaseService.executeQuery(`
+        DELETE FROM
+          ${schema}.channel_ban cb
+        WHERE
+          cb.channel_id = ${channel_id}
+            AND
+          cb.user_id = ${user_id}
+        RETURNING
+          *
+      `);
+      if (array.length && ban_time)
+        this.pubSub.publish(`to_channel_${channel_id}`, {
+          subscribeChannel: {
+            type: Notify.BAN,
+            participant: await this.usersService.getUserById(user_id),
+            text: null,
+            check: false,
+          },
+        });
+    }, ban_time);
+    return true;
   }
 
-  // async chatMessage(): Promise<boolean> {}
+  async unbanUserFromChannel(
+    channel_id: string,
+    user_id: string,
+  ): Promise<boolean> {
+    const array = await this.databaseService.executeQuery(`
+      DELETE FROM
+        ${schema}.channel_ban cb
+      WHERE
+        cb.channel_id = ${channel_id}
+          AND
+        cb.user_id = ${user_id}
+      RETURNING
+        *
+    `);
+    return !!array.length;
+  }
+
+  async chatMessage(
+    channel_id: string,
+    user_id: string,
+    message: string,
+  ): Promise<boolean> {
+    if (message.length > 10000) throw new Error('message too long');
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.CHAT,
+        participant: await this.usersService.getUserById(user_id),
+        text: message,
+        check: true,
+      },
+    });
+    return true;
+  }
 
   /*
    ** ANCHOR: ResolveField
    */
 
-  async getAdministrators(id: string): Promise<User[]> {
-    const administrators = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_user cu
-          ON u.id = cu.user_id
-        WHERE cu.channel_id = ${id} AND cu.channel_role = 'ADMIN';
+  async getOwner(channel_id: string) {
+    const array = await this.databaseService.executeQuery(`
+      SELECT
+        u.id id,
+        u.nickname nickname,
+        u.avatar avatar,
+        u.status_message status_message,
+        u.rank_score rank_score,
+        u.site_role site_role
+      FROM
+        ${schema}.user u
+      INNER JOIN
+        ${schema}.channel_user cu
+          ON
+            u.id = cu.user_id
+      WHERE
+        cu.channel_id = ${channel_id}
+          AND
+        cu.channel_role = 'OWNER';
     `);
-
-    return administrators;
+    return array.length === 0 ? null : array[0];
   }
 
-  // NOTE: owner, admin 제외한 참가자. db role enum의 user을 participant로 바꾸는게 나을 듯
-  async getParticipants(id: string): Promise<User[]> {
-    const participants = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_user cu
-          ON u.id = cu.user_id
-        WHERE cu.channel_id = ${id} AND cu.channel_role = 'USER';
+  async getAdministrators(channel_id: string) {
+    return await this.databaseService.executeQuery(`
+    SELECT
+      u.id,
+      u.nickname,
+      u.avatar,
+      u.status_message,
+      u.rank_score,
+      u.site_role
+    FROM
+      ${schema}.user u
+    INNER JOIN
+      ${schema}.channel_user cu
+        ON
+          u.id = cu.user_id
+    WHERE
+      cu.channel_id = ${channel_id}
+        AND
+      cu.channel_role = 'ADMIN';
     `);
-
-    return participants;
   }
 
-  async getBannedUsers(id: string): Promise<User[]> {
-    const bannedUsers = await this.databaseService.executeQuery(`
-      SELECT *
-        FROM ${schema}.user u
-        INNER JOIN ${schema}.channel_ban cb
-          ON u.id = cb.banned_user
-        WHERE cb.channel_id = ${id};
+  async getParticipants(channel_id: string) {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        u.id,
+        u.nickname,
+        u.avatar,
+        u.status_message,
+        u.rank_score,
+        u.site_role
+      FROM
+        ${schema}.user u
+      INNER JOIN
+        ${schema}.channel_user cu
+          ON
+            u.id = cu.user_id
+      WHERE
+        cu.channel_id = ${channel_id}
     `);
-
-    return bannedUsers;
   }
-
-  // async getMutedUsers(id: string): Promise<User[]> {
-
-  // }
 }

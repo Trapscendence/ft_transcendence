@@ -5,6 +5,7 @@ RUN npm install -g db-migrate db-migrate-pg
 WORKDIR /
 COPY ./migrations /migrations
 COPY database.json /
+COPY entrypoint.sh /
 
-ENTRYPOINT [ "db-migrate" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "up" ]
