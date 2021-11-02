@@ -7,30 +7,43 @@ import {
   Typography,
 } from '@mui/material';
 
-export default function ChannelCard(): JSX.Element {
+import { ChannelSummary } from '../models';
+
+interface ChannelCardProps {
+  channelSummary: ChannelSummary;
+}
+
+export default function ChannelCard({
+  channelSummary,
+}: ChannelCardProps): JSX.Element {
+  const { title, isPrivate, owner, participants } = channelSummary;
+
   return (
     <Grid item xs={6} p={3}>
       <Card sx={{ minWidth: 275 }}>
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            Word of the Day
+            {isPrivate ? 'Private' : 'Public'}
           </Typography>
           <Typography variant="h5" component="div">
-            T_T...
+            {title}
           </Typography>
           <Typography sx={{ mb: 1.5 }} color="text.secondary">
-            adjective
+            Owner: {owner.nickname}
           </Typography>
           <Typography variant="body2">
-            well meaning and kindly.
-            <br />
-            {'"a benevolent smile"'}
+            {participants.map((val) => val.nickname).join()}
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Learn More</Button>
+          <Button size="small">Enter channel</Button>
         </CardActions>
       </Card>
     </Grid>
   );
 }
+
+// TODO
+// * Public, Private 등에 아이콘 넣기. 필터 선택에도 마찬가지...? Owner 등에도!
+// * participants 백엔드를 아직 테스트 안해봤음.
+// * 현재 스키마에 isPrivate이 아니라 private임. isPrivate으로 바뀌면 다시 테스트 필요
