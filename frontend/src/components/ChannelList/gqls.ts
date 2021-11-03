@@ -1,11 +1,11 @@
 import gql from 'graphql-tag';
 
-export const GET_CHANNELS = gql`
-  query GetChannels {
-    channels {
+export const GET_ALL_CHANNELS = gql`
+  query GetAllChannels {
+    channels(limit: 0, offset: 0) {
       id
       title
-      private
+      is_private
       owner {
         nickname
       }

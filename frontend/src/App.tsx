@@ -17,9 +17,7 @@ import UserRankPage from './routes/UserRankPage';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
-  // FIXME
-  // 메뉴가 스크롤 여부를 바뀌게 한다...
-  // 스크롤 여부에 따라 들쑥날쑥한 현상을 없애려면 어떻게 해야할까?
+  // TODO: 스크롤을 페이지 내부로 옮기고 싶다. 맨 오른쪽 스크롤은 SocialDrawer에 대한 스크롤만 나타나도록...
 
   return (
     <BrowserRouter>

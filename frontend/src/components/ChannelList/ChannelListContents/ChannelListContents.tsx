@@ -1,7 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { Grid } from '@mui/material';
 
-import { GET_CHANNELS } from '../gqls';
+import { GET_ALL_CHANNELS } from '../gqls';
 import { ChannelSummaryData } from '../models';
 import ChannelCard from './ChannelCard';
 
@@ -10,7 +10,8 @@ import ChannelCard from './ChannelCard';
 // }
 
 export default function ChannelListContents(): JSX.Element {
-  const { data, loading, error } = useQuery<ChannelSummaryData>(GET_CHANNELS);
+  const { data, loading, error } =
+    useQuery<ChannelSummaryData>(GET_ALL_CHANNELS);
 
   if (error) return <p>error! 나중에 대체</p>;
   if (loading) return <p>loading... 나중에 대체</p>;

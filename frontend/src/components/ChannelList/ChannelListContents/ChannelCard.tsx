@@ -16,14 +16,14 @@ interface ChannelCardProps {
 export default function ChannelCard({
   channelSummary,
 }: ChannelCardProps): JSX.Element {
-  const { title, isPrivate, owner, participants } = channelSummary;
+  const { title, is_private, owner, participants } = channelSummary;
 
   return (
     <Grid item xs={6} p={3}>
       <Card sx={{ minWidth: 275 }}>
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            {isPrivate ? 'Private' : 'Public'}
+            {is_private ? 'Private' : 'Public'}
           </Typography>
           <Typography variant="h5" component="div">
             {title}
@@ -32,7 +32,7 @@ export default function ChannelCard({
             Owner: {owner.nickname}
           </Typography>
           <Typography variant="body2">
-            {participants.map((val) => val.nickname).join()}
+            Participants: {participants.map((val) => val.nickname).join()}
           </Typography>
         </CardContent>
         <CardActions>

@@ -1,7 +1,7 @@
 export interface ChannelSummary {
   id: string;
   title: string;
-  isPrivate: boolean; // TODO: 아직 private임. 바뀐거 확인해야
+  is_private: boolean;
   owner: { nickname: string };
   participants: { nickname: string }[];
 }
