@@ -16,6 +16,7 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
+import { channel } from 'diagnostics_channel';
 
 @Resolver((of) => Channel)
 export class ChannelsResolver {

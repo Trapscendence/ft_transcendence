@@ -7,6 +7,7 @@ import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User } from 'src/users/models/user.model';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {

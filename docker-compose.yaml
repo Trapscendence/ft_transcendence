@@ -107,7 +107,7 @@ services:
 
   pgadmin:
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_EMAIL: jolim@admin.com
       PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
     image: dpage/pgadmin4
     networks:
