@@ -44,8 +44,8 @@ export class MessageResolver {
   @ResolveField('messages', (returns) => [Message])
   async messages(
     @Parent() dm: DM,
-    @Args('offset') offset: number,
-    @Args('limit') limit: number,
+    @Args('offset', { type: () => Int }) offset: number,
+    @Args('limit', { type: () => Int }) limit: number,
   ): Promise<Message[]> {
     const { user_id, other_id } = dm;
     return await this.messageService.getMessages(

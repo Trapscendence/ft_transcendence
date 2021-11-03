@@ -224,17 +224,16 @@ export class MessageService {
         d.id dm_id,
         '${text}' dm_text,
         ${new Date().getTime()} time_stamp
-      FROM
-        (
-          SELECT
-            d.id id
-          FROM
-            ${schema}.dm d
-          WHERE
-            d.sender_id = ${user_id}
-              AND
-            d.receiver_id = ${other_id}
-        ) d
+      FROM (
+        SELECT
+          d.id id
+        FROM
+          ${schema}.dm d
+        WHERE
+          d.sender_id = ${user_id}
+            AND
+          d.receiver_id = ${other_id}
+      ) d
       RETURNING
         m.id AS id,
         false AS received,
