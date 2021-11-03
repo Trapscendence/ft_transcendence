@@ -14,7 +14,7 @@ import {
   PopperPlacementType,
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { DmUsersData, DmUsersVars } from '../../utils/Apollo/Message';
 import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
@@ -54,7 +54,7 @@ export default function DirectMessage(): JSX.Element {
   };
 
   //ANCHOR userId를  '자신의 닉네임'으로 수정할 것
-  const userId = '1';
+  const userId = '3';
   //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
   const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
@@ -83,6 +83,9 @@ export default function DirectMessage(): JSX.Element {
     setNewDm(!newDm);
   };
   const [selectedIndex, setSelectedIndex] = useState('0');
+
+  const myRef = useRef<null | HTMLDivElement>(null);
+  const executeScroll = () => myRef?.current?.scrollIntoView();
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
@@ -125,7 +128,7 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {data?.dmUsers.map((user) => (
-                <Box>
+                <Box onClick={executeScroll}>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={user.nickname}
@@ -155,6 +158,7 @@ export default function DirectMessage(): JSX.Element {
                 <DirectMessageContent
                   user_id={userId}
                   other_id={selectedIndex}
+                  scroll_ref={myRef}
                   // messages={dms[selectedIndex - 1].messages}
                 />
               ) : newDm ? (

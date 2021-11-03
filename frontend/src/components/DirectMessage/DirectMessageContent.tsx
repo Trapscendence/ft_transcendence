@@ -1,20 +1,29 @@
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Send } from '@mui/icons-material';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { Box, Divider, Stack, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+// import LoadingButton from '@mui/lab/LoadingButton';
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 
 import { DmsData, DmVars } from '../../utils/Apollo/Message';
-import { GET_DM } from '../../utils/Apollo/MessageQuery';
+import { GET_DM, SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
 
 interface DirectMessageContentProps {
   user_id: string;
   other_id: string;
+  scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
 }
 
 function DirectMessageContent({
   user_id,
   other_id,
+  scroll_ref,
 }: DirectMessageContentProps): JSX.Element {
   const friendDmStyle = {
     background: '#262626',
@@ -37,26 +46,44 @@ function DirectMessageContent({
     margin: '0.12rem 0.5rem',
   };
 
+  const scrollToBottom = () => scroll_ref?.current?.scrollIntoView();
+  useEffect(() => {
+    scrollToBottom();
+  });
   const [loadingState, setLoadingState] = useState(false);
   const handleClick = () => {
     setLoadingState(true);
-    // goToBottom();
+    scrollToBottom();
   };
 
-  const { error, loading, data } = useQuery<DmsData, DmVars>(GET_DM, {
+  const { data } = useQuery<DmsData, DmVars>(GET_DM, {
     variables: { user_id: user_id, other_id: other_id, offset: 0, limit: 10 },
   });
 
-  // const messagesEndRef = useRef();
-  // const scrollToBottom = () => {
-  //   window.HTMLElement.prototype.scrollIntoView = function() {};
-  // //   this.messagesEnd.current.scrollIntoView({ behavior: 'smooth' })
-  // }
+  //ANCHOR 새로운 DM 보내기
+  const [sendMessageMutation, { loading }] = useMutation(SEND_MESSAGE);
+  const [form, setForm] = useState('');
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-  // const goToBottom = () => {
-  //   window.scrollTo(0, document.body.scrollHeight);
-  //   console.log('흑흑 ');
-  // };
+    console.log(form);
+    if (!loading) {
+      try {
+        await sendMessageMutation({
+          // const { user_id } = getValues();
+          //ANCHOR 매번 유저정보 가져오게 수정하기
+          variables: {
+            user_id: user_id,
+            other_id: other_id,
+            text: form,
+          },
+          //ANCHOR 센드누른이후 새로고침해주기
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
 
   return (
     <Box
@@ -102,29 +129,47 @@ function DirectMessageContent({
               >
                 <Box style={myDmStyle}>{message.content}</Box>
                 <Typography variant="caption" display="block" gutterBottom>
-                  {new Date(+message?.time_stamp).toLocaleString('ko-KR')}
+                  {new Date(+message?.time_stamp).toLocaleString('ko-kr', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </Typography>
               </Box>
             )
           )}
+        <Box id="scroll-container" ref={scroll_ref} />
       </Box>
 
-      <Box
+      <Divider light />
+      <form
         id="send-container"
-        sx={{
+        autoComplete="off"
+        onSubmit={handleSubmit}
+        style={{
           display: 'flex',
           alignItems: 'space-between',
           justifyContent: 'space-between',
           bottom: '0',
         }}
       >
-        <Divider light />
-        <TextField size="small" fullWidth margin="dense"></TextField>
-        <LoadingButton
+        <TextField
+          name="dmInput"
+          size="small"
+          fullWidth
+          margin="dense"
+          onChange={(e) => {
+            setForm(e.target.value);
+          }}
+        />
+        <Button
+          type="submit"
           onClick={handleClick}
-          endIcon={<Send />}
-          loading={loadingState}
-          loadingPosition="end"
+          // endIcon={<Send />}
+          // loading={loadingState}
+          // loadingPosition="end"
           variant="contained"
           sx={{
             boxShadow: 0,
@@ -132,8 +177,8 @@ function DirectMessageContent({
           }}
         >
           Send
-        </LoadingButton>
-      </Box>
+        </Button>
+      </form>
     </Box>
   );
 }

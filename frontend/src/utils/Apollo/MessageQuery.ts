@@ -9,13 +9,11 @@ export const GET_DM_USERS = gql`
   }
 `;
 
-// export const SEND_MESSAGE = gql`
-//   mutation sendMessage($user_id: ID!, $other_id: ID!, $text: String) {
-//     sendMessage(user_id: $user_id, other_id: $other_id, text: $text) {
-//       boolean
-//     }
-//   }
-// `;
+export const SEND_MESSAGE = gql`
+  mutation sendMessage($user_id: ID!, $other_id: ID!, $text: String!) {
+    sendMessage(user_id: $user_id, other_id: $other_id, text: $text)
+  }
+`;
 
 export const GET_DM = gql`
   query DM($user_id: ID!, $other_id: ID!, $offset: Float!, $limit: Float!) {
