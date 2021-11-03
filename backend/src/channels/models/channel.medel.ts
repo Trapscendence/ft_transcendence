@@ -2,6 +2,7 @@ import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.medel';
 
 export enum Notify {
+  INOUT,
   CHAT,
   MUTE,
   KICK,

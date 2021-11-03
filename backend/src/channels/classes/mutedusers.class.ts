@@ -38,4 +38,9 @@ export class MutedUsers {
     this.channels.delete(channel_id);
     return true;
   }
+
+  hasUser(channel_id: string, user_id: string): boolean {
+    if (this.channels.get(channel_id)?.has(user_id)) return true;
+    return false;
+  }
 }

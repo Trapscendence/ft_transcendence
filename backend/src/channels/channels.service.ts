@@ -7,6 +7,7 @@ import { Notify, ChannelNotify, Channel } from './models/channel.medel';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User } from 'src/users/models/user.medel';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {
@@ -74,6 +75,38 @@ export class ChannelsService {
    ** ANCHOR: Mutation
    */
 
+  async enterChannel(
+    channel_id: string,
+    user_id: string,
+  ): Promise<Channel | null> {
+    const channels = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${schema}.channel_user(
+          user_id,
+          channel_id
+        )
+      VALUES (
+        (
+          SELECT
+            id
+          FROM
+            ${schema}.user
+          WHERE
+            id = ${user_id}
+        ),
+        (
+          SELECT
+            id
+          FROM
+            ${schema}.channel
+          WHERE
+            id = ${channel_id}
+        )
+      );
+    `);
+    return channels.length ? channels[0] : null;
+  }
+
   async addChannel(
     title: string,
     password: string,
@@ -87,7 +120,11 @@ export class ChannelsService {
       WHERE
         cu.user_id = ${owner_user_id};
     `);
-    if (inChannel.length > 0) return null;
+    if (
+      inChannel.length > 0 ||
+      !(await this.usersService.getUserById(owner_user_id))
+    )
+      return null;
 
     const [{ id }] = password
       ? await this.databaseService.executeQuery(`
@@ -370,6 +407,7 @@ export class ChannelsService {
     user_id: string,
     message: string,
   ): Promise<boolean> {
+    if (this.mutedUsers.hasUser(channel_id, user_id)) return false;
     if (message.length > 10000) throw new Error('message too long');
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -406,7 +444,7 @@ export class ChannelsService {
           AND
         cu.channel_role = 'OWNER';
     `);
-    return array.length === 0 ? null : array[0];
+    return !array.length ? null : array[0];
   }
 
   async getAdministrators(channel_id: string): Promise<User[]> {
