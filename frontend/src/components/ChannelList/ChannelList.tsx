@@ -1,5 +1,4 @@
 import { Divider } from '@mui/material';
-import { Box } from '@mui/system';
 
 import ChannelListContents from './ChannelListContents';
 import ChannelListHeader from './ChannelListHeader';
@@ -8,11 +7,11 @@ import ChannelListHeader from './ChannelListHeader';
 
 export default function ChannelList(): JSX.Element {
   return (
-    <Box display="flex" flexDirection="column" p={3} pt={1}>
+    <>
       <ChannelListHeader />
       <Divider sx={{ my: 2, mx: -3 }} />
       <ChannelListContents />
-    </Box>
+    </>
   );
 }
 

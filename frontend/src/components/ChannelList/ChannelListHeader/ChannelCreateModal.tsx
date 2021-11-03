@@ -1,13 +1,13 @@
 import {
-  Box,
   Button,
   Card,
   CardActions,
   CardContent,
   Modal,
   TextField,
-  Typography,
 } from '@mui/material';
+
+import { useInput } from '../../../hooks/useInput';
 
 interface ChannelCreateModalProps {
   open: boolean;
@@ -18,6 +18,20 @@ export default function ChannelCreateModal({
   open,
   handleClose,
 }: ChannelCreateModalProps): JSX.Element {
+  const [title, setTitle, onChangeTitle] = useInput('');
+  const [password, setPassword, onChangePassword] = useInput('');
+  // const onClickBtn = async (): Promise<void> => {
+  const onClickBtn = (): void => {
+    console.log(title, password);
+    // try {
+    //   await postSignin({ variables: { id, password } });
+    // } catch (e) {
+    //   console.error(e);
+    // }
+    setTitle('');
+    setPassword('');
+  };
+
   return (
     <Modal
       open={open}
@@ -40,22 +54,29 @@ export default function ChannelCreateModal({
       >
         <CardContent>
           <TextField
-            label="Title"
+            label="Title*"
             variant="filled"
             size="small"
             margin="dense"
             sx={{ width: '100%' }}
+            value={title}
+            onChange={onChangeTitle}
           />
           <TextField
             label="Password"
             variant="filled"
             size="small"
             margin="dense"
+            helperText="If you do not enter a password, it will be created as a public room."
             sx={{ width: '100%' }}
+            value={password}
+            onChange={onChangePassword}
           />
         </CardContent>
         <CardActions>
-          <Button variant="contained">Make Channel</Button>
+          <Button variant="contained" onClick={onClickBtn}>
+            Make Channel
+          </Button>
         </CardActions>
       </Card>
     </Modal>

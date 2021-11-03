@@ -10,7 +10,7 @@ export default function ChannelListHeader(): JSX.Element {
   const handleClose = () => setOpen(false);
 
   return (
-    <Box display="flex" alignItems="center">
+    <Box display="flex" alignItems="center" mt={-2}>
       <Button
         variant="contained"
         color="secondary"
