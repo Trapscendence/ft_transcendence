@@ -64,7 +64,6 @@ export class UsersService {
   }
 
   async createUser(nickname: string): Promise<User> {
-    // NOTE 일단 몰라서 Promise<any>로
     const users = await this.databaseService.executeQuery(`
       INSERT INTO ${schema}.user( nickname, oauth_id, oauth_type )
       VALUES ( '${nickname}', 'mock_id', 'FORTYTWO' )
@@ -92,7 +91,7 @@ export class UsersService {
       DO NOTHING
       RETURNING *;
     `);
-    return array.length === 0 ? false : true;
+    return !(array.length === 0);
   }
 
   async deleteFriend(user_id: string, friend_id: string): Promise<boolean> {
@@ -107,7 +106,7 @@ export class UsersService {
         ( f.my_id = ${friend_id} AND f.friend_id = ${user_id} )
       RETURNING *;
     `);
-    return array.length === 0 ? false : true;
+    return !(array.length === 0);
   }
 
   async getFriends(id: string): Promise<User[]> {
