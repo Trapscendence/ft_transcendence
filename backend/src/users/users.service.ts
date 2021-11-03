@@ -16,7 +16,11 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-        site_role
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
       FROM
         ${schema}.user
       WHERE
@@ -34,7 +38,11 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-        site_role
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
       FROM
         ${schema}.user
       WHERE
@@ -55,7 +63,11 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-        site_role
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
       FROM
         ${schema}.user
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
