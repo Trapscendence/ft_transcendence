@@ -6,8 +6,12 @@ import ChannelCreateModal from './ChannelCreateModal';
 
 export default function ChannelListHeader(): JSX.Element {
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleOpen = (): void => {
+    setOpen(true);
+  };
+  const handleClose = (): void => {
+    setOpen(false);
+  };
 
   return (
     <Box display="flex" alignItems="center" mt={-2}>

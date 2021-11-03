@@ -7,10 +7,10 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ChannelSummary } from '../models';
+import { GetAllChannelsResponse } from '../models';
 
 interface ChannelCardProps {
-  channelSummary: ChannelSummary;
+  channelSummary: GetAllChannelsResponse;
 }
 
 export default function ChannelCard({

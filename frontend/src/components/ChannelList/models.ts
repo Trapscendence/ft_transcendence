@@ -1,4 +1,4 @@
-export interface ChannelSummary {
+export interface GetAllChannelsResponse {
   id: string;
   title: string;
   is_private: boolean;
@@ -6,6 +6,15 @@ export interface ChannelSummary {
   participants: { nickname: string }[];
 }
 
-export interface ChannelSummaryData {
-  channels: ChannelSummary[];
+export interface GetAllChannelsResponses {
+  channels: GetAllChannelsResponse[];
+}
+
+export interface AddChannelResponse {
+  id: string;
+  title: string;
+  is_private: boolean;
+  owner: { nickname: string };
+  administrators: { nickname: string }[];
+  participants: { nickname: string }[];
 }
