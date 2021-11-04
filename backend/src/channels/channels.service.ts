@@ -7,7 +7,6 @@ import { Notify, ChannelNotify, Channel } from './models/channel.medel';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User } from 'src/users/models/user.medel';
-import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {
@@ -102,9 +101,35 @@ export class ChannelsService {
           WHERE
             id = ${channel_id}
         )
-      );
+      )
+      ON CONFLICT ( user_id )
+      DO NOTHING;
     `);
+    if (channels.length) {
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.ENTER,
+          participant: await this.usersService.getUserById(user_id),
+          text: null,
+          check: true,
+        },
+      });
+      return channels[0];
+    }
     return channels.length ? channels[0] : null;
+  }
+
+  async leaveChannel(user_id: string, channel_id: string): Promise<boolean> {
+    const channels = await this.databaseService.executeQuery(`
+        DELETE FROM
+          ${schema}.channel_user
+        WHERE
+          user_id = ${user_id}
+            AND
+          channel_id = ${channel_id}
+        RETURNING *;
+    `);
+    return channels.length ? true : false;
   }
 
   async addChannel(

@@ -2,7 +2,7 @@ import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.medel';
 
 export enum Notify {
-  INOUT,
+  ENTER, // check가 true면 입장, false면 퇴장.
   CHAT,
   MUTE,
   KICK,
