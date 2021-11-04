@@ -1,20 +1,11 @@
-export interface GetAllChannelsResponse {
-  id: string;
-  title: string;
-  is_private: boolean;
-  owner: { nickname: string };
-  participants: { nickname: string }[];
-}
-
-export interface GetAllChannelsResponses {
-  channels: GetAllChannelsResponse[];
-}
+import { ChannelSummary } from '../../utils/models';
 
 export interface AddChannelResponse {
-  id: string;
-  title: string;
-  is_private: boolean;
-  owner: { nickname: string };
-  administrators: { nickname: string }[];
-  participants: { nickname: string }[];
+  addChannel: ChannelSummary;
+}
+
+export interface GetCurrentChannelResponse {
+  user: {
+    channel: ChannelSummary;
+  };
 }
