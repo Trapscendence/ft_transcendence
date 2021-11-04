@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { User } from './models/user.medel';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
+import { Channel } from 'src/channels/models/channel.medel';
 
 @Injectable()
 export class UsersService {
@@ -235,5 +236,33 @@ export class UsersService {
               blocker_id = ${id}
           )
     `);
+  }
+
+  async getChannelByUserId(id: string): Promise<Channel | null> {
+    const array: Channel[] = await this.databaseService.executeQuery(`
+      SELECT
+        c.id
+          AS id,
+        c.title
+          AS title,
+        CASE
+          WHEN
+            c.password IS NULL
+          THEN
+            false
+          ELSE
+            true
+        END
+          AS is_private
+      FROM
+        ${schema}.channel c
+      INNER JOIN
+        ${schema}.channel_user cu
+          ON
+            cu.user_id = ${id}
+              AND
+            cu.channel_id = c.id
+    `);
+    return array.length ? array[0] : null;
   }
 }

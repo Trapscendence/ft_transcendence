@@ -30,9 +30,9 @@ export class ChannelsService {
     const array = await this.databaseService.executeQuery(`
       SELECT
         c.id
-          AS id
+          AS id,
         c.title
-          AS title
+          AS title,
         CASE
           WHEN
             c.password IS NULL
@@ -43,7 +43,7 @@ export class ChannelsService {
         END
           AS is_private
       FROM
-        ${schema}.channel
+        ${schema}.channel c
       WHERE
         c.id = ${channel_id};
     `);
