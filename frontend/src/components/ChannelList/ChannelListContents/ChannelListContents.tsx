@@ -2,18 +2,14 @@ import { useQuery } from '@apollo/client';
 import { Grid } from '@mui/material';
 import { useEffect } from 'react';
 
+import { ChannelListSummary } from '../../../utils/models';
 import { GET_ALL_CHANNELS } from '../gqls';
 import { GetAllChannelsResponse } from '../responseModels';
 import ChannelCard from './ChannelCard';
 
 export default function ChannelListContents(): JSX.Element {
-  const { data, loading, error } = useQuery<GetAllChannelsResponse>(
-    GET_ALL_CHANNELS,
-    {
-      variables: { limit: 0, offset: 0 },
-      // pollInterval: 5000, // NOTE: 5초마다 polling하려면 이렇게. 일단은 주석처리는 해놓음.
-    }
-  );
+  const { data, loading, error } =
+    useQuery<ChannelListSummary>(GET_ALL_CHANNELS);
 
   if (error) return <p>error! 나중에 대체</p>;
   if (loading) return <p>loading... 나중에 대체</p>;
