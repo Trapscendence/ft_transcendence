@@ -96,4 +96,9 @@ export class MessageResolver {
   async receiveMessage(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`message_to_${user_id}`);
   }
+
+  @Subscription((returns) => User)
+  newDmUser(@Args('user_id') user_id: string) {
+    return this.pubSub.asyncIterator(`new_message_to_${user_id}`);
+  }
 }

@@ -6,11 +6,13 @@ import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { DM, Message } from './model/message.model';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class MessageService {
   constructor(
     private readonly databaseService: DatabaseService,
+    private readonly usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -245,8 +247,11 @@ export class MessageService {
     if (array.length !== 0) {
       array[0].received = true;
       array[0].checked = false;
-      this.pubSub.publish(`message_from_to_${other_id}`, {
+      this.pubSub.publish(`message_to_${other_id}`, {
         receiveMessage: array[0],
+      });
+      this.pubSub.publish(`new_message_to_${other_id}`, {
+        newDmUser: await this.usersService.getUserById(user_id),
       });
     }
     return !(array.length === 0);

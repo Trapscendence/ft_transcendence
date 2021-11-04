@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -7,13 +8,19 @@ import {
   ID,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub.module';
 import { User, UserStatus } from './models/user.medel';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   /*
    ** ANCHOR: User

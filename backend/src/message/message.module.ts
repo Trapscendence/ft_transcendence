@@ -3,9 +3,10 @@ import { MessageService } from './message.service';
 import { MessageResolver } from './message.resolver';
 import { DatabaseModule } from 'src/database/database.module';
 import { UsersModule } from 'src/users/users.module';
+import { PubSubModule } from 'src/pubsub.module';
 
 @Module({
-  imports: [DatabaseModule, UsersModule],
+  imports: [DatabaseModule, UsersModule, PubSubModule],
   providers: [MessageService, MessageResolver],
 })
 export class MessageModule {}

@@ -100,4 +100,5 @@ type Mutation {
 
 type Subscription {
   receiveMessage(user_id: ID!): Message!
+  newDmUser(user_id: String!): User!
 }
