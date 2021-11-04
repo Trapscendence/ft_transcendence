@@ -85,3 +85,13 @@ export const GET_CURRENT_CHANNEL = gql`
     }
   }
 `;
+
+export const GET_CURRENT_CHANNEL_ID = gql`
+  query GetCurrentChannelId($id: ID!) {
+    user(id: $id) {
+      channel {
+        id
+      }
+    }
+  }
+`;

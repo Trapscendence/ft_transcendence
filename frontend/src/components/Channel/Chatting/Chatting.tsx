@@ -1,3 +1,4 @@
+import { useMutation, useReactiveVar } from '@apollo/client';
 import {
   Button,
   Card,
@@ -7,20 +8,48 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 
+import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
+import { ChannelNotifySummary } from '../../../utils/models';
+import { CHAT_MESSAGE } from '../gqls';
+import ChattingMessage from './ChattingMessage';
 
-export default function Chatting(): JSX.Element {
+interface ChattingProps {
+  notify: ChannelNotifySummary | undefined;
+}
+
+export default function Chatting({ notify }: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
+  const [chatMessage] = useMutation(CHAT_MESSAGE);
+
+  const userId = useReactiveVar(userIdVar);
+  // const currentChannel = useReactiveVar(currentChannelVar);
+  const chattingMessages = useReactiveVar(chattingMessagesVar);
+  const channelId = useReactiveVar(channelIdVar);
 
   const onClickBtn = () => {
-    console.log(input);
+    // console.log(input);
+    void chatMessage({
+      variables: {
+        message: input,
+        user_id: userId,
+        channel_id: channelId,
+      },
+    }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
   };
 
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '79vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
-        <Box></Box>
+        <Box>
+          {/* {channelId &&
+            chattingMessages
+              .get(channelId)
+              ?.map((val) => (
+                <ChattingMessage key={+new Date()} chattingSummary={val} />
+              ))} */}
+        </Box>
       </CardContent>
       <CardActions sx={{ width: '100%', height: '10%' }}>
         <TextField

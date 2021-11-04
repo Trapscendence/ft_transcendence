@@ -1,15 +1,11 @@
-import { UserStatus } from './schemas';
+import { Notify, UserStatus } from './schemaEnums';
 
-export interface ChannelListItem {
+export interface ChannelListSummary {
   id: string;
   title: string;
   is_private: boolean;
   owner: { nickname: string };
   participants: { nickname: string }[];
-}
-
-export interface ChannelListSummary {
-  channels: ChannelListItem[];
 }
 
 export interface UserSummary {
@@ -26,4 +22,16 @@ export interface ChannelSummary {
   owner: UserSummary;
   administrators: UserSummary[];
   participants: UserSummary[];
+}
+
+export interface ChannelNotifySummary {
+  type: Notify;
+  participant?: UserSummary;
+  text?: string;
+  check?: boolean;
+}
+
+export interface ChattingSummary {
+  participant: UserSummary;
+  text: string;
 }

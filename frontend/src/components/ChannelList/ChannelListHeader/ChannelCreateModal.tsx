@@ -8,10 +8,11 @@ import {
   TextField,
 } from '@mui/material';
 
-import { currentChannelVar } from '../../..';
+import { channelIdVar } from '../../..';
+// import { currentChannelVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { ADD_CHANNEL } from '../gqls';
-import { AddChannelResponse } from '../models';
+import { AddChannelResponse } from '../responseModels';
 
 interface ChannelCreateModalProps {
   open: boolean;
@@ -28,7 +29,7 @@ export default function ChannelCreateModal({
   // TODO: loading, error 등은 나중에 고려
   const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL, {
     onCompleted({ addChannel }) {
-      currentChannelVar(addChannel);
+      channelIdVar(addChannel.id);
     },
   });
 
