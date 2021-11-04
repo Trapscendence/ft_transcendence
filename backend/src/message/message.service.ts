@@ -37,7 +37,7 @@ export class MessageService {
     const array = await this.databaseService.executeQuery(`
       SELECT
         sender_id AS user_id,
-        ${other_id} AS other_id,
+        receiver_id AS other_id,
         check_date AS checked_date
       FROM
         ${schema}.dm
@@ -46,7 +46,7 @@ export class MessageService {
           AND
         receiver_id = ${other_id};
     `);
-    return !(array.length === 0) ? null : array[0];
+    return array.length === 0 ? null : array[0];
   }
 
   async getMessages(
