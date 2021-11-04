@@ -16,7 +16,6 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.medel';
 import { PubSub } from 'graphql-subscriptions';
-import { channel } from 'diagnostics_channel';
 
 @Resolver((of) => Channel)
 export class ChannelsResolver {
@@ -55,6 +54,14 @@ export class ChannelsResolver {
     @Args('channel_id') channel_id: string,
   ): Promise<Channel | null> {
     return await this.channelsService.enterChannel(user_id, channel_id);
+  }
+
+  @Mutation((returns) => Boolean)
+  async leaveChannel(
+    @Args('user_id') user_id: string,
+    @Args('channel_id') channel_id: string,
+  ): Promise<Boolean> {
+    return await this.channelsService.leaveChannel(user_id, channel_id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
@@ -174,9 +181,12 @@ export class ChannelsResolver {
    */
 
   @Subscription((returns) => ChannelNotify)
-  async subscribeChannel(
-    @Args('channel_id') channel_id: string,
-  ): Promise<AsyncIterator<string>> {
+  subscribeChannel(@Args('channel_id') channel_id: string) {
     return this.pubSub.asyncIterator(`to_channel_${channel_id}`);
+  }
+
+  @Subscription((returns) => Channel)
+  subscribeChannelUpdate() {
+    return this.pubSub.asyncIterator('new_channel');
   }
 }
