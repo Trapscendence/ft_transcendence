@@ -1,9 +1,8 @@
-import { useSubscription } from '@apollo/client';
-import { Alert } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useQuery, useReactiveVar, useSubscription } from '@apollo/client';
+import { Redirect, useHistory } from 'react-router';
 
-import { chattingMessagesVar } from '../..';
-import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
+import { channelIdVar, chattingMessagesVar } from '../..';
+import { ChannelNotifySummary, ChattingSummary } from '../../utils/models';
 import { Notify } from '../../utils/schemaEnums';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
@@ -11,89 +10,55 @@ import { SUBSCRIBE_CHANNEL } from './gqls';
 import ParticipantsList from './ParticipantsList';
 import { SubscribeChannelResponse } from './responseModels';
 
-interface ChannelProps {
-  channel: IChannel;
-}
+export default function Channel(): JSX.Element {
+  const history = useHistory();
 
-export default function Channel({ channel }: ChannelProps): JSX.Element {
-  const { id, title, is_private, owner, administrators, participants } =
-    channel;
+  const channelId = useReactiveVar(channelIdVar);
 
-  const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
+  if (!channelId) {
+    // history.push(`/channel`);
+    return <Redirect to="/channel" />;
+  }
+
+  const chattingMessages = useReactiveVar(chattingMessagesVar);
+
+  const { data } = useSubscription<SubscribeChannelResponse>(
     SUBSCRIBE_CHANNEL,
-    { variables: { channel_id: id } }
-  );
+    {
+      variables: { channel_id: channelId },
+      onSubscriptionData: ({ subscriptionData: { data } }): void => {
+        console.log(data); // TODO: subscribe가 두번 오는 이슈. 백엔드에 여쭤보기!
 
-  // TODO: 새로 들어가거나 온라인 접속했을 때, mute나 ban 목록을 다시 알려줘야 하지 않나?
-  // TODO: 프론트와 백에서 어떻게 하기로 했는지가 기억이 잘 안남...
+        // if (!data || !data.subscribeChannel) return;
 
-  const [muteList, setMuteList] = useState<string[]>([]);
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+        // const { type, participant, text, check }: ChannelNotifySummary =
+        //   data.subscribeChannel;
 
-  useEffect(() => {
-    if (!subscribeData || !subscribeData.subscribeChannel) return; // TODO: 임시 조치... 어떻게 들어오는지 확인 후 수정 필요
+        // switch (type) {
+        //   case Notify.CHAT:
+        //     if (participant && text) {
+        //       let prev: ChattingSummary[] | undefined =
+        //         chattingMessages.get(channelId);
 
-    const { type, participant, text, check }: IChannelNotify =
-      subscribeData.subscribeChannel;
+        //       if (!prev) {
+        //         prev = [];
+        //       }
 
-    const subscribe_id = new Date().getTime().toString();
+        //       const duplicatedMap = new Map(chattingMessages);
+        //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
 
-    console.log(type, participant, text, check);
-
-    switch (type) {
-      case Notify.CHAT:
-        if (participant && text) {
-          let prev: IChatting[] | undefined = chattingMessagesVar().get(id);
-
-          if (!prev) {
-            prev = [];
-          }
-
-          const duplicatedMap = new Map(chattingMessagesVar());
-          duplicatedMap.set(id, [
-            ...prev,
-            { id: subscribe_id, participant, text },
-          ]);
-
-          chattingMessagesVar(duplicatedMap);
-        }
-        break;
-      case Notify.MUTE:
-        if (check) {
-          setMuteList([...muteList, (participant as IUser).id]);
-          setAlertMsg(
-            `MUTE: User '${(participant as IUser).nickname}' is muted.`
-          );
-          setTimeout(() => {
-            setAlertMsg(null);
-          }, 3000);
-        } else {
-          setMuteList(
-            muteList.filter((val) => val !== (participant as IUser).id)
-          );
-          setAlertMsg(
-            `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
-          );
-          setTimeout(() => {
-            setAlertMsg(null);
-          }, 3000);
-        }
-        break;
-      case Notify.BAN:
-        // TODO: ban 백엔드 함수가 에러가 나서 아직 구현하지 못하는 상태
-        setAlertMsg('BAN: ...');
-        setTimeout(() => {
-          setAlertMsg(null);
-        }, 3000);
-        break;
+        //       chattingMessagesVar(duplicatedMap);
+        //     }
+        // }
+      },
     }
-  }, [subscribeData]);
+  );
 
   return (
     <>
-      <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
-      <ParticipantsList {...{ id, participants }} />
-      <Chatting {...{ id, alertMsg, muteList }} />
+      <ChannelHeader />
+      <ParticipantsList notify={data?.subscribeChannel} />
+      <Chatting notify={data?.subscribeChannel} />
     </>
   );
 }

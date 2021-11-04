@@ -1,27 +1,21 @@
-import { IChannel, IChannelListItem } from '../../utils/models';
+import { ChannelListSummary, ChannelSummary } from '../../utils/models';
 
 export interface AddChannelResponse {
-  addChannel: IChannel;
+  addChannel: ChannelSummary;
 }
 
 export interface GetCurrentChannelResponse {
   user: {
-    channel: IChannel;
+    channel: ChannelSummary;
   };
 }
 
 export interface GetAllChannelsResponse {
-  channels: IChannelListItem[];
+  channels: ChannelListSummary[];
 }
 
 export interface GetCurrentChannelIdResponse {
   user: {
     channel: { id: string };
-  };
-}
-
-export interface EnterChannelResponse {
-  enterChannel: {
-    channel: IChannel;
   };
 }

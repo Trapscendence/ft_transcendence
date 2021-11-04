@@ -42,9 +42,3 @@ export const GET_CURRENT_PARTICIPANTS = gql`
     }
   }
 `;
-
-export const LEAVE_CHANNEL = gql`
-  mutation LeaveChannel($channel_id: ID!, $user_id: ID!) {
-    leaveChannel(channel_id: $channel_id, user_id: $user_id)
-  }
-`;

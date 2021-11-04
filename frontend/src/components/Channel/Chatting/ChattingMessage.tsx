@@ -1,26 +1,24 @@
+// import { useReactiveVar } from '@apollo/client';
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 
-import { IChatting } from '../../../utils/models';
+// import { chattingMessagesVar } from '../../..';
+import { ChattingSummary } from '../../../utils/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ChattingMessageProps {
-  IChatting: IChatting;
-  channelId: string;
+  chattingSummary: ChattingSummary;
 }
 
 export default function ChattingMessage({
-  IChatting,
-  channelId,
+  chattingSummary,
 }: ChattingMessageProps): JSX.Element {
-  const { participant, text } = IChatting;
+  const { participant, text } = chattingSummary;
 
   return (
     <Box>
-      <Box sx={{ display: 'inline-block' }}>
-        <UserSummary IUser={participant} channelId={channelId} />
-      </Box>
-      <Typography sx={{ display: 'inline-block' }}>{text}</Typography>
+      <UserSummary nickname={participant.nickname} />
+      <Typography>{text}</Typography>
     </Box>
   );
 }

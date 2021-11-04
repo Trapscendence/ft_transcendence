@@ -37,10 +37,10 @@ export enum MatchType {
 // }
 
 export enum UserStatus {
-  ONLINE = 'ONLINE',
-  IN_RANK_GAME = 'IN_RANK_GAME',
-  IN_NORMAL_GAME = 'IN_NORMAL_GAME',
-  OFFLINE = 'OFFLINE',
+  ONLINE,
+  IN_RANK_GAME,
+  IN_NORMAL_GAME,
+  OFFLINE,
 }
 
 export enum UserRole {
