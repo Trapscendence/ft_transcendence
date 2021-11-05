@@ -96,6 +96,7 @@ type Mutation {
   addToBlackLIst(black_id: ID!, user_id: ID!): Boolean!
   deleteFromBlackList(black_id: ID!, user_id: ID!): Boolean!
   sendMessage(text: String!, other_id: ID!, user_id: ID!): Boolean!
+  updateCheckdate(other_id: ID!, user_id: ID!): Boolean
 }
 
 type Subscription {

@@ -88,10 +88,18 @@ export class MessageResolver {
     return await this.messageService.insertMessage(user_id, other_id, text);
   }
 
+  @Mutation((returns) => Boolean, { nullable: true })
+  updateCheckdate(
+    @Args('user_id', { type: () => ID }) user_id: string,
+    @Args('other_id', { type: () => ID }) other_id: string,
+  ): null {
+    this.messageService.setCheckDate(user_id, other_id);
+    return null;
+  }
+
   /*
    ** ANCHOR: DM subscription
    */
-
   @Subscription((returns) => Message)
   async receiveMessage(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`message_to_${user_id}`);

@@ -16,6 +16,19 @@ export class MessageService {
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
+  async setCheckDate(user_id: string, other_id: string): Promise<void> {
+    this.databaseService.executeQuery(`
+    UPDATE
+      ${schema}.dm
+    SET
+      check_date = ${new Date().getTime()}
+    WHERE
+      sender_id = ${user_id}
+        AND
+      receiver_id = ${other_id};
+    `);
+  }
+
   async getDM(user_id: string, other_id: string): Promise<DM> {
     this.databaseService.executeQuery(`
       INSERT INTO
@@ -34,6 +47,8 @@ export class MessageService {
             dm_pk
       DO NOTHING;
     `);
+    this.setCheckDate(user_id, other_id);
+
     const array = await this.databaseService.executeQuery(`
       SELECT
         sender_id AS user_id,
@@ -112,7 +127,7 @@ export class MessageService {
         WHERE
           m.dm_id = d.id
       ORDER BY
-        time_stamp
+        time_stamp DESC
       OFFSET
         ${offset} ROWS
       FETCH NEXT
@@ -125,7 +140,8 @@ export class MessageService {
     offset: number,
     limit: number,
   ): Promise<User[]> {
-    return await this.databaseService.executeQuery(`
+    return (
+      await this.databaseService.executeQuery(`
       SELECT
         u.id,
         u.nickname,
@@ -206,7 +222,8 @@ export class MessageService {
         ${offset} ROWS
       FETCH NEXT
         ${limit} ROWS ONLY;
-    `);
+    `)
+    ).reverse();
   }
 
   async insertMessage(
