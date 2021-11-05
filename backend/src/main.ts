@@ -9,15 +9,24 @@ async function bootstrap() {
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       preflightContinue: false,
       optionsSuccessStatus: 204,
+      credentials: true,
     },
   });
+
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: false,
+      cookie: {
+        path: '/',
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 0.5, // 0.5 hours
+        secure: false, // TODO Must change this to true
+      },
     }),
   );
   await app.listen(3000);
 }
+
 bootstrap();

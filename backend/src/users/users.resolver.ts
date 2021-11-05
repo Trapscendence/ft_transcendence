@@ -1,3 +1,4 @@
+import { UseGuards } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -10,6 +11,8 @@ import {
 } from '@nestjs/graphql';
 import { Channel } from 'src/channels/models/channel.model';
 import { User, UserRole } from './models/user.model';
+import { GqlSession } from 'src/session/decorator/user.decorator';
+import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User)
@@ -19,6 +22,12 @@ export class UsersResolver {
   /*
    ** ANCHOR: User
    */
+
+  @Query((returns) => Int)
+  @UseGuards(GqlSessionGuard)
+  async whoAmI(@GqlSession() session: Record<string, any>) {
+    return session.uid;
+  }
 
   @Query((returns) => User, { nullable: true })
   async user(

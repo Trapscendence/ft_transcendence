@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 @Injectable()
-export class SessionGuard implements CanActivate {
+export class GqlSessionGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const session: Record<string, any> = context
-      .switchToHttp()
-      .getRequest().session;
+    const req = GqlExecutionContext.create(context).getContext().req;
+    const session = req.session;
 
-    console.log(session.id);
+    console.log(req.session.id);
 
     if (session.uid === undefined) {
       return false;
