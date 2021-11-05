@@ -15,21 +15,14 @@ import { SubscribeChannelResponse } from './responseModels';
 
 export default function Channel(): JSX.Element {
   const channelId = useReactiveVar(channelIdVar);
-  const userId = useReactiveVar(userIdVar);
-  const chattingMessages = useReactiveVar(chattingMessagesVar);
-
-  if (!channelId) {
-    // history.push(`/channel`);
-    return <Redirect to="/channel" />;
-  }
 
   const { data: channelData } = useQuery<GetCurrentChannelResponse>(
     GET_CURRENT_CHANNEL,
-    { variables: { id: userId } }
+    { variables: { id: userIdVar() } }
   );
   const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
     SUBSCRIBE_CHANNEL,
-    { variables: { channel_id: channelId } }
+    { variables: { channel_id: channelIdVar() } }
   );
 
   useEffect(() => {
@@ -45,15 +38,19 @@ export default function Channel(): JSX.Element {
     switch (type) {
       case Notify.CHAT:
         if (participant && text) {
-          let prev: ChattingSummary[] | undefined =
-            chattingMessages.get(channelId);
+          let prev: ChattingSummary[] | undefined = chattingMessagesVar().get(
+            channelIdVar() as string // TODO: 임시 조치... 이렇게 해도 될까...?
+          );
 
           if (!prev) {
             prev = [];
           }
 
-          const duplicatedMap = new Map(chattingMessages);
-          duplicatedMap.set(channelId, [...prev, { id, participant, text }]);
+          const duplicatedMap = new Map(chattingMessagesVar());
+          duplicatedMap.set(channelIdVar() as string, [
+            ...prev,
+            { id, participant, text },
+          ]);
 
           console.log(duplicatedMap);
           chattingMessagesVar(duplicatedMap);
@@ -62,6 +59,11 @@ export default function Channel(): JSX.Element {
   }, [subscribeData]);
 
   if (!channelData) return <div>???</div>;
+
+  if (!channelId) {
+    // history.push(`/channel`);
+    return <Redirect to="/channel" />; // TODO: 차이가 뭐지?
+  } // TODO: channelID 때문에 얼리리턴 했는데... 괜찮은걸까? 훅 앞에 얼리리턴 하면 안된다고 했었는데, useQuery 등도 훅 아닌가?
 
   return (
     <>

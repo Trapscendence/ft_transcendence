@@ -12,14 +12,8 @@ import { GetCurrentChannelIdResponse } from './responseModels';
 
 export default function ChannelList(): JSX.Element {
   const history = useHistory();
-
   const channelId = useReactiveVar(channelIdVar);
   const userId = useReactiveVar(userIdVar);
-
-  if (channelId) {
-    return <Redirect to={`/channel/${channelId}`} />;
-    // history.push(`/channel/${currentChannel.id}`);
-  }
 
   // TODO: 현재 채널에 들어와있는지 확인하는 방법... 이게 최선일까?
   // const { data, loading, error } = useQuery<GetCurrentChannelResponse>(
@@ -33,6 +27,11 @@ export default function ChannelList(): JSX.Element {
       }
     },
   });
+
+  if (channelId) {
+    return <Redirect to={`/channel/${channelId}`} />;
+    // history.push(`/channel/${currentChannel.id}`);
+  }
 
   return (
     <>

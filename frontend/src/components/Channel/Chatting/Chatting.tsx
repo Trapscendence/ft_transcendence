@@ -24,9 +24,7 @@ export default function Chatting(): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-  const userId = useReactiveVar(userIdVar);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
-  const channelId = useReactiveVar(channelIdVar);
 
   const [chatMessage] = useMutation(CHAT_MESSAGE);
 
@@ -39,8 +37,8 @@ export default function Chatting(): JSX.Element {
     void chatMessage({
       variables: {
         message: input,
-        user_id: userId,
-        channel_id: channelId,
+        user_id: userIdVar(),
+        channel_id: channelIdVar(),
       },
     }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
@@ -50,9 +48,9 @@ export default function Chatting(): JSX.Element {
     <Card variant="outlined" sx={{ width: '100%', height: '75vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-          {channelId &&
+          {channelIdVar() &&
             chattingMessages
-              .get(channelId)
+              .get(channelIdVar() as string) // TODO: 임시 조치
               ?.map((val) => (
                 <ChattingMessage key={val.id} chattingSummary={val} />
               ))}
