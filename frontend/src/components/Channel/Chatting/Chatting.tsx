@@ -7,6 +7,7 @@ import {
   TextField,
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { createRef, useEffect, useRef } from 'react';
 
 import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
@@ -38,16 +39,23 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
     setInput('');
   };
 
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chattingMessages]);
+
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '79vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
-        <Box>
+        <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {channelId &&
             chattingMessages
               .get(channelId)
               ?.map((val) => (
                 <ChattingMessage key={val.id} chattingSummary={val} />
               ))}
+          <div ref={messagesEndRef} />
         </Box>
       </CardContent>
       <CardActions sx={{ width: '100%', height: '10%' }}>
