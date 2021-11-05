@@ -25,19 +25,15 @@ export default function Channel(): JSX.Element {
 
   const { data: channelData } = useQuery<GetCurrentChannelResponse>(
     GET_CURRENT_CHANNEL,
-    {
-      variables: { id: userId },
-    }
+    { variables: { id: userId } }
   );
   const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
     SUBSCRIBE_CHANNEL,
-    {
-      variables: { channel_id: channelId },
-    }
+    { variables: { channel_id: channelId } }
   );
 
   useEffect(() => {
-    if (!subscribeData || !subscribeData.subscribeChannel) return;
+    if (!subscribeData || !subscribeData.subscribeChannel) return; // TODO: 임시 조치... 어떻게 들어오는지 확인 후 수정 필요
 
     const { type, participant, text, check }: ChannelNotifySummary =
       subscribeData.subscribeChannel;
@@ -70,8 +66,10 @@ export default function Channel(): JSX.Element {
   return (
     <>
       <ChannelHeader channelData={channelData} />
-      <ParticipantsList notify={subscribeData?.subscribeChannel} />
-      <Chatting notify={subscribeData?.subscribeChannel} />
+      {/* <ParticipantsList notify={subscribeData?.subscribeChannel} /> */}
+      <ParticipantsList channelData={channelData} />
+      {/* <Chatting notify={subscribeData?.subscribeChannel} /> */}
+      <Chatting />
     </>
   );
 }

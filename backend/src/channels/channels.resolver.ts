@@ -50,16 +50,16 @@ export class ChannelsResolver {
 
   @Mutation((returns) => Channel, { nullable: true })
   async enterChannel(
-    @Args('user_id') user_id: string,
-    @Args('channel_id') channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Channel | null> {
     return await this.channelsService.enterChannel(user_id, channel_id);
   }
 
   @Mutation((returns) => Boolean)
   async leaveChannel(
-    @Args('user_id') user_id: string,
-    @Args('channel_id') channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user_id, channel_id);
   }

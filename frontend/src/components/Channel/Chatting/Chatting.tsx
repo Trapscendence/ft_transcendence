@@ -15,11 +15,12 @@ import { ChannelNotifySummary } from '../../../utils/models';
 import { CHAT_MESSAGE } from '../gqls';
 import ChattingMessage from './ChattingMessage';
 
-interface ChattingProps {
-  notify: ChannelNotifySummary | undefined;
-}
+// interface ChattingProps {
+//   notify: ChannelNotifySummary | undefined;
+// }
 
-export default function Chatting({ notify }: ChattingProps): JSX.Element {
+// export default function Chatting({ notify }: ChattingProps): JSX.Element {
+export default function Chatting(): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 

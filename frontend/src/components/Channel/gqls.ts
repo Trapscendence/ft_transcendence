@@ -42,3 +42,9 @@ export const GET_CURRENT_PARTICIPANTS = gql`
     }
   }
 `;
+
+export const LEAVE_CHANNEL = gql`
+  mutation LeaveChannel($channel_id: ID!, $user_id: ID!) {
+    leaveChannel(channel_id: $channel_id, user_id: $user_id)
+  }
+`; // TODO: 아직 백엔드의 owner 양도 기능이 없어서 나가기 버튼 누르면 오류 발생함

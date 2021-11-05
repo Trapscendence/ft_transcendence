@@ -11,9 +11,10 @@ import { GetCurrentChannelIdResponse } from './responseModels';
 // TODO: channel list는 subscription으로 주기적으로 새로고침하게 하기로 했었나?
 
 export default function ChannelList(): JSX.Element {
+  const history = useHistory();
+
   const channelId = useReactiveVar(channelIdVar);
   const userId = useReactiveVar(userIdVar);
-  const history = useHistory();
 
   if (channelId) {
     return <Redirect to={`/channel/${channelId}`} />;

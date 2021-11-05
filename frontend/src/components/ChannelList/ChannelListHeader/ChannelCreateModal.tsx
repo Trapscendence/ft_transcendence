@@ -7,6 +7,7 @@ import {
   Modal,
   TextField,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 import { channelIdVar } from '../../..';
 // import { currentChannelVar } from '../../..';
@@ -25,13 +26,25 @@ export default function ChannelCreateModal({
 }: ChannelCreateModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
+  // const [id, setId] = useState<string | null>(null);
 
   // TODO: loading, error 등은 나중에 고려
-  const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL, {
-    onCompleted({ addChannel }) {
-      channelIdVar(addChannel.id);
-    },
-  });
+  const [addChannelFunc, { data }] = useMutation<AddChannelResponse>(
+    ADD_CHANNEL,
+    {
+      // variables: { owner_user_id: '1', title, password },
+      // onCompleted({ addChannel }) {
+      //   channelIdVar(addChannel.id);
+      // },
+    }
+  );
+
+  useEffect(() => {
+    let newId = channelIdVar();
+    if (data) newId = channelIdVar(data.addChannel.id);
+
+    channelIdVar(newId);
+  }, [data]);
 
   const onClickBtn = async (): Promise<void> => {
     console.log(title, password);
