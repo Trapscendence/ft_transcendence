@@ -71,67 +71,76 @@ export class MessageService {
     limit: number,
   ): Promise<Message[]> {
     return await this.databaseService.executeQuery(`
-        SELECT
-          m.id,
-          false
-            AS received,
-          m.dm_text
-            AS content,
-          m.time_stamp
-            AS time_stamp,
-          true AS checked
-        FROM
-          ${schema}.message m,
-          (
+      WITH
+        messages AS (
             SELECT
-              d.id
-            FROM
-              ${schema}.dm d
-            WHERE
-              sender_id = ${user_id}
-                AND
-              receiver_id = ${other_id}
-          ) AS d
-        WHERE
-          m.dm_id = d.id
-      UNION
-        SELECT
-          m.id,
-          true
-            AS received,
-          m.dm_text
-            AS content,
-          m.time_stamp,
-          CASE
-            WHEN
-              m.time_stamp < d.check_date
-            THEN
+              m.id,
               false
-            ELSE
-              true
-          END
-            AS checked
-        FROM
-          ${schema}.message m,
-          (
-            SELECT
-              d.id,
-              d.check_date
+                AS received,
+              m.dm_text
+                AS content,
+              m.time_stamp
+                AS time_stamp,
+              true AS checked
             FROM
-              ${schema}.dm d
+              ${schema}.message m,
+              (
+                SELECT
+                  d.id
+                FROM
+                  ${schema}.dm d
+                WHERE
+                  sender_id = ${user_id}
+                    AND
+                  receiver_id = ${other_id}
+              ) AS d
             WHERE
-              receiver_id = ${user_id}
-                AND
-              sender_id = ${other_id}
-          ) d
-        WHERE
-          m.dm_id = d.id
+              m.dm_id = d.id
+          UNION
+            SELECT
+              m.id,
+              true
+                AS received,
+              m.dm_text
+                AS content,
+              m.time_stamp,
+              CASE
+                WHEN
+                  m.time_stamp < d.check_date
+                THEN
+                  false
+                ELSE
+                  true
+              END
+                AS checked
+            FROM
+              ${schema}.message m,
+              (
+                SELECT
+                  d.id,
+                  d.check_date
+                FROM
+                  ${schema}.dm d
+                WHERE
+                  receiver_id = ${user_id}
+                    AND
+                  sender_id = ${other_id}
+              ) d
+            WHERE
+              m.dm_id = d.id
+          ORDER BY
+            time_stamp DESC
+          OFFSET
+            ${offset} ROWS
+          FETCH NEXT
+            ${limit} ROWS ONLY
+        )
+      SELECT
+        *
+      FROM
+        messages
       ORDER BY
-        time_stamp DESC
-      OFFSET
-        ${offset} ROWS
-      FETCH NEXT
-        ${limit} ROWS ONLY;
+        time_stamp;
     `);
   }
 
