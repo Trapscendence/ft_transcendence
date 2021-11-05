@@ -1,5 +1,6 @@
-import { Controller, Get, Req, Session, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, Session, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { SessionGuard } from './guard/session.guard';
 
 @Controller('session')
@@ -8,9 +9,11 @@ export class SessionController {
   @UseGuards(AuthGuard('42'))
   createSessionWith42(
     @Req() req: any,
+    @Res() res: Response,
     @Session() session: Record<string, any>,
   ) {
     session.uid = req.user.uid;
+    res.redirect('/graphql');
   }
 
   @Get('logout')
@@ -22,7 +25,7 @@ export class SessionController {
 
   @Get('test')
   @UseGuards(SessionGuard)
-  returnSessionOK() {
-    return 'SessionOK';
+  returnSessionOK(@Req() req) {
+    return `SessionOK, Date: ${Date.now()}`;
   }
 }

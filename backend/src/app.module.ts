@@ -9,7 +9,6 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
-import { SessionController } from './session/session.controller';
 import { SessionModule } from './session/session.module';
 
 @Module({
@@ -19,7 +18,15 @@ import { SessionModule } from './session/session.module';
       subscriptions: {
         'graphql-ws': true,
       },
-      // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
+      cors: {
+        origin: process.env.FRONTEND_URI,
+        credentials: true,
+      },
+      playground: {
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
     }),
     DatabaseModule,
     UsersModule,
