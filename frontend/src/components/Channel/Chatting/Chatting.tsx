@@ -23,7 +23,6 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
   const [chatMessage] = useMutation(CHAT_MESSAGE);
 
   const userId = useReactiveVar(userIdVar);
-  // const currentChannel = useReactiveVar(currentChannelVar);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
   const channelId = useReactiveVar(channelIdVar);
 
@@ -43,12 +42,12 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
     <Card variant="outlined" sx={{ width: '100%', height: '79vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
         <Box>
-          {/* {channelId &&
+          {channelId &&
             chattingMessages
               .get(channelId)
               ?.map((val) => (
-                <ChattingMessage key={+new Date()} chattingSummary={val} />
-              ))} */}
+                <ChattingMessage key={val.id} chattingSummary={val} />
+              ))}
         </Box>
       </CardContent>
       <CardActions sx={{ width: '100%', height: '10%' }}>

@@ -32,6 +32,7 @@ export interface ChannelNotifySummary {
 }
 
 export interface ChattingSummary {
+  id: string;
   participant: UserSummary;
   text: string;
 }

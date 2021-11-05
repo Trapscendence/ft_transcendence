@@ -1,4 +1,5 @@
 import { useQuery, useReactiveVar, useSubscription } from '@apollo/client';
+import { useEffect } from 'react';
 import { Redirect, useHistory } from 'react-router';
 
 import { channelIdVar, chattingMessagesVar } from '../..';
@@ -26,33 +27,63 @@ export default function Channel(): JSX.Element {
     SUBSCRIBE_CHANNEL,
     {
       variables: { channel_id: channelId },
-      onSubscriptionData: ({ subscriptionData: { data } }): void => {
-        console.log(data); // TODO: subscribe가 두번 오는 이슈. 백엔드에 여쭤보기!
+      // onSubscriptionData: ({ subscriptionData: { data } }): void => {
 
-        // if (!data || !data.subscribeChannel) return;
+      // if (!data || !data.subscribeChannel) return;
 
-        // const { type, participant, text, check }: ChannelNotifySummary =
-        //   data.subscribeChannel;
+      // const { type, participant, text, check }: ChannelNotifySummary =
+      //   data.subscribeChannel;
 
-        // switch (type) {
-        //   case Notify.CHAT:
-        //     if (participant && text) {
-        //       let prev: ChattingSummary[] | undefined =
-        //         chattingMessages.get(channelId);
+      // switch (type) {
+      //   case Notify.CHAT:
+      //     if (participant && text) {
+      //       let prev: ChattingSummary[] | undefined =
+      //         chattingMessages.get(channelId);
 
-        //       if (!prev) {
-        //         prev = [];
-        //       }
+      //       if (!prev) {
+      //         prev = [];
+      //       }
 
-        //       const duplicatedMap = new Map(chattingMessages);
-        //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
+      //       const duplicatedMap = new Map(chattingMessages);
+      //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
 
-        //       chattingMessagesVar(duplicatedMap);
-        //     }
-        // }
-      },
+      //       chattingMessagesVar(duplicatedMap);
+      //     }
+      // }
+      // },
     }
   );
+
+  useEffect(() => {
+    if (!data || !data.subscribeChannel) return;
+
+    const { type, participant, text, check }: ChannelNotifySummary =
+      data.subscribeChannel;
+
+    console.log(type);
+
+    const id = new Date().getTime().toString();
+
+    switch (type) {
+      case Notify.CHAT:
+        if (participant && text) {
+          let prev: ChattingSummary[] | undefined =
+            chattingMessages.get(channelId);
+
+          if (!prev) {
+            prev = [];
+          }
+
+          const duplicatedMap = new Map(chattingMessages);
+          duplicatedMap.set(channelId, [...prev, { id, participant, text }]);
+
+          console.log(duplicatedMap);
+          chattingMessagesVar(duplicatedMap);
+        }
+    }
+
+    // return () => {};
+  }, [data]);
 
   return (
     <>
