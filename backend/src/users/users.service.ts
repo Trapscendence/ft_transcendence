@@ -41,7 +41,61 @@ WHERE
     return array.length ? array[0] : null;
   }
 
-  async getUsers(ladder: boolean, offset: number, limit: number): Promise<User[]> {
+  async getOrCreateUserByOAuth(
+    oauth_id: number,
+    oauth_type: string,
+  ): Promise<User | null> {
+    const selectQueryResult = await this.databaseService.executeQuery(`
+SELECT
+  id,
+  nickname,
+  avatar,
+  status_message,
+  rank_score,
+  site_role
+FROM
+  ${schema}.user
+WHERE
+  oauth_id = '${oauth_id}'
+AND
+  oauth_type = '${oauth_type}';
+    `);
+
+    if (selectQueryResult.length === 1) {
+      return selectQueryResult[0];
+    } else if (selectQueryResult.length === 0) {
+      const insertQueryResult = await this.databaseService.executeQuery(`
+INSERT INTO ${schema}.user(
+  nickname,
+  oauth_id,
+  oauth_type
+) VALUES (
+  '${oauth_type}-${oauth_id}',
+  '${oauth_id}',
+  '${oauth_type}'
+) RETURNING id, nickname, avatar, status_message, rank_score, site_role;
+      `);
+
+      if (insertQueryResult.length !== 1) {
+        console.error(
+          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
+        );
+      } else {
+        return insertQueryResult[0];
+      }
+    } else {
+      console.error(
+        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
+      );
+      return null;
+    }
+  }
+
+  async getUsers(
+    ladder: boolean,
+    offset: number,
+    limit: number,
+  ): Promise<User[]> {
     return this.databaseService.executeQuery(`
 SELECT
   id,
@@ -52,29 +106,24 @@ SELECT
   site_role
 FROM
   ${schema}.user
-${
-  ladder ?
-  'ORDER BY rank_score DESC' : ''
-}
-${
-  limit ?
-  `LIMIT ${limit} ${offset ? `OFFSET ${offset}`: ''}` : ''
-}
+${ladder ? 'ORDER BY rank_score DESC' : ''}
+${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
   }
 
-  async createUser(nickname: string): Promise<User> { // NOTE 일단 몰라서 Promise<any>로
+  async createUser(nickname: string): Promise<User> {
+    // NOTE 일단 몰라서 Promise<any>로
     const users = await this.databaseService.executeQuery(`
 INSERT INTO ${schema}.user( nickname, oauth_id, oauth_type )
 VALUES ( '${nickname}', 'mock_id', 'FORTYTWO' )
 RETURNING *;
     `); // NOTE oauth_id, oauth_type, fta_secret는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
-    return users[0]
+    return users[0];
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error('One cannot be their\'s own friend');
+      throw new Error("One cannot be their's own friend");
     const array: Array<User> = await this.databaseService.executeQuery(`
 INSERT INTO ${schema}.friend( my_id, friend_id )
 VALUES
@@ -96,7 +145,7 @@ RETURNING *;
 
   async deleteFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error ('One cannot have themself as a friend');
+      throw new Error('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
 DELETE FROM
   ${schema}.friend f
@@ -129,8 +178,7 @@ WHERE f.my_id = ${id};
   }
 
   async addToBlackList(user_id: string, black_id: string): Promise<boolean> {
-    if (user_id === black_id)
-      throw new Error ('One cannot block themself');
+    if (user_id === black_id) throw new Error('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
 INSERT INTO ${schema}.block( blocker_id, blocked_id )
 VALUES
@@ -146,9 +194,11 @@ RETURNING *;
     return array.length === 0 ? false : true;
   }
 
-  async deleteFromBlackList(user_id: string, black_id: string): Promise<boolean> {
-    if (user_id === black_id)
-      throw new Error ('One cannot block themself');
+  async deleteFromBlackList(
+    user_id: string,
+    black_id: string,
+  ): Promise<boolean> {
+    if (user_id === black_id) throw new Error('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
 DELETE FROM
   ${schema}.friend f
@@ -181,7 +231,6 @@ INNER JOIN
   id ON ${schema}.user.id = ${schema}.friend.my_id;
     `);
   }
-
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`

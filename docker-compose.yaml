@@ -2,6 +2,8 @@ version: "3"
 
 services:
   frontend:
+    environment:
+      BACKEND_URI: ${BACKEND_URI}
     build:
       context: ./frontend
     networks:
@@ -24,12 +26,10 @@ services:
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
+    networks:
+      - default
     volumes:
       - db_data:/var/lib/postgresql/data
-    # networks:
-    #   - default
 
   backend:
     environment:
@@ -39,6 +39,11 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
+      - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
+      - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
+      - FORTYTWO_REDIRECT_URI=${FORTYTWO_REDIRECT_URI}
+      - FRONTEND_URI=${FRONTEND_URI}
+      - SESSION_SECRET=${SESSION_SECRET}
     build: ./backend
     networks:
       - default
@@ -46,8 +51,6 @@ services:
       - "5000:5000"
     volumes:
       - ./backend/src:/app/src
-    # networks:
-    #   - default
 
   # pgadmin:
   #   image: dpage/pgadmin4
@@ -60,33 +63,33 @@ services:
   #     - "5050:80"
 
   migration:
-    build:
-      context: ./migration
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
+    build:
+      context: ./migration
+    networks:
+      - default
     depends_on:
       - database
     volumes:
       - ./migration/migrations:/mitrations
 
   pgadmin:
-    image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
-    depends_on:
-      - database
+    image: dpage/pgadmin4
     networks:
       - default
-    ports:
-      - "5050:80"
+    depends_on:
+      - database
 
 volumes:
   db_data:
 
-networks:
-  internal:
-    driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요
+# networks:
+#   internal:
+#     driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요

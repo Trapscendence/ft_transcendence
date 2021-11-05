@@ -81,6 +81,7 @@ type Message {
 }
 
 type Query {
+  whoAmI: Int!
   user(nickname: String, id: ID): User
   users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
   DM(other_user: ID!, user_id: ID!): [DM!]
