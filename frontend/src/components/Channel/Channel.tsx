@@ -1,10 +1,12 @@
 import { useQuery, useReactiveVar, useSubscription } from '@apollo/client';
 import { useEffect } from 'react';
-import { Redirect, useHistory } from 'react-router';
+import { Redirect } from 'react-router';
 
-import { channelIdVar, chattingMessagesVar } from '../..';
+import { channelIdVar, chattingMessagesVar, userIdVar } from '../..';
 import { ChannelNotifySummary, ChattingSummary } from '../../utils/models';
 import { Notify } from '../../utils/schemaEnums';
+import { GET_CURRENT_CHANNEL } from '../ChannelList/gqls';
+import { GetCurrentChannelResponse } from '../ChannelList/responseModels';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
 import { SUBSCRIBE_CHANNEL } from './gqls';
@@ -12,53 +14,33 @@ import ParticipantsList from './ParticipantsList';
 import { SubscribeChannelResponse } from './responseModels';
 
 export default function Channel(): JSX.Element {
-  const history = useHistory();
-
   const channelId = useReactiveVar(channelIdVar);
+  const userId = useReactiveVar(userIdVar);
+  const chattingMessages = useReactiveVar(chattingMessagesVar);
 
   if (!channelId) {
     // history.push(`/channel`);
     return <Redirect to="/channel" />;
   }
 
-  const chattingMessages = useReactiveVar(chattingMessagesVar);
-
-  const { data } = useSubscription<SubscribeChannelResponse>(
+  const { data: channelData } = useQuery<GetCurrentChannelResponse>(
+    GET_CURRENT_CHANNEL,
+    {
+      variables: { id: userId },
+    }
+  );
+  const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
     SUBSCRIBE_CHANNEL,
     {
       variables: { channel_id: channelId },
-      // onSubscriptionData: ({ subscriptionData: { data } }): void => {
-
-      // if (!data || !data.subscribeChannel) return;
-
-      // const { type, participant, text, check }: ChannelNotifySummary =
-      //   data.subscribeChannel;
-
-      // switch (type) {
-      //   case Notify.CHAT:
-      //     if (participant && text) {
-      //       let prev: ChattingSummary[] | undefined =
-      //         chattingMessages.get(channelId);
-
-      //       if (!prev) {
-      //         prev = [];
-      //       }
-
-      //       const duplicatedMap = new Map(chattingMessages);
-      //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
-
-      //       chattingMessagesVar(duplicatedMap);
-      //     }
-      // }
-      // },
     }
   );
 
   useEffect(() => {
-    if (!data || !data.subscribeChannel) return;
+    if (!subscribeData || !subscribeData.subscribeChannel) return;
 
     const { type, participant, text, check }: ChannelNotifySummary =
-      data.subscribeChannel;
+      subscribeData.subscribeChannel;
 
     console.log(type);
 
@@ -81,15 +63,15 @@ export default function Channel(): JSX.Element {
           chattingMessagesVar(duplicatedMap);
         }
     }
+  }, [subscribeData]);
 
-    // return () => {};
-  }, [data]);
+  if (!channelData) return <div>???</div>;
 
   return (
     <>
-      <ChannelHeader />
-      <ParticipantsList notify={data?.subscribeChannel} />
-      <Chatting notify={data?.subscribeChannel} />
+      <ChannelHeader channelData={channelData} />
+      <ParticipantsList notify={subscribeData?.subscribeChannel} />
+      <Chatting notify={subscribeData?.subscribeChannel} />
     </>
   );
 }

@@ -7,7 +7,7 @@ import {
   TextField,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { createRef, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
@@ -21,11 +21,17 @@ interface ChattingProps {
 
 export default function Chatting({ notify }: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
-  const [chatMessage] = useMutation(CHAT_MESSAGE);
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
   const userId = useReactiveVar(userIdVar);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
   const channelId = useReactiveVar(channelIdVar);
+
+  const [chatMessage] = useMutation(CHAT_MESSAGE);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chattingMessages]);
 
   const onClickBtn = () => {
     // console.log(input);
@@ -39,14 +45,8 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
     setInput('');
   };
 
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chattingMessages]);
-
   return (
-    <Card variant="outlined" sx={{ width: '100%', height: '79vh', p: 2 }}>
+    <Card variant="outlined" sx={{ width: '100%', height: '75vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {channelId &&
@@ -76,4 +76,3 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
 }
 
 // TODO: 85vh, 90% 이런식으로 말고 더 나은 방법은 없을까?
-// TODO: 90%, 10% 이런거 너무 마음에 안드는데...
