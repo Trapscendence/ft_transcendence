@@ -108,19 +108,11 @@ export class UsersResolver {
     return await this.usersService.getBlackList(id);
   }
 
-<<<<<<< HEAD
-  @ResolveField('status', (returns) => UserStatus) // 임시로 오프라인 default
-  getUserStatus(): UserStatus {
-    return UserStatus.OFFLINE;
-  }
-
-=======
   @ResolveField('channel', (returns) => Channel, { nullable: true })
   async getChannelByUserId(@Parent() user: User): Promise<Channel | null> {
     const { id } = user;
     return await this.usersService.getChannelByUserId(id);
   }
->>>>>>> 0364a2076146118118c874ab0a660257b0b7a39d
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;

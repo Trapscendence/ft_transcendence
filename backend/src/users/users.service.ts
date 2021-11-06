@@ -17,15 +17,11 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-<<<<<<< HEAD
-        site_role
-=======
         site_role,
         DENSE_RANK() OVER (
           ORDER BY
             rank_score DESC
         ) rank
->>>>>>> 0364a2076146118118c874ab0a660257b0b7a39d
       FROM
         ${schema}.user
       WHERE
