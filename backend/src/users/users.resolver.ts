@@ -13,6 +13,7 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { User, UserStatus } from './models/user.medel';
+import { Channel } from 'src/channels/models/channel.medel';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User)
@@ -47,8 +48,8 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
-  @Mutation((returns) => User)
-  async createUser(@Args('nickname') nickname: string): Promise<User> {
+  @Mutation((returns) => User, { nullable: true })
+  async createUser(@Args('nickname') nickname: string): Promise<User | null> {
     return await this.usersService.createUser(nickname);
   }
 
@@ -57,7 +58,7 @@ export class UsersResolver {
    */
   // NOTE: 나중에 분리할 수도...?
 
-  @Mutation((returns) => Boolean)
+  @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
@@ -107,11 +108,19 @@ export class UsersResolver {
     return await this.usersService.getBlackList(id);
   }
 
+<<<<<<< HEAD
   @ResolveField('status', (returns) => UserStatus) // 임시로 오프라인 default
   getUserStatus(): UserStatus {
     return UserStatus.OFFLINE;
   }
 
+=======
+  @ResolveField('channel', (returns) => Channel, { nullable: true })
+  async getChannelByUserId(@Parent() user: User): Promise<Channel | null> {
+    const { id } = user;
+    return await this.usersService.getChannelByUserId(id);
+  }
+>>>>>>> 0364a2076146118118c874ab0a660257b0b7a39d
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;

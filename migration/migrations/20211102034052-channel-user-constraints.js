@@ -16,20 +16,20 @@ exports.setup = function (options, seedLink) {
 
 exports.up = function (db) {
   return db.runSql(`
-ALTER TABLE ${process.env.DB_SCHEMA}.friend
-ADD CONSTRAINT friend_pk
-UNIQUE (my_id, friend_id);
-ALTER TABLE ${process.env.DB_SCHEMA}.friend
-DROP COLUMN id;
+    ALTER TABLE
+      ${process.env.DB_SCHEMA}.channel_user
+    ADD CONSTRAINT
+      uniq_user_id
+      UNIQUE ( user_id );
   `);
 };
 
 exports.down = function (db) {
   return db.runSql(`
-ALTER TABLE ${process.env.DB_SCHEMA}.friend
-DROP CONSTRAINT friend_pk;
-ALTER TABLE ${process.env.DB_SCHEMA}.friend
-ADD COLUMN id;
+    ALTER TABLE
+      ${process.env.DB_SCHEMA}.channel_user
+    DROP CONSTRAINT
+      uniq_user_id;
   `);
 };
 

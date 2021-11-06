@@ -9,7 +9,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend/src:/usr/src/frontend/src
+      - ./frontend/src:/app/src
 
   database:
     environment:

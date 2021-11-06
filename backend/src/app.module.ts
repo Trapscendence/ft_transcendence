@@ -16,9 +16,9 @@ import { PubSubModule } from './pubsub.module';
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
-      // subscriptions: { // 권장사항이지만 playground를 쓸 수 없기 때문에...
+      // subscriptions: {
       //   'graphql-ws': true,
-      // },
+      // }, // production에선 켜야함
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
     }),
     DatabaseModule,

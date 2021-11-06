@@ -6,6 +6,7 @@ WORKDIR /
 RUN mkdir /migrations
 COPY ./migrations /migrations
 COPY database.json /
+COPY entrypoint.sh /
 
-ENTRYPOINT [ "db-migrate" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "up" ]

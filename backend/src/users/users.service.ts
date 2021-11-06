@@ -3,6 +3,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { User } from './models/user.medel';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
+import { Channel } from 'src/channels/models/channel.medel';
 
 @Injectable()
 export class UsersService {
@@ -16,12 +17,20 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
+<<<<<<< HEAD
         site_role
+=======
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
+>>>>>>> 0364a2076146118118c874ab0a660257b0b7a39d
       FROM
         ${schema}.user
       WHERE
         id = ${id};
-    `);
+      `);
     return array.length ? array[0] : null;
   }
 
@@ -34,12 +43,16 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-        site_role
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
       FROM
         ${schema}.user
       WHERE
         nickname = '${nickname}';
-     `);
+    `);
     return array.length ? array[0] : null;
   }
 
@@ -55,7 +68,11 @@ export class UsersService {
         avatar,
         status_message,
         rank_score,
-        site_role
+        site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            rank_score DESC
+        ) rank
       FROM
         ${schema}.user
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
@@ -63,12 +80,31 @@ export class UsersService {
     `);
   }
 
-  async createUser(nickname: string): Promise<User> {
+  async createUser(nickname: string): Promise<User | null> {
+    nickname = sqlEscaper(nickname);
+    const existingUser = await this.databaseService.executeQuery(`
+      SELECT
+        id
+      FROM
+        ${schema}.user
+      WHERE
+        nickname = '${nickname}'
+      `);
+
+    if (existingUser.length) return null;
     const users = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.user( nickname, oauth_id, oauth_type )
-      VALUES ( '${nickname}', 'mock_id', 'FORTYTWO' )
+      INSERT INTO
+        ${schema}.user(
+          nickname,
+          oauth_id,
+          oauth_type
+        )
+      VALUES (
+        '${nickname}',
+        'mock_id', /* 적절한 변환 필요 */
+        'FORTYTWO' )
       RETURNING *;
-    `); // NOTE oauth_id, oauth_type, fta_secret는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
+    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
     return users[0];
   }
 
@@ -185,24 +221,52 @@ export class UsersService {
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
-    SELECT
-      id,
-      nickname,
-      avatar,
-      status_message,
-      rank_score,
-      site_role
-    FROM
-      ${schema}.user u
-    WHERE
-        id = (
-          SELECT
-            blocked_id
-          FROM
-            ${schema}.block b
-          WHERE
-            blocker_id = ${id}
-        )
+      SELECT
+        id,
+        nickname,
+        avatar,
+        status_message,
+        rank_score,
+        site_role
+      FROM
+        ${schema}.user u
+      WHERE
+          id = (
+            SELECT
+              blocked_id
+            FROM
+              ${schema}.block b
+            WHERE
+              blocker_id = ${id}
+          )
     `);
+  }
+
+  async getChannelByUserId(id: string): Promise<Channel | null> {
+    const array: Channel[] = await this.databaseService.executeQuery(`
+      SELECT
+        c.id
+          AS id,
+        c.title
+          AS title,
+        CASE
+          WHEN
+            c.password IS NULL
+          THEN
+            false
+          ELSE
+            true
+        END
+          AS is_private
+      FROM
+        ${schema}.channel c
+      INNER JOIN
+        ${schema}.channel_user cu
+          ON
+            cu.user_id = ${id}
+              AND
+            cu.channel_id = c.id
+    `);
+    return array.length ? array[0] : null;
   }
 }

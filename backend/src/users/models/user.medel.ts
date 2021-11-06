@@ -6,6 +6,7 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
+import { Channel } from 'src/channels/models/channel.medel';
 import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
@@ -68,6 +69,9 @@ export class User {
 
   @Field((type) => [Achivement])
   achivements: Achivement[];
+
+  @Field((type) => Channel, { nullable: true })
+  channel: Channel;
 
   @Field((type) => UserRole)
   role: UserRole;
