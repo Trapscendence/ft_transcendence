@@ -7,8 +7,6 @@ export class GqlSessionGuard implements CanActivate {
     const req = GqlExecutionContext.create(context).getContext().req;
     const session = req.session;
 
-    console.log(req.session.id);
-
     if (session.uid === undefined) {
       return false;
     } else {
