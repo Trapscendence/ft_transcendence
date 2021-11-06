@@ -1,89 +1,71 @@
-import { useMutation, useQuery } from '@apollo/client';
-import { Send } from '@mui/icons-material';
+import { useQuery, useSubscription } from '@apollo/client';
 // import LoadingButton from '@mui/lab/LoadingButton';
-import {
-  Box,
-  Button,
-  Divider,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, Divider, Stack, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { DmsData, DmVars } from '../../utils/Apollo/Message';
-import { GET_DM, SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
+import { DmsData, DmVars, Message } from '../../utils/Apollo/Message';
+import { GET_DM, RECEIVE_MESSAGE } from '../../utils/Apollo/MessageQuery';
+import DMContentBox from './DmContentBox';
+import SendNewMessage from './SendNewMessage';
 
-interface DirectMessageContentProps {
+export interface DirectMessageContentProps {
   user_id: string;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
 }
 
-function DirectMessageContent({
+export function DirectMessageContent({
   user_id,
   other_id,
   scroll_ref,
 }: DirectMessageContentProps): JSX.Element {
-  const friendDmStyle = {
-    background: '#262626',
-    borderRadius: '0.1rem 0.9rem 0.9rem 0.9rem',
-    color: '#fff',
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '0.5rem 1rem',
-    margin: '0.12rem 0.5rem',
-  };
+  function GetDM(): JSX.Element {
+    const Dms: Message[] = [];
+    //ANCHOR 초회 DM 데이터 가져오기----------------------------------
+    const { data } = useQuery<DmsData, DmVars>(GET_DM, {
+      //NOTE 최신 0번째부터 4개만 가져옴
+      variables: { user_id: user_id, other_id: other_id, offset: 0, limit: 4 },
+    });
+    if (data && data?.DM?.messages != undefined)
+      data.DM.messages.map((message) => Dms.push(message));
 
-  const myDmStyle = {
-    backgroundAttachment: 'fixed',
-    background: ' rgba(103, 88, 205, 1)',
-    borderRadius: '0.9rem 0.9rem 0.1rem 0.9rem',
-    color: '#fff',
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '0.5rem 1rem',
-    margin: '0.12rem 0.5rem',
-  };
+    //ANCHOR latestDM 가져오기 -------------------------------------
+    const { data: subscriptionData } = useSubscription<
+      Message,
+      { user_id: string }
+    >(RECEIVE_MESSAGE, {
+      variables: { user_id: user_id },
+    });
 
-  const scrollToBottom = () => scroll_ref?.current?.scrollIntoView();
-  useEffect(() => {
-    scrollToBottom();
-  });
-  const [loadingState, setLoadingState] = useState(false);
-  const handleClick = () => {
-    setLoadingState(true);
-    scrollToBottom();
-  };
-
-  const { data } = useQuery<DmsData, DmVars>(GET_DM, {
-    variables: { user_id: user_id, other_id: other_id, offset: 0, limit: 10 },
-  });
-
-  //ANCHOR 새로운 DM 보내기
-  const [sendMessageMutation, { loading }] = useMutation(SEND_MESSAGE);
-  const [form, setForm] = useState('');
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    console.log(form);
-    if (!loading) {
-      try {
-        await sendMessageMutation({
-          // const { user_id } = getValues();
-          //ANCHOR 매번 유저정보 가져오게 수정하기
-          variables: {
-            user_id: user_id,
-            other_id: other_id,
-            text: form,
-          },
-          //ANCHOR 센드누른이후 새로고침해주기
-        });
-      } catch (e) {
-        console.log(e);
+    useEffect(() => {
+      console.log(subscriptionData);
+      if (subscriptionData) {
+        Dms.push(subscriptionData);
       }
-    }
-  };
+    }, [subscriptionData]);
+
+    console.log(`DMS:`, Dms);
+
+    if (Dms && Dms != undefined)
+      return (
+        <div>
+          {Dms.map((message) => (
+            //TODO DMCONTENTBOX가 시간순으로 정렬해서 출력하게 하기
+            <DMContentBox
+              content={message?.content}
+              received={message?.received}
+              time_stamp={message?.time_stamp}
+            />
+          ))}
+        </div>
+      );
+    else
+      return (
+        <Typography variant="body2" component="div">
+          새로운 대화의 시작입니다.
+        </Typography>
+      );
+  }
 
   return (
     <Box
@@ -100,87 +82,15 @@ function DirectMessageContent({
         sx={{
           overflowY: 'scroll',
         }}
-        // ref={messagesEndRef}
       >
-        {data?.DM?.messages != undefined &&
-          data.DM.messages.map((message) =>
-            message.received ? (
-              <Stack
-                // direction="row"
-                // justifyContent="flex-start"
-                justifyContent="flex-end"
-                spacing={0}
-              >
-                <Box id="friend-DM" style={friendDmStyle}>
-                  {message.content}
-                </Box>
-                <Typography variant="caption" display="block" gutterBottom>
-                  {new Date(+message?.time_stamp).toLocaleString('ko-KR')}
-                </Typography>
-              </Stack>
-            ) : (
-              <Box
-                id="mine-DM"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-end',
-                }}
-              >
-                <Box style={myDmStyle}>{message.content}</Box>
-                <Typography variant="caption" display="block" gutterBottom>
-                  {new Date(+message?.time_stamp).toLocaleString('ko-kr', {
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </Typography>
-              </Box>
-            )
-          )}
+        {/* NOTE 초회: 기존 DM 보여주기, 이후: latestDM받아와서 보여주기
+        TODO (contentBox를 부르는 상위함수 하나를 만들어서, 초회에만 usequery, 이후에는 latestDM 사용하도록하기) 
+        TODO TIMESTAMP로 알아서 정렬해서 출력하세요.. ^^ */}
+        <GetDM />
         <Box id="scroll-container" ref={scroll_ref} />
       </Box>
-
       <Divider light />
-      <form
-        id="send-container"
-        autoComplete="off"
-        onSubmit={handleSubmit}
-        style={{
-          display: 'flex',
-          alignItems: 'space-between',
-          justifyContent: 'space-between',
-          bottom: '0',
-        }}
-      >
-        <TextField
-          name="dmInput"
-          size="small"
-          fullWidth
-          margin="dense"
-          onChange={(e) => {
-            setForm(e.target.value);
-          }}
-        />
-        <Button
-          type="submit"
-          onClick={handleClick}
-          // endIcon={<Send />}
-          // loading={loadingState}
-          // loadingPosition="end"
-          variant="contained"
-          sx={{
-            boxShadow: 0,
-            margin: '5px 0px 5px 8px',
-          }}
-        >
-          Send
-        </Button>
-      </form>
+      <SendNewMessage {...{ user_id, other_id, scroll_ref }} />
     </Box>
   );
 }
-
-export default DirectMessageContent;

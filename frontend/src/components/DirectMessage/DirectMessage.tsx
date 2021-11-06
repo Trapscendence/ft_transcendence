@@ -18,7 +18,7 @@ import { useRef, useState } from 'react';
 
 import { DmUsersData, DmUsersVars } from '../../utils/Apollo/Message';
 import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
-import DirectMessageContent from './DirectMessageContent';
+import { DirectMessageContent } from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
 import NewDirectMessage from './NewDirectMessage';
 
@@ -54,7 +54,7 @@ export default function DirectMessage(): JSX.Element {
   };
 
   //ANCHOR userId를  '자신의 닉네임'으로 수정할 것
-  const userId = '3';
+  const userId = '1';
   //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
   const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
@@ -62,6 +62,8 @@ export default function DirectMessage(): JSX.Element {
       variables: { limit: 10, offset: 0, user_id: userId },
     }
   );
+  //TODO getDmUsers는 처음로딩할 때 쓰이고 그 이후부터 newDmUser 섭스크립션을 해서 새로 온 애들을 맨 위로 올리게 하기
+
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] = useState<PopperPlacementType>();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
