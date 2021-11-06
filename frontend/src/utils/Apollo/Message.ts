@@ -1,9 +1,4 @@
 import { User } from './User';
-// export interface SendMessageVars {
-//   user_id: string;
-//   other_id: string;
-//   text: string;
-// }
 
 export interface DmUsersData {
   dmUsers: User[];
@@ -23,6 +18,10 @@ export interface DM {
   other_user: string;
   messages: Message[];
   checked_date: string;
+}
+
+export interface RecieveMessageData {
+  receiveMessage: Message;
 }
 
 export interface DmsData {

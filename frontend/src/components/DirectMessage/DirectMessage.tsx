@@ -16,26 +16,33 @@ import {
 import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 
-import { DmUsersData, DmUsersVars } from '../../utils/Apollo/Message';
+import {
+  DmsData,
+  DmUsersData,
+  DmUsersVars,
+  DmVars,
+  Message,
+  RecieveMessageData,
+} from '../../utils/Apollo/Message';
 import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
-import { DirectMessageContent } from './DirectMessageContent';
+import DirectMessageContent from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
 import NewDirectMessage from './NewDirectMessage';
 
-export interface Message {
-  id?: number;
-  received: boolean;
-  content: string;
-  date: number;
-}
+// export interface Message {
+//   id?: number;
+//   received: boolean;
+//   content: string;
+//   date: number;
+// }
 
-interface Dm {
-  id: number;
-  name: string;
-  messages: Message[];
-  lastCheckDate?: number;
-  lastMessageDate?: number;
-}
+// interface Dm {
+//   id: number;
+//   name: string;
+//   messages: Message[];
+//   lastCheckDate?: number;
+//   lastMessageDate?: number;
+// }
 
 export default function DirectMessage(): JSX.Element {
   const style = {
@@ -89,6 +96,19 @@ export default function DirectMessage(): JSX.Element {
   const myRef = useRef<null | HTMLDivElement>(null);
   const executeScroll = () => myRef?.current?.scrollIntoView();
 
+  const [offset, setOffset] = useState<number>(0);
+  // const [cachedDms, setCachedDms] = useState<RecieveMessageCache[]>([]);
+  // const updateCachedDms = (index: number, value: Message[]) => {
+  //   const newDmCache = [...cachedDms];
+  //   console.log(newDmCache);
+
+  //   if (newDmCache[index]) newDmCache[index].assign(newDmCache[index], value);
+  //   else newDmCache[index] = value;
+
+  //   setCachedDms(newDmCache);
+  //   console.log(cachedDms);
+  // };
+
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Box>
@@ -135,6 +155,7 @@ export default function DirectMessage(): JSX.Element {
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={user.nickname}
                     ID={user.id}
+                    setOffset={setOffset}
                   />
                   <Divider light />
                 </Box>
@@ -161,6 +182,10 @@ export default function DirectMessage(): JSX.Element {
                   user_id={userId}
                   other_id={selectedIndex}
                   scroll_ref={myRef}
+                  offset={offset}
+                  setOffset={setOffset}
+                  // cachedDm={cachedDms[+selectedIndex]}
+                  // updateCachedDms={updateCachedDms}
                   // messages={dms[selectedIndex - 1].messages}
                 />
               ) : newDm ? (

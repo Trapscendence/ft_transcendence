@@ -37,6 +37,7 @@ type User {
   rank: Int!
   match_history: [Match!]!
   achivements: [Achivement!]!
+  channel: Channel
   role: UserRole!
 }
 
@@ -56,12 +57,29 @@ enum UserRole {
 type Channel {
   id: ID!
   title: String!
-  private: Boolean!
+  is_private: Boolean!
   owner: User!
   administrators: [User!]!
   participants: [User!]!
   bannedUsers: [User!]!
   mutedUsers: [User!]!
+}
+
+type ChannelNotify {
+  type: Notify!
+  participant: User
+  text: String
+  check: Boolean
+}
+
+enum Notify {
+  ENTER
+  CHAT
+  MUTE
+  KICK
+  BAN
+  EDIT
+  DELETE
 }
 
 type DM {
@@ -85,21 +103,34 @@ type Query {
   users(limit: Int!, offset: Int!, ladder: Boolean!): [User!]!
   DM(other_id: ID!, user_id: ID!): DM
   dmUsers(limit: Int!, offset: Int!, user_id: ID!): [User!]!
-  channel(id: String!): Channel!
-  channels(isPrivate: Boolean): [Channel!]!
+  channel(channel_id: ID!): Channel
+  channels(limit: Float!, offset: Float!): [Channel!]
 }
 
 type Mutation {
-  createUser(nickname: String!): User!
-  addFriend(friend_id: ID!, user_id: ID!): Boolean!
+  createUser(nickname: String!): User
+  addFriend(friend_id: ID!, user_id: ID!): Boolean
   deleteFriend(friend_id: ID!, user_id: ID!): Boolean!
   addToBlackLIst(black_id: ID!, user_id: ID!): Boolean!
   deleteFromBlackList(black_id: ID!, user_id: ID!): Boolean!
   sendMessage(text: String!, other_id: ID!, user_id: ID!): Boolean!
   updateCheckdate(other_id: ID!, user_id: ID!): Boolean
+  enterChannel(channel_id: String!, user_id: String!): Channel
+  leaveChannel(channel_id: String!, user_id: String!): Boolean!
+  addChannel(owner_user_id: String!, password: String, title: String!): Channel
+  editChannel(password: String, title: String!, channel_id: ID!): Channel
+  deleteChannel(channel_id: ID!): Boolean!
+  muteUserOnChannel(mute_time: Int!, user_id: ID!, channel_id: ID!): Boolean!
+  unmuteUserOnChannel(user_id: ID!, channel_id: ID!): Boolean!
+  kickUserFromChannel(user_id: ID!, channel_id: ID!): Boolean!
+  banUserFromChannel(user_id: ID!, channel_id: ID!): Boolean!
+  unbanUserFromChannel(user_id: ID!, channel_id: ID!): Boolean!
+  chatMessage(message: String!, user_id: ID!, channel_id: ID!): Boolean!
 }
 
 type Subscription {
   receiveMessage(user_id: ID!): Message!
   newDmUser(user_id: String!): User!
+  subscribeChannel(channel_id: String!): ChannelNotify!
+  subscribeChannelUpdate: Channel!
 }

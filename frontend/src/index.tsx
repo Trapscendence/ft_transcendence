@@ -12,6 +12,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
+import { Message } from './utils/Apollo/Message';
 import { ChannelSummary, ChattingSummary } from './utils/models';
 
 const wsLink = new WebSocketLink({
@@ -48,7 +49,6 @@ export const chattingMessagesVar = makeVar<Map<string, ChattingSummary[]>>(
 );
 // TODO: chattingSummarysVar 등으로 이름 수정하면 나을듯... 저 작명도 별로지만 T_T
 // TODO: 일단은 캐시 생각 안하고 id 등만 저장해서 쿼리 재요청하는 식으로 모두 구현해보자
-
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>

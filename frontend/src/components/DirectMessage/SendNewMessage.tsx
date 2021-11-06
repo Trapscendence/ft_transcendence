@@ -4,14 +4,19 @@ import { Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
-import { DirectMessageContentProps } from './DirectMessageContent';
 //ANCHOR 새로운 DM 보내기
+
+interface SendNewMessageContentProps {
+  user_id: string;
+  other_id: string;
+  scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
+}
 
 export default function SendNewMessage({
   user_id,
   other_id,
   scroll_ref,
-}: DirectMessageContentProps): JSX.Element {
+}: SendNewMessageContentProps): JSX.Element {
   const scrollToBottom = () => scroll_ref?.current?.scrollIntoView();
   useEffect(() => {
     scrollToBottom();
@@ -29,7 +34,6 @@ export default function SendNewMessage({
     event.preventDefault();
 
     if (!loading) {
-      console.log(form);
       try {
         await sendMessageMutation({
           // const { user_id } = getValues();
