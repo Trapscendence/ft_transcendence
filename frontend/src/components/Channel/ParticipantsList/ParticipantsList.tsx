@@ -1,23 +1,15 @@
 import { Paper } from '@mui/material';
 
-// import { ChannelNotifySummary } from '../../../utils/models';
-import { GetCurrentChannelResponse } from '../../ChannelList/responseModels';
+import { IUser } from '../../../utils/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ParticipantsListProps {
-  // notify: ChannelNotifySummary | undefined;
-  channelData: GetCurrentChannelResponse;
+  participants: IUser[]; // TODO: 맞나?
 }
 
 export default function ParticipantsList({
-  channelData,
+  participants,
 }: ParticipantsListProps): JSX.Element {
-  const {
-    user: {
-      channel: { participants },
-    },
-  } = channelData;
-
   return (
     <Paper variant="outlined" sx={{ my: 3 }}>
       {participants.map((val) => {

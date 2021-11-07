@@ -1,6 +1,6 @@
 import { Notify, UserStatus } from './schemaEnums';
 
-export interface ChannelListSummary {
+export interface IChannelListItem {
   id: string;
   title: string;
   is_private: boolean;
@@ -8,31 +8,31 @@ export interface ChannelListSummary {
   participants: { nickname: string }[];
 }
 
-export interface UserSummary {
+export interface IUser {
   id: string;
   nickname: string;
   avatar: string;
   status: UserStatus;
 }
 
-export interface ChannelSummary {
+export interface IChannel {
   id: string;
   title: string;
   is_private: boolean;
-  owner: UserSummary;
-  administrators: UserSummary[];
-  participants: UserSummary[];
+  owner: IUser;
+  administrators: IUser[];
+  participants: IUser[];
 }
 
-export interface ChannelNotifySummary {
+export interface IChannelNotify {
   type: Notify;
-  participant?: UserSummary;
+  participant?: IUser;
   text?: string;
   check?: boolean;
 }
 
-export interface ChattingSummary {
-  id: string;
-  participant: UserSummary;
+export interface IChatting {
+  id: string; // NOTE: new Date().getTime().toString()
+  participant: IUser;
   text: string;
 }

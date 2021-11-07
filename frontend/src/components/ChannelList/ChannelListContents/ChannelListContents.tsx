@@ -5,10 +5,6 @@ import { GET_ALL_CHANNELS } from '../gqls';
 import { GetAllChannelsResponse } from '../responseModels';
 import ChannelCard from './ChannelCard';
 
-// interface ChannelListContentsProps {
-//   channels: ChannelSummary[];
-// }
-
 export default function ChannelListContents(): JSX.Element {
   const { data, loading, error } =
     useQuery<GetAllChannelsResponse>(GET_ALL_CHANNELS);

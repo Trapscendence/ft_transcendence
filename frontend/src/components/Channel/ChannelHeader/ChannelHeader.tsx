@@ -1,38 +1,33 @@
 import { useMutation } from '@apollo/client';
 import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import { useHistory } from 'react-router';
 
 import { userIdVar } from '../../..';
-import { UserSummary } from '../../../utils/models';
-import { GetCurrentChannelResponse } from '../../ChannelList/responseModels';
+import { IUser } from '../../../utils/models';
+import { GET_ALL_CHANNELS, GET_CURRENT_CHANNEL } from '../../ChannelList/gqls';
 import { LEAVE_CHANNEL } from '../gqls';
 import { LeaveChannelResponse } from '../responseModels';
 
 interface ChannelHeaderProps {
-  // id: string;
+  id: string;
   title: string;
   is_private: boolean;
-  owner: UserSummary;
-  administrators: UserSummary[];
+  owner: IUser;
+  administrators: IUser[];
 }
 
 export default function ChannelHeader({
+  id,
   title,
   is_private,
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
-  const history = useHistory();
-
   const [leaveChannel, { data: leaveData }] = useMutation<LeaveChannelResponse>(
     LEAVE_CHANNEL,
     {
-      // variables: { channel_id: channelId, user_id: userId },
-      onCompleted: () => {
-        // channelIdVar(null); // TODO: 이렇게 하면 안될것같은데 // 위로 올리면 얼리리턴일텐데
-        history.push('/channel');
-      },
+      variables: { channel_id: id, user_id: userIdVar() },
+      refetchQueries: [GET_CURRENT_CHANNEL, GET_ALL_CHANNELS], // TODO: GET_ALL_CHANNELS 리패치시 오류
     }
   );
   // useEffect(() => {
