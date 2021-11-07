@@ -15,7 +15,6 @@ import { CHAT_MESSAGE } from '../gqls';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
-  // notify: ChannelNotifySummary | undefined;
   id: string;
 }
 

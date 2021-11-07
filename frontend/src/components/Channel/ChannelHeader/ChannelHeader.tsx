@@ -23,39 +23,16 @@ export default function ChannelHeader({
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
-  const [leaveChannel, { data: leaveData }] = useMutation<LeaveChannelResponse>(
-    LEAVE_CHANNEL,
-    {
-      variables: { channel_id: id, user_id: userIdVar() },
-      refetchQueries: [GET_CURRENT_CHANNEL, GET_ALL_CHANNELS], // TODO: GET_ALL_CHANNELS 리패치시 오류
-    }
-  );
-  // useEffect(() => {
-  //   return () => {
-  //     console.log('leaveData?.leaveChannel', leaveData?.leaveChannel);
-  //     console.log('channelIdVar', channelIdVar());
-  //     console.log('leaveData', leaveData);
-  //     if (leaveData?.leaveChannel) {
-  //       // TODO: 조건문에 쓰면 안되려나..?
-  //       channelIdVar(null);
-  //     }
-  //   };
-  // }, []);
-
-  // useEffect(() => {
-  //   console.log('leaveData', leaveData);
-  //   // channelIdVar(null);
-  //   if (leaveData?.leaveChannel) channelIdVar(null);
-  // }, [leaveData]);
+  const [leaveChannel] = useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
+    variables: { channel_id: id, user_id: userIdVar() },
+    refetchQueries: [
+      GET_CURRENT_CHANNEL,
+      { query: GET_ALL_CHANNELS, variables: { limit: 0, offset: 0 } },
+    ],
+  });
 
   const onClickLeave = () => {
-    void leaveChannel({
-      // variables: { channel_id: channelIdVar(), user_id: userIdVar() },
-    });
-
-    // // return <Redirect to="/channel" />;
-    // // history.push('/channel');
-    // history.push('/rank');
+    void leaveChannel();
   };
 
   return (

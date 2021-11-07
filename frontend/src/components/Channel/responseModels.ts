@@ -9,5 +9,5 @@ export interface GetCurrentParticipantsResponse {
 }
 
 export interface LeaveChannelResponse {
-  leaveChannel: boolean; // TODO: 맞나?
+  leaveChannel: boolean;
 }

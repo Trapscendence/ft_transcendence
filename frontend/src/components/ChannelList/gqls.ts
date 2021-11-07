@@ -3,8 +3,8 @@ import gql from 'graphql-tag';
 // TODO: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있음.
 
 export const GET_ALL_CHANNELS = gql`
-  query GetAllChannels {
-    channels(limit: 0, offset: 0) {
+  query GetAllChannels($limit: Float!, $offset: Float!) {
+    channels(limit: $limit, offset: $offset) {
       id
       title
       is_private
@@ -81,16 +81,6 @@ export const GET_CURRENT_CHANNEL = gql`
           # avatar
           # status
         }
-      }
-    }
-  }
-`;
-
-export const GET_CURRENT_CHANNEL_ID = gql`
-  query GetCurrentChannelId($id: ID!) {
-    user(id: $id) {
-      channel {
-        id
       }
     }
   }

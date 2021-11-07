@@ -4,7 +4,7 @@ import { IUser } from '../../../utils/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ParticipantsListProps {
-  participants: IUser[]; // TODO: 맞나?
+  participants: IUser[];
 }
 
 export default function ParticipantsList({
@@ -24,5 +24,3 @@ export default function ParticipantsList({
     </Paper>
   );
 }
-
-// TODO: 하나만 있으면 폭이 100%? 인 이슈가 있음. UserSummary에서 수정해야 할지...

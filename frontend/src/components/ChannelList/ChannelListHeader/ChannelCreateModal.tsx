@@ -9,8 +9,6 @@ import {
 } from '@mui/material';
 
 import { userIdVar } from '../../..';
-// import { channelIdVar } from '../../..';
-// import { currentChannelVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { ADD_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
 import { AddChannelResponse } from '../responseModels';

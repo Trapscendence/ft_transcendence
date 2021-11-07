@@ -45,5 +45,3 @@ export default function ChannelCard({
 
 // TODO
 // * Public, Private 등에 아이콘 넣기. 필터 선택에도 마찬가지...? Owner 등에도!
-// * participants 백엔드를 아직 테스트 안해봤음.
-// * 현재 스키마에 isPrivate이 아니라 private임. isPrivate으로 바뀌면 다시 테스트 필요
