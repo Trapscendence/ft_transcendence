@@ -9,7 +9,7 @@ import {
 import { Box } from '@mui/system';
 import { useEffect, useRef } from 'react';
 
-import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
+import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { ChannelNotifySummary } from '../../../utils/models';
 import { CHAT_MESSAGE } from '../gqls';
@@ -38,7 +38,7 @@ export default function Chatting(): JSX.Element {
       variables: {
         message: input,
         user_id: userIdVar(),
-        channel_id: channelIdVar(),
+        // channel_id: channelIdVar(),
       },
     }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
@@ -48,12 +48,12 @@ export default function Chatting(): JSX.Element {
     <Card variant="outlined" sx={{ width: '100%', height: '75vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
-          {channelIdVar() &&
+          {/* {channelIdVar() &&
             chattingMessages
               .get(channelIdVar() as string) // TODO: 임시 조치
               ?.map((val) => (
                 <ChattingMessage key={val.id} chattingSummary={val} />
-              ))}
+              ))} */}
           <div ref={messagesEndRef} />
         </Box>
       </CardContent>

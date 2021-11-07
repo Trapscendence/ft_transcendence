@@ -7,7 +7,6 @@ import Navigation from './components/Navigation';
 import SocialDrawer from './components/SocialDrawer';
 import AdminPage from './routes/AdminPage';
 import ChannelListPage from './routes/ChannelListPage';
-import ChannelPage from './routes/ChannelPage';
 import HomePage from './routes/HomePage';
 import LoginPage from './routes/LoginPage';
 import MyProfilePage from './routes/MyProfilePage';
@@ -38,11 +37,6 @@ function App(): JSX.Element {
           <Route exact path="/" component={HomePage} />
           <Route exact path="/login" component={LoginPage} />
           <RestrictRoute exact path="/channel" component={ChannelListPage} />
-          <RestrictRoute
-            exact
-            path="/channel/:channelid"
-            component={ChannelPage}
-          />
           <RestrictRoute exact path="/rank" component={RankPage} />
           <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
           <RestrictRoute exact path="/profile/my" component={MyProfilePage} />

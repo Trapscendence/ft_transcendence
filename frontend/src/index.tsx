@@ -42,7 +42,7 @@ const client = new ApolloClient({
 export const isLoginVar = makeVar(false); // TODO: 위치 어디에 해야? 따로 파일을 만들어야 하려나?
 export const tokenVar = makeVar('');
 export const userIdVar = makeVar<string | null>('1'); // TODO: User? UserSummary? id? // 로그인이 없으니 그냥 "1"로...
-export const channelIdVar = makeVar<string | null>(null);
+// export const channelIdVar = makeVar<string | null>(null);
 export const chattingMessagesVar = makeVar<Map<string, ChattingSummary[]>>(
   new Map<string, ChattingSummary[]>()
 );
