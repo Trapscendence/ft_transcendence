@@ -19,3 +19,9 @@ export interface GetCurrentChannelIdResponse {
     channel: { id: string };
   };
 }
+
+export interface EnterChannelResponse {
+  enterChannel: {
+    channel: IChannel;
+  };
+}

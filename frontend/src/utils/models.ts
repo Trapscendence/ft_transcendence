@@ -22,7 +22,7 @@ export interface IChannel {
   owner: IUser;
   administrators: IUser[];
   participants: IUser[];
-}
+} // TODO: bannedUsers 등도 추가해야함
 
 export interface IChannelNotify {
   type: Notify;

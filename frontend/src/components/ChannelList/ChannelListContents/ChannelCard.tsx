@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client';
 import {
   Button,
   Card,
@@ -7,7 +8,10 @@ import {
   Typography,
 } from '@mui/material';
 
+import { userIdVar } from '../../..';
 import { IChannelListItem } from '../../../utils/models';
+import { ENTER_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
+import { EnterChannelResponse } from '../responseModels';
 
 interface ChannelCardProps {
   channelSummary: IChannelListItem;
@@ -16,7 +20,17 @@ interface ChannelCardProps {
 export default function ChannelCard({
   channelSummary,
 }: ChannelCardProps): JSX.Element {
-  const { title, is_private, owner, participants } = channelSummary;
+  const { id, title, is_private, owner, participants } = channelSummary;
+
+  const [enterChannel] = useMutation<EnterChannelResponse>(ENTER_CHANNEL, {
+    // variables: { channel_id: id, user_id: userIdVar() },
+    // refetchQueries: [GET_CURRENT_CHANNEL],
+  });
+
+  const onClickBtn = () => {
+    console.log(id, userIdVar());
+    void enterChannel({ variables: { channel_id: id, user_id: userIdVar() } });
+  };
 
   return (
     <Grid item xs={6} p={3}>
@@ -36,7 +50,9 @@ export default function ChannelCard({
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Enter channel</Button>
+          <Button size="small" onClick={onClickBtn}>
+            Enter channel
+          </Button>
         </CardActions>
       </Card>
     </Grid>

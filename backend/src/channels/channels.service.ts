@@ -75,8 +75,8 @@ export class ChannelsService {
    */
 
   async enterChannel(
-    channel_id: string,
     user_id: string,
+    channel_id: string,
   ): Promise<Channel | null> {
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
