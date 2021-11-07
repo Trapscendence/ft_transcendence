@@ -239,7 +239,7 @@ export class MessageService {
     user_id: string,
     other_id: string,
     text: string,
-  ): Promise<boolean> {
+  ): Promise<Message> {
     text = sqlEscaper(text);
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
@@ -279,7 +279,10 @@ export class MessageService {
       this.pubSub.publish(`new_message_to_${other_id}`, {
         newDmUser: await this.usersService.getUserById(user_id),
       });
+      array[0].received = false;
+      array[0].checked = true;
+      return array[0];
     }
-    return !(array.length === 0);
+    return null;
   }
 }

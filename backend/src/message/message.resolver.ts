@@ -79,12 +79,12 @@ export class MessageResolver {
    ** ANCHOR: DM mutation
    */
 
-  @Mutation((returns) => Boolean)
+  @Mutation((returns) => Message, { nullable: true })
   async sendMessage(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('other_id', { type: () => ID }) other_id: string,
     @Args('text') text: string,
-  ): Promise<boolean> {
+  ): Promise<Message> {
     return await this.messageService.insertMessage(user_id, other_id, text);
   }
 

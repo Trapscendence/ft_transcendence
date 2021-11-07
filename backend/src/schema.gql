@@ -113,7 +113,7 @@ type Mutation {
   deleteFriend(friend_id: ID!, user_id: ID!): Boolean!
   addToBlackLIst(black_id: ID!, user_id: ID!): Boolean!
   deleteFromBlackList(black_id: ID!, user_id: ID!): Boolean!
-  sendMessage(text: String!, other_id: ID!, user_id: ID!): Boolean!
+  sendMessage(text: String!, other_id: ID!, user_id: ID!): Message
   updateCheckdate(other_id: ID!, user_id: ID!): Boolean
   enterChannel(channel_id: String!, user_id: String!): Channel
   leaveChannel(channel_id: String!, user_id: String!): Boolean!
