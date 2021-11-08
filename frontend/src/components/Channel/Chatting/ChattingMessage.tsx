@@ -15,8 +15,10 @@ export default function ChattingMessage({
 
   return (
     <Box>
-      <UserSummary nickname={participant.nickname} />
-      <Typography>{text}</Typography>
+      <Box sx={{ display: 'inline-block' }}>
+        <UserSummary nickname={participant.nickname} />
+      </Box>
+      <Typography sx={{ display: 'inline-block' }}>{text}</Typography>
     </Box>
   );
 }

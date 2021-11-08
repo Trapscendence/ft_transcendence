@@ -43,7 +43,7 @@ export default function Chatting({ id }: ChattingProps): JSX.Element {
   };
 
   return (
-    <Card variant="outlined" sx={{ width: '100%', height: '75vh', p: 2 }}>
+    <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
       <CardContent sx={{ height: '90%' }}>
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {chattingMessages.get(id)?.map((val) => {

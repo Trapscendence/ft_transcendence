@@ -1,4 +1,5 @@
-import { Paper } from '@mui/material';
+import { List, Paper, Stack } from '@mui/material';
+import { Box } from '@mui/system';
 
 import { IUser } from '../../../utils/models';
 import UserSummary from '../../commons/UserSummary';
@@ -12,15 +13,19 @@ export default function ParticipantsList({
 }: ParticipantsListProps): JSX.Element {
   return (
     <Paper variant="outlined" sx={{ my: 3 }}>
-      {participants.map((val) => {
-        return (
-          <UserSummary
-            key={val.id}
-            avatar={val.avatar}
-            nickname={val.nickname}
-          />
-        );
-      })}
+      <List>
+        {participants.map((val) => {
+          return (
+            <Box sx={{ display: 'inline-block' }}>
+              <UserSummary
+                key={val.id}
+                avatar={val.avatar}
+                nickname={val.nickname}
+              />
+            </Box>
+          );
+        })}
+      </List>
     </Paper>
   );
 }

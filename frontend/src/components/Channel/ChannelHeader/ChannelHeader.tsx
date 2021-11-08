@@ -46,6 +46,7 @@ export default function ChannelHeader({
       }}
     >
       <Box>
+        <Typography>{is_private ? 'Private' : 'Public'}</Typography>
         <Typography>Title: {title}</Typography>
         <Typography>Owner: {owner.nickname}</Typography>
       </Box>
