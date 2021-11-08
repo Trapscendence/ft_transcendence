@@ -24,7 +24,7 @@ export default function ChannelCard({
 
   const [enterChannel] = useMutation<EnterChannelResponse>(ENTER_CHANNEL, {
     // variables: { channel_id: id, user_id: userIdVar() },
-    // refetchQueries: [GET_CURRENT_CHANNEL],
+    refetchQueries: [GET_CURRENT_CHANNEL],
   });
 
   const onClickBtn = () => {
@@ -46,7 +46,7 @@ export default function ChannelCard({
             Owner: {owner.nickname}
           </Typography>
           <Typography variant="body2">
-            Participants: {participants.map((val) => val.nickname).join()}
+            Participants: {participants.map((val) => val.nickname).join(', ')}
           </Typography>
         </CardContent>
         <CardActions>
