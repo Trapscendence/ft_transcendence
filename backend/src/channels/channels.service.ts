@@ -82,7 +82,8 @@ export class ChannelsService {
       INSERT INTO
         ${schema}.channel_user(
           user_id,
-          channel_id
+          channel_id,
+          channel_role
         )
       VALUES (
         (
@@ -100,10 +101,12 @@ export class ChannelsService {
             ${schema}.channel
           WHERE
             id = ${channel_id}
-        )
+        ),
+        'USER'
       )
       ON CONFLICT ( user_id )
-      DO NOTHING;
+      DO NOTHING
+      RETURNING *;
     `);
     if (channels.length) {
       this.pubSub.publish(`to_channel_${channel_id}`, {
@@ -114,9 +117,9 @@ export class ChannelsService {
           check: true,
         },
       });
-      return channels[0];
+      return await this.getChannel(channel_id);
     }
-    return channels.length ? channels[0] : null;
+    return null;
   }
 
   async leaveChannel(user_id: string, channel_id: string): Promise<boolean> {
