@@ -31,7 +31,6 @@ export default function Chatting({ id }: ChattingProps): JSX.Element {
   }, [chattingMessages]);
 
   const onClickBtn = () => {
-    // console.log(input);
     void chatMessage({
       variables: {
         message: input,
@@ -40,6 +39,19 @@ export default function Chatting({ id }: ChattingProps): JSX.Element {
       },
     }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
+  };
+
+  const onKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      void chatMessage({
+        variables: {
+          message: input,
+          user_id: userIdVar(),
+          channel_id: id,
+        },
+      });
+      setInput('');
+    }
   };
 
   return (
@@ -60,6 +72,7 @@ export default function Chatting({ id }: ChattingProps): JSX.Element {
           sx={{ width: '100%', mr: 2 }}
           value={input}
           onChange={onChangeInput}
+          onKeyPress={onKeyPress}
         />
         <Button variant="contained" onClick={onClickBtn}>
           Send
