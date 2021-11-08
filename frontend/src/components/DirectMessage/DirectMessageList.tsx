@@ -14,7 +14,6 @@ interface DirectMessageListProps {
   selectedIndex: string;
   setSelectedIndex: React.Dispatch<React.SetStateAction<string>>;
   setNewDm: React.Dispatch<React.SetStateAction<boolean>>;
-  setOffset: React.Dispatch<React.SetStateAction<number>>;
 }
 
 function DirectMessageList({
@@ -24,13 +23,12 @@ function DirectMessageList({
   setNewDm,
   selectedIndex,
   setSelectedIndex,
-  setOffset,
 }: DirectMessageListProps): JSX.Element {
   const handleListItemClick = (index: string) => {
     setSelectedIndex(index);
     setNewDm(false);
-    setOffset(0);
   };
+  //TODO addOffset으로 ID,0 넣어주기
   return (
     <ListItemButton
       selected={selectedIndex === ID}

@@ -15,6 +15,7 @@ import { useState } from 'react';
 import UseSearchUser from '../../hooks/useSearchUser';
 import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
+import DirectMessageContent from './DirectMessageContent';
 
 // NOTE 여기까지는 가능하면 다른 파일에 export로 내보내둘것
 
@@ -25,6 +26,12 @@ function NewDirectMessage(): JSX.Element {
   });
 
   const [buttonActive, setButtonActive] = useState(true);
+
+  const handleOnclick = (value: string) => {
+    //TODO value를 other_id(selectedIndex)에 넣기
+    //TODO 위를 위해서 dm 리스트 동적으로 받아오기
+    return value;
+  };
 
   if (data || error)
     return (
@@ -43,6 +50,7 @@ function NewDirectMessage(): JSX.Element {
           //NOTE data 목록에 사용자의 input값이 없으면 다음 버튼이 활성화 되지 않아야 함
           size="medium"
           sx={{ margin: '5px 0px', width: '10px' }}
+          // onClick={() => handleOnclick(event.target.value)}
         >
           다음
         </Button>

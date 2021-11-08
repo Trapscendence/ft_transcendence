@@ -1,21 +1,29 @@
-import { useMutation } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 // import { Send } from '@mui/icons-material';
 import { Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
+import {
+  DmsData,
+  DmVars,
+  Message,
+  SendMessageData,
+} from '../../utils/Apollo/Message';
+import { GET_DM, SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
 //ANCHOR 새로운 DM 보내기
 
 interface SendNewMessageContentProps {
   user_id: string;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
+  handleClick: () => void;
 }
 
 export default function SendNewMessage({
   user_id,
   other_id,
   scroll_ref,
+  handleClick,
 }: SendNewMessageContentProps): JSX.Element {
   const scrollToBottom = () => scroll_ref?.current?.scrollIntoView();
   useEffect(() => {
@@ -23,13 +31,51 @@ export default function SendNewMessage({
   });
   const [loadingState, setLoadingState] = useState(false);
 
-  const handleClick = () => {
-    setLoadingState(true);
-    scrollToBottom();
-  };
   const [form, setForm] = useState('');
   //TODO 센드 하고나면 프론트가 알아서 새로고침하기
-  const [sendMessageMutation, { loading }] = useMutation(SEND_MESSAGE);
+  const [sendMessageMutation, { loading }] = useMutation<SendMessageData>(
+    SEND_MESSAGE,
+    {
+      //여기의 data는 sendMessageMutation의 내부쿼리임!
+      update(cache, { data }) {
+        // 1. 보낸 메시지를 가져온다
+        const newMessage = data?.sendMessage;
+
+        console.log(`NEWMESSAGE:`, newMessage);
+        const existingMessages = cache.readQuery<DmsData, DmVars>({
+          // 2. 현재 캐시에 저장되어있는 데이터를 가져온다.
+          query: GET_DM,
+          variables: {
+            user_id: user_id,
+            other_id: other_id,
+            offset: 0,
+            limit: 5,
+          },
+        });
+        console.log(`OLDMESSAGE:`, existingMessages);
+
+        if (newMessage && existingMessages) {
+          cache.writeQuery<DmsData, DmVars>({
+            // 캐시 업데이트!
+            query: GET_DM,
+            variables: {
+              user_id: user_id,
+              other_id: other_id,
+              offset: 0,
+              limit: 5,
+            },
+            data: {
+              DM: {
+                ...existingMessages.DM,
+                messages: [...existingMessages.DM.messages, newMessage],
+                // 3. 현재 캐시에 저장되어있는 messages에 새로운 message를 추가해준다.
+              },
+            },
+          });
+        }
+      },
+    }
+  );
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -49,6 +95,10 @@ export default function SendNewMessage({
             const [deleteTask] = useMutation(DELETE_TASK, {
               refetchQueries: [GET_TASKS],
             });*/
+        }).then(() => {
+          handleClick();
+          setLoadingState(true);
+          scrollToBottom();
         });
       } catch (e) {
         console.log(e);
@@ -79,7 +129,7 @@ export default function SendNewMessage({
       />
       <Button
         type="submit"
-        onClick={handleClick}
+        // onClick={handleClick}
         // endIcon={<Send />}
         // loading={loadingState}
         // loadingPosition="end"
