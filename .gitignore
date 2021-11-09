@@ -1,10 +1,10 @@
 dist
 node_modules
-backend/**/schema.gql
 db-migrate
 db-migrate-pg
-certbot/certs
-certbot/log
+log
+certs
+schema.gql
 
 .env
 
