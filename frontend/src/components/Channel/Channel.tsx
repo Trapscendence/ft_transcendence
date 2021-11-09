@@ -60,7 +60,7 @@ export default function Channel({ channel }: ChannelProps): JSX.Element {
         break;
       case Notify.MUTE:
         if (check) {
-          setMuteList([...muteList, (participant as IUser).nickname]);
+          setMuteList([...muteList, (participant as IUser).id]);
           setAlertMsg(
             `MUTE: User '${(participant as IUser).nickname}' is muted.`
           );
@@ -69,7 +69,7 @@ export default function Channel({ channel }: ChannelProps): JSX.Element {
           }, 3000);
         } else {
           setMuteList(
-            muteList.filter((val) => val !== (participant as IUser).nickname)
+            muteList.filter((val) => val !== (participant as IUser).id)
           );
           setAlertMsg(
             `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`

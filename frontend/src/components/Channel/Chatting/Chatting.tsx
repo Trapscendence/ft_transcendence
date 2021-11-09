@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
@@ -36,6 +36,15 @@ export default function Chatting({
   const chattingMessages = useReactiveVar(chattingMessagesVar);
 
   const [chatMessage] = useMutation(CHAT_MESSAGE);
+  const [muted, setMuted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (muteList.find((val) => val === userIdVar())) {
+      setMuted(true);
+    } else {
+      setMuted(false);
+    }
+  }, [muteList]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -108,8 +117,9 @@ export default function Chatting({
           value={input}
           onChange={onChangeInput}
           onKeyPress={onKeyPress}
+          disabled={muted}
         />
-        <Button variant="contained" onClick={onClickBtn}>
+        <Button variant="contained" onClick={onClickBtn} disabled={muted}>
           Send
         </Button>
       </CardActions>
