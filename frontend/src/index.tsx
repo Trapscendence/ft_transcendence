@@ -1,6 +1,7 @@
 import {
   ApolloClient,
   ApolloProvider,
+  createHttpLink,
   InMemoryCache,
   makeVar,
   // useQuery,
@@ -13,8 +14,13 @@ import ReactDOM from 'react-dom';
 import App from './App';
 
 const client = new ApolloClient({
-  uri: 'http://localhost:5000/graphql',
   cache: new InMemoryCache(),
+  link: createHttpLink({
+    uri: `https://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+      process.env.REACT_APP_BACKEND_PORT ?? ''
+    }/graphql`,
+    credentials: 'include',
+  }),
 });
 
 export const isLoginVar = makeVar(false); // 위치 어디에 해야?
