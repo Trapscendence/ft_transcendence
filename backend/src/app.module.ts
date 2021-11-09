@@ -22,7 +22,7 @@ import { SessionModule } from './session/session.module';
       // }, // production에선 켜야함
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
       cors: {
-        origin: process.env.FRONTEND_URI,
+        origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
         credentials: true,
       },
       playground: {
@@ -30,6 +30,8 @@ import { SessionModule } from './session/session.module';
           'request.credentials': 'include',
         },
       },
+      context: ({ req, connection }) =>
+        connection ? { req: { headers: connection.context } } : { req },
     }),
     DatabaseModule,
     UsersModule,
