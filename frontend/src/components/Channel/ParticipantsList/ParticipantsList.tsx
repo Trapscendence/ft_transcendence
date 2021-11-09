@@ -1,14 +1,16 @@
-import { List, Paper, Stack } from '@mui/material';
+import { List, Paper } from '@mui/material';
 import { Box } from '@mui/system';
 
 import { IUser } from '../../../utils/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ParticipantsListProps {
+  id: string;
   participants: IUser[];
 }
 
 export default function ParticipantsList({
+  id,
   participants,
 }: ParticipantsListProps): JSX.Element {
   return (
@@ -16,12 +18,8 @@ export default function ParticipantsList({
       <List>
         {participants.map((val) => {
           return (
-            <Box sx={{ display: 'inline-block' }}>
-              <UserSummary
-                key={val.id}
-                avatar={val.avatar}
-                nickname={val.nickname}
-              />
+            <Box key={val.id} sx={{ display: 'inline-block' }}>
+              <UserSummary IUser={val} channelId={id} />
             </Box>
           );
         })}

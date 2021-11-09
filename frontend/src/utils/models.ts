@@ -12,6 +12,7 @@ export interface IUser {
   id: string;
   nickname: string;
   avatar: string;
+  status_message?: string;
   status: UserStatus;
 }
 

@@ -6,17 +6,19 @@ import UserSummary from '../../commons/UserSummary';
 
 interface ChattingMessageProps {
   IChatting: IChatting;
+  channelId: string;
 }
 
 export default function ChattingMessage({
   IChatting,
+  channelId,
 }: ChattingMessageProps): JSX.Element {
   const { participant, text } = IChatting;
 
   return (
     <Box>
       <Box sx={{ display: 'inline-block' }}>
-        <UserSummary nickname={participant.nickname} />
+        <UserSummary IUser={participant} channelId={channelId} />
       </Box>
       <Typography sx={{ display: 'inline-block' }}>{text}</Typography>
     </Box>

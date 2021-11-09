@@ -1,6 +1,7 @@
 import { ChevronRight } from '@mui/icons-material';
 import { Box, Divider, Drawer, IconButton, List } from '@mui/material';
 
+import { UserStatus } from '../../utils/schemaEnums';
 import UserSummary from '../commons/UserSummary';
 
 export default function SocialDrawer(): JSX.Element {
@@ -24,25 +25,24 @@ export default function SocialDrawer(): JSX.Element {
             <ChevronRight />
           </IconButton>
           <Divider />
-          <UserSummary nickname="tmpMy" statusMessage="hello~" />
+          <UserSummary
+            IUser={{
+              id: '1',
+              nickname: 'tmpMy',
+              avatar: 'dd',
+              status: UserStatus.ONLINE,
+            }}
+          />
           <Divider />
           <List>
-            <UserSummary nickname="friend1" />
-            <UserSummary nickname="friend2" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
-            <UserSummary nickname="friend3" />
+            <UserSummary
+              IUser={{
+                id: '2',
+                nickname: 'kim',
+                avatar: 'dd',
+                status: UserStatus.ONLINE,
+              }}
+            />
           </List>
         </Box>
       </Drawer>

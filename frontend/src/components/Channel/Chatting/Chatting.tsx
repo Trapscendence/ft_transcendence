@@ -1,24 +1,35 @@
 import { useMutation, useReactiveVar } from '@apollo/client';
+import { Calculate } from '@mui/icons-material';
 import {
+  Alert,
   Button,
   Card,
   CardActions,
   CardContent,
+  Snackbar,
   TextField,
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { useEffect, useRef } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
+import { IUser } from '../../../utils/models';
 import { CHAT_MESSAGE } from '../gqls';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
   id: string;
+  alertMsg: string | null;
+  muteList: string[];
 }
 
-export default function Chatting({ id }: ChattingProps): JSX.Element {
+export default function Chatting({
+  id,
+  alertMsg,
+  muteList,
+}: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -56,10 +67,34 @@ export default function Chatting({ id }: ChattingProps): JSX.Element {
 
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
-      <CardContent sx={{ height: '90%' }}>
+      <CardContent sx={{ height: '90%', position: 'relative' }}>
+        {alertMsg && (
+          <Alert
+            severity="info"
+            sx={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translate(-50%, 0)',
+              zIndex: 1,
+            }}
+          >
+            {alertMsg}
+          </Alert>
+        )}
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {chattingMessages.get(id)?.map((val) => {
-            return <ChattingMessage key={val.id} IChatting={val} />;
+            if (muteList.find((muted) => muted === val.participant.nickname)) {
+              // return null;
+              // return <Typography>Message from a muted member.</Typography>;
+              return (
+                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                  Message from a muted member.
+                </Alert>
+              );
+            } // TODO: 배열을 순회하므로 조금 비효율적...
+            return (
+              <ChattingMessage key={val.id} IChatting={val} channelId={id} />
+            );
           })}
           <div ref={messagesEndRef} />
         </Box>
