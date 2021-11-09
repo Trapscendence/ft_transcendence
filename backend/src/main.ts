@@ -1,11 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
+import { readFileSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
+    httpsOptions: {
+      key: readFileSync(`/certs/live/${process.env.BACKEND_HOST}/privkey.pem`),
+      cert: readFileSync(
+        `/certs/live/${process.env.BACKEND_HOST}/fullchain.pem`,
+      ),
+    },
     cors: {
-      origin: process.env.FRONTEND_URI,
+      origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       preflightContinue: false,
       optionsSuccessStatus: 204,
@@ -19,15 +26,15 @@ async function bootstrap() {
       resave: false,
       saveUninitialized: false,
       cookie: {
-        path: '/',
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 0.5, // 0.5 hours
-        secure: false, // TODO Must change this to true
+        path: '/',
+        secure: true,
       },
+      name: 'TRAP_SESSIONID',
     }),
   );
 
-  await app.listen(5000);
+  await app.listen(3000);
 }
 
 bootstrap();
