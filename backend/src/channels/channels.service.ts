@@ -3,10 +3,10 @@ import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
-import { Notify, ChannelNotify, Channel } from './models/channel.medel';
+import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 
 @Injectable()
 export class ChannelsService {
@@ -409,7 +409,7 @@ export class ChannelsService {
       WHERE
         cb.channel_id = ${channel_id}
           AND
-        cb.user_id = ${user_id}
+        cb.banned_user = ${user_id}
       RETURNING
         *
     `);

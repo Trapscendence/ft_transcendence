@@ -8,8 +8,8 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { Channel } from 'src/channels/models/channel.medel';
-import { User } from './models/user.medel';
+import { Channel } from 'src/channels/models/channel.model';
+import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User)
@@ -105,6 +105,12 @@ export class UsersResolver {
   async getChannelByUserId(@Parent() user: User): Promise<Channel | null> {
     const { id } = user;
     return await this.usersService.getChannelByUserId(id);
+  }
+
+  @ResolveField('channel_role', (returns) => UserRole, { nullable: true })
+  async getChannelRole(@Parent() user: User): Promise<UserRole | null> {
+    const { id } = user;
+    return await this.usersService.getChannelRole(id);
   }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {

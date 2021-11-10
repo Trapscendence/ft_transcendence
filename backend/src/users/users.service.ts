@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from './models/user.medel';
+import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
-import { Channel } from 'src/channels/models/channel.medel';
+import { Channel } from 'src/channels/models/channel.model';
 
 @Injectable()
 export class UsersService {
@@ -264,5 +264,17 @@ export class UsersService {
             cu.channel_id = c.id
     `);
     return array.length ? array[0] : null;
+  }
+
+  async getChannelRole(id: string): Promise<UserRole | null> {
+    const array: User[] = await this.databaseService.executeQuery(`
+      SELECT
+        channel_role
+      FROM
+        ${schema}.channel_user
+      WHERE
+        user_id = ${id};
+    `);
+    return array.length ? array[0].channel_role : null;
   }
 }
