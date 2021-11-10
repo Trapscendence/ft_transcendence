@@ -5,7 +5,7 @@ import gql from 'graphql-tag';
  */
 
 export const GET_CHANNELS = gql`
-  query GetChannels($limit: Float!, $offset: Float!) {
+  query GetChannels($limit: Int!, $offset: Int!) {
     channels(limit: $limit, offset: $offset) {
       id
       title
