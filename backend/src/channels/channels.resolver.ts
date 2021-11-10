@@ -11,10 +11,10 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { PUB_SUB } from 'src/pubsub.module';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
-import { Channel, ChannelNotify } from './models/channel.medel';
+import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 
 @Resolver((of) => Channel)
@@ -38,8 +38,8 @@ export class ChannelsResolver {
 
   @Query((returns) => [Channel], { name: 'channels', nullable: true }) // TODO: 제대로 하려면 수정 필요할 듯? 필터링 부분...
   async getChannels(
-    @Args('offset') offset: number,
-    @Args('limit') limit: number, // 0일 경우 모두 불러옴
+    @Args('offset', { type: () => Int }) offset: number,
+    @Args('limit', { type: () => Int }) limit: number, // 0일 경우 모두 불러옴
   ) {
     return await this.channelsService.getChannels(offset, limit);
   }

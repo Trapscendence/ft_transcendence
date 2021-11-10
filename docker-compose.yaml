@@ -87,6 +87,6 @@ services:
 volumes:
   db_data:
 
-networks:
-  internal:
-    driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요
+# networks:
+#   internal:
+#     driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요

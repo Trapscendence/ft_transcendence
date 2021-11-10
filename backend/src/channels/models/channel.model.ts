@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 
 export enum Notify {
   ENTER, // check가 true면 입장, false면 퇴장.

@@ -3,10 +3,10 @@ import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
-import { Notify, ChannelNotify, Channel } from './models/channel.medel';
+import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 
 @Injectable()
 export class ChannelsService {
@@ -371,33 +371,19 @@ export class ChannelsService {
     user_id: string,
   ): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
-      WITH
-        banned
-          AS (
-            DELETE FROM
-              ${schema}.channel_user
-            WHERE
-              channel_id = ${channel_id}
-                AND
-              user_id = ${user_id}
-            RETURNING
-              channel_id,
-              user_id
-          )
       INSERT INTO
         ${schema}.channel_ban(
           channel_id,
           banned_user
         )
       VALUES (
-        banned.channel_id,
-        banned.user_id
+        ${channel_id},
+        ${user_id}
       )
-      ON CONSTRAINT
-        UNIQUE (
-          ${schema}.channel_ban.channel_id,
-          ${schema}.channel_ban.banned_user
-        )
+      ON CONFLICT
+        ON CONSTRAINT
+          ban_constraint
+      DO NOTHING
       RETURNING
         *;
     `);
@@ -423,7 +409,7 @@ export class ChannelsService {
       WHERE
         cb.channel_id = ${channel_id}
           AND
-        cb.user_id = ${user_id}
+        cb.banned_user = ${user_id}
       RETURNING
         *
     `);
