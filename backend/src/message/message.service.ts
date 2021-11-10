@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { schema } from 'src/utils/envs';
 import { DM, Message } from './model/message.model';
 
@@ -27,7 +27,7 @@ WHERE
     user_id: string,
     other_user: string,
     offset: number,
-    limit: number
+    limit: number,
   ): Promise<Message[]> {
     return await this.databaseService.executeQuery(`
   SELECT
@@ -85,7 +85,11 @@ FETCH NEXT ${limit} ROWS ONLY;
     `);
   }
 
-  async getDmUsers(user_id: string, offset: number, limit: number): Promise<User[]>{
+  async getDmUsers(
+    user_id: string,
+    offset: number,
+    limit: number,
+  ): Promise<User[]> {
     return await this.databaseService.executeQuery(`
 SELECT
   u.id,
@@ -100,6 +104,6 @@ SELECT
 SELECT
 
 
-    `)
+    `);
   }
 }

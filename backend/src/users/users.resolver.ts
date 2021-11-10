@@ -11,7 +11,7 @@ import {
 } from '@nestjs/graphql';
 import { GqlSession } from 'src/session/decorator/user.decorator';
 import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
-import { User } from './models/user.medel';
+import { User } from './models/user.model';
 import { UsersService } from './users.service';
 
 @Resolver((of) => User)

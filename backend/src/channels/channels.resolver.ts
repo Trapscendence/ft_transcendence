@@ -1,6 +1,6 @@
 import { Args, ID, Query, Resolver } from '@nestjs/graphql';
 import { ChannelsService } from './channels.service';
-import { Channel } from './models/channel.medel';
+import { Channel } from './models/channel.model';
 
 @Resolver((of) => Channel)
 export class ChannelsResolver {

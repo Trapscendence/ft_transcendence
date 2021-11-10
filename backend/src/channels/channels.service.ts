@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Channel } from './models/channel.medel';
+import { Channel } from './models/channel.model';
 
 @Injectable()
 export class ChannelsService {
@@ -8,5 +8,4 @@ export class ChannelsService {
   findOneById(id: string) {}
 
   findAll(isPrivate: boolean) {}
-  
 }
