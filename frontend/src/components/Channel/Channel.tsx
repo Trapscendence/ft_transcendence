@@ -10,8 +10,8 @@ import { chattingMessagesVar, userIdVar } from '../..';
 import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
 import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
 import {
-  GetCurrentChannelResponse,
   GetMyBlacklistResponse,
+  GetMyChannelResponse,
   SubscribeChannelResponse,
 } from '../../utils/responseModels';
 import { Notify } from '../../utils/schemaEnums';
@@ -23,7 +23,7 @@ interface ChannelProps {
   channel: IChannel;
   channelRefetch: (
     variables?: Partial<OperationVariables> | undefined
-  ) => Promise<ApolloQueryResult<GetCurrentChannelResponse>>;
+  ) => Promise<ApolloQueryResult<GetMyChannelResponse>>;
 }
 
 export default function Channel({

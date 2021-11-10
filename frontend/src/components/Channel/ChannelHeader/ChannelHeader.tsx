@@ -4,8 +4,8 @@ import { Box } from '@mui/system';
 
 import { userIdVar } from '../../..';
 import {
-  GET_ALL_CHANNELS,
-  GET_CURRENT_CHANNEL,
+  GET_CHANNELS,
+  GET_MY_CHANNEL,
   LEAVE_CHANNEL,
 } from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
@@ -29,8 +29,8 @@ export default function ChannelHeader({
   const [leaveChannel] = useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
     variables: { channel_id: id, user_id: userIdVar() },
     refetchQueries: [
-      GET_CURRENT_CHANNEL,
-      { query: GET_ALL_CHANNELS, variables: { limit: 0, offset: 0 } },
+      GET_MY_CHANNEL,
+      { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
     ],
   });
 

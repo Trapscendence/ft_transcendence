@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 
 import { userIdVar } from '../../..';
-import { ENTER_CHANNEL, GET_CURRENT_CHANNEL } from '../../../utils/gqls';
+import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
 import { IChannelListItem } from '../../../utils/models';
 import { EnterChannelResponse } from '../../../utils/responseModels';
 
@@ -24,7 +24,7 @@ export default function ChannelCard({
 
   const [enterChannel] = useMutation<EnterChannelResponse>(ENTER_CHANNEL, {
     // variables: { channel_id: id, user_id: userIdVar() },
-    refetchQueries: [GET_CURRENT_CHANNEL],
+    refetchQueries: [GET_MY_CHANNEL],
   });
 
   const onClickBtn = () => {
