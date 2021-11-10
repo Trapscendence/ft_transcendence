@@ -15,14 +15,14 @@ import App from './App';
 import { IChatting } from './utils/models';
 
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:5000/graphql',
+  uri: 'ws://localhost:50000/graphql',
   options: {
     reconnect: true,
   },
 });
 
 const client = new ApolloClient({
-  uri: 'http://localhost:5000/graphql',
+  uri: 'http://localhost:50000/graphql',
   link: wsLink, // 이렇게?
   cache: new InMemoryCache({
     typePolicies: {
