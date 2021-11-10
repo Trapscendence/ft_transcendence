@@ -3,6 +3,8 @@ import { Grid } from '@mui/material';
 
 import { GET_CHANNELS } from '../../../utils/gqls';
 import { GetChannelsResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 import ChannelCard from './ChannelCard';
 
 export default function ChannelListContents(): JSX.Element {
@@ -11,11 +13,11 @@ export default function ChannelListContents(): JSX.Element {
     // pollInterval: 5000, // NOTE: 5초마다 polling하려면 이렇게. 일단은 주석처리는 해놓음.
   });
 
-  if (error) return <p>error: {error.message}</p>;
-  if (loading) return <p>loading... 나중에 대체</p>;
+  if (error) return <ErrorAlert error={error} />;
 
   return (
     <Grid container>
+      <LoadingBackdrop loading={loading} />
       {data?.channels.map((val) => (
         <ChannelCard key={val.id} channelSummary={val} />
       ))}

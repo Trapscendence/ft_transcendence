@@ -14,6 +14,7 @@ import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { CHAT_MESSAGE } from '../../../utils/gqls';
 import { GetMyBlacklistResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
@@ -34,7 +35,7 @@ export default function Chatting({
 
   const chattingMessages = useReactiveVar(chattingMessagesVar);
 
-  const [chatMessage] = useMutation(CHAT_MESSAGE);
+  const [chatMessage, { error }] = useMutation(CHAT_MESSAGE);
   const [muted, setMuted] = useState<boolean>(false);
 
   useEffect(() => {
@@ -59,6 +60,8 @@ export default function Chatting({
     }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
   };
+
+  if (error) return <ErrorAlert error={error} />;
 
   const onKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {

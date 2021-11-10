@@ -15,6 +15,7 @@ import {
   SubscribeChannelResponse,
 } from '../../utils/responseModels';
 import { Notify } from '../../utils/schemaEnums';
+import ErrorAlert from '../commons/ErrorAlert';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
 import ParticipantsList from './ParticipantsList';
@@ -41,10 +42,10 @@ export default function Channel({
     mutedUsers,
   } = channel;
 
-  const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
-    SUBSCRIBE_CHANNEL,
-    { variables: { channel_id: id } }
-  );
+  const { data: subscribeData, error: subscribeError } =
+    useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
+      variables: { channel_id: id },
+    });
 
   const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
     GET_MY_BLACKLIST,
@@ -129,6 +130,8 @@ export default function Channel({
         break;
     }
   }, [subscribeData]);
+
+  if (subscribeError) return <ErrorAlert error={subscribeError} />;
 
   return (
     <>

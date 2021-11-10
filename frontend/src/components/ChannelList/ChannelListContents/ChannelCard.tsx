@@ -12,6 +12,8 @@ import { userIdVar } from '../../..';
 import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
 import { IChannelListItem } from '../../../utils/models';
 import { EnterChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelCardProps {
   channelSummary: IChannelListItem;
@@ -22,17 +24,22 @@ export default function ChannelCard({
 }: ChannelCardProps): JSX.Element {
   const { id, title, is_private, owner, participants } = channelSummary;
 
-  const [enterChannel] = useMutation<EnterChannelResponse>(ENTER_CHANNEL, {
-    // variables: { channel_id: id, user_id: userIdVar() },
-    refetchQueries: [GET_MY_CHANNEL],
-  });
+  const [enterChannel, { loading, error }] = useMutation<EnterChannelResponse>(
+    ENTER_CHANNEL,
+    {
+      refetchQueries: [GET_MY_CHANNEL],
+    }
+  );
 
   const onClickBtn = () => {
     void enterChannel({ variables: { channel_id: id, user_id: userIdVar() } });
   };
 
+  if (error) return <ErrorAlert error={error} />;
+
   return (
     <Grid item xs={6} p={3}>
+      <LoadingBackdrop loading={loading} />
       <Card sx={{ minWidth: 275 }}>
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
@@ -57,6 +64,3 @@ export default function ChannelCard({
     </Grid>
   );
 }
-
-// TODO
-// * Public, Private 등에 아이콘 넣기. 필터 선택에도 마찬가지...? Owner 등에도!

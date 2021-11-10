@@ -10,6 +10,8 @@ import {
 } from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
 import { LeaveChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelHeaderProps {
   id: string;
@@ -26,17 +28,22 @@ export default function ChannelHeader({
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
-  const [leaveChannel] = useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
-    variables: { channel_id: id, user_id: userIdVar() },
-    refetchQueries: [
-      GET_MY_CHANNEL,
-      { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
-    ],
-  });
+  const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
+    LEAVE_CHANNEL,
+    {
+      variables: { channel_id: id, user_id: userIdVar() },
+      refetchQueries: [
+        GET_MY_CHANNEL,
+        { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
+      ],
+    }
+  );
 
   const onClickLeave = () => {
     void leaveChannel();
   };
+
+  if (error) return <ErrorAlert error={error} />;
 
   return (
     <Paper
@@ -48,6 +55,7 @@ export default function ChannelHeader({
         alignItems: 'center',
       }}
     >
+      <LoadingBackdrop loading={loading} />
       <Box>
         <Typography>{is_private ? 'Private' : 'Public'}</Typography>
         <Typography>Title: {title}</Typography>
