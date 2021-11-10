@@ -12,7 +12,7 @@ async function bootstrap() {
     //   ),
     // },
     cors: {
-      origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+      origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
       preflightContinue: false,
       optionsSuccessStatus: 204,
