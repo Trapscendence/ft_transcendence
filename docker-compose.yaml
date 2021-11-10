@@ -60,8 +60,13 @@ services:
       - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
       - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
       - FORTYTWO_REDIRECT_URI=${FORTYTWO_REDIRECT_URI}
+      - GOOGLE_APP_ID=${GOOGLE_APP_ID}
+      - GOOGLE_APP_SECRET=${GOOGLE_APP_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
       - FRONTEND_HOST=${FRONTEND_HOST}
       - FRONTEND_PORT=${FRONTEND_PORT}
+      - BACKEND_HOST=${BACKEND_HOST}
+      - BACKEND_PORT=${BACKEND_PORT}
       - SESSION_SECRET=${SESSION_SECRET}
     build: ./backend
     networks:
@@ -71,16 +76,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./backend/src:/app/src
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
-    # networks:
-    #   - default
-    ports:
-      - "5050:80"
+      - ./certbot/certs:/certs
 
   migration:
     environment:
@@ -114,10 +110,10 @@ volumes:
 #   internal:
 #     driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요
 
-# networks:
-#   default:
-#     driver: bridge
-#     ipam:
-#       driver: default
-#       config:
-#         - subnet: 172.25.0.0/16
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/16

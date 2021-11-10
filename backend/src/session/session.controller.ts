@@ -16,6 +16,17 @@ export class SessionController {
     res.redirect('/graphql');
   }
 
+  @Get('login/google')
+  @UseGuards(AuthGuard('google'))
+  createSessionWithGoogle(
+    @Req() req: any,
+    @Res() res: Response,
+    @Session() session: Record<string, any>,
+  ) {
+    session.uid = req.user.uid;
+    res.redirect('/graphql');
+  }
+
   @Get('logout')
   deleteSession(@Session() session: Record<string, any>) {
     session.destroy((err) => {
