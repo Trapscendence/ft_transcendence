@@ -92,9 +92,7 @@ export default function Chatting({
         )}
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {chattingMessages.get(id)?.map((val) => {
-            if (muteList.find((muted) => muted === val.participant.nickname)) {
-              // return null;
-              // return <Typography>Message from a muted member.</Typography>;
+            if (muteList.find((muted) => muted === val.participant.id)) {
               return (
                 <Alert severity="error" sx={{ m: 1 }} key={val.id}>
                   Message from a muted member.
