@@ -17,6 +17,7 @@ import { useState } from 'react';
 
 import DirectMessageContent from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
+import NewDirectMessage from './NewDirectMessage';
 
 const style = {
   // position: 'absolute' as const,
@@ -63,7 +64,7 @@ export default function DirectMessage(): JSX.Element {
       ],
     },
     {
-      name: 'aaa_seohchoi',
+      name: 'qwer',
       id: 2,
       lastMessageDate: 13,
       messages: [
@@ -89,96 +90,6 @@ export default function DirectMessage(): JSX.Element {
         { received: false, content: '보낸메세지11', date: 20211018 },
       ],
     },
-    {
-      name: 'hola5',
-      id: 5,
-      lastMessageDate: 10,
-      messages: [
-        { received: true, content: '받은메시지10', date: 20211018 },
-        { received: false, content: '보낸메세지10', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola6',
-      id: 6,
-      lastMessageDate: 9,
-      messages: [
-        { received: true, content: '받은메시지9', date: 20211018 },
-        { received: false, content: '보낸메세지9', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola7',
-      id: 7,
-      lastMessageDate: 8,
-      messages: [
-        { received: true, content: '받은메시지8', date: 20211018 },
-        { received: false, content: '보낸메세지8', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola8',
-      id: 8,
-      lastMessageDate: 7,
-      messages: [
-        { received: true, content: '받은메시지7', date: 20211018 },
-        { received: false, content: '보낸메세지7', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola9',
-      id: 9,
-      lastMessageDate: 6,
-      messages: [
-        { received: true, content: '받은메시지6', date: 20211018 },
-        { received: false, content: '보낸메세지6', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola10',
-      id: 10,
-      lastMessageDate: 5,
-      messages: [
-        { received: true, content: '받은메시지5', date: 20211018 },
-        { received: false, content: '보낸메세지5', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola11',
-      id: 11,
-      lastMessageDate: 4,
-      messages: [
-        { received: true, content: '받은메시지4', date: 20211018 },
-        { received: false, content: '보낸메세지4', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola12',
-      id: 12,
-      lastMessageDate: 3,
-      messages: [
-        { received: true, content: '받은메시지3', date: 20211018 },
-        { received: false, content: '보낸메세지3', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola13',
-      id: 13,
-      lastMessageDate: 2,
-      messages: [
-        { received: true, content: '받은메시지2', date: 20211018 },
-        { received: false, content: '보낸메세지2', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola14',
-      id: 14,
-      lastMessageDate: 1,
-      messages: [
-        { received: true, content: '받은메시지1', date: 20211018 },
-        { received: false, content: '보낸메세지1', date: 20211018 },
-      ],
-    },
   ];
 
   const [open, setOpen] = useState(false);
@@ -197,6 +108,10 @@ export default function DirectMessage(): JSX.Element {
     setOpen(false);
   };
 
+  const [newDm, setNewDm] = useState(false);
+  const newDmHandler = () => {
+    setNewDm(!newDm);
+  };
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   return (
@@ -208,7 +123,7 @@ export default function DirectMessage(): JSX.Element {
           sx={{
             position: 'fixed',
             margin: '20px',
-            boxShadow: 0,
+            // boxShadow: 0,
             bottom: '0%',
             right: '200px',
           }}
@@ -225,7 +140,7 @@ export default function DirectMessage(): JSX.Element {
 
         <Popper open={open} anchorEl={anchorEl} placement={placement}>
           <Paper
-            variant="outlined"
+            elevation={5}
             sx={style}
             style={{ outline: 'none', padding: '0' }}
           >
@@ -242,7 +157,7 @@ export default function DirectMessage(): JSX.Element {
               {dm.map((dm) => (
                 <Box>
                   <DirectMessageList
-                    {...{ selectedIndex, setSelectedIndex }}
+                    {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={dm.name}
                     ID={dm.id}
                   />
@@ -258,49 +173,53 @@ export default function DirectMessage(): JSX.Element {
                 width: '65%',
                 right: '1px',
                 borderRadius: '0rem 0.2rem 0.2rem 0rem',
-                height: '99.2%',
+                // height: '99.2%',
+                height: '100%',
                 padding: '10px',
                 backgroundColor: 'white',
                 overflowX: 'hidden',
               }}
             >
-              {
-                // 삼항연산자 중첩으로 코드가 거지같습니다. 해결방법이 없을까요?
-                selectedIndex ? (
-                  <DirectMessageContent
-                    messages={dm[selectedIndex - 1].messages}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '5%',
-                    }}
+              {newDm && <NewDirectMessage />}
+
+              {selectedIndex ? (
+                <DirectMessageContent
+                  messages={dm[selectedIndex - 1].messages}
+                />
+              ) : (
+                <Box
+                  id="DM-nonselected"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '5%',
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    component="div"
+                    sx={{ bottom: '0%' }}
                   >
-                    <Typography
-                      variant="h5"
-                      gutterBottom
-                      component="div"
-                      sx={{ bottom: '0%' }}
-                    >
-                      선택된 쪽지가 없습니다.
-                      <br />
-                      <Typography variant="h6" gutterBottom component="div">
-                        기존 쪽지 중 하나를 선택하거나
-                        <br />새 쪽지를 작성하세요.
-                      </Typography>
-                      <Button variant="outlined" size="medium">
-                        새 쪽지
-                      </Button>
+                    선택된 쪽지가 없습니다.
+                    <br />
+                    <Typography variant="body2" component="div">
+                      기존 쪽지 중 하나를 선택하거나
+                      <br />새 쪽지를 작성하세요.
                     </Typography>
-                  </Box>
-                  // 여기다가 '선택된 쪽지가 없음' 컴포넌트 삽입하기. [새 쪽지] 버튼 포함.
-                )
-              }
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      onClick={newDmHandler}
+                      sx={{ margin: '20px 0px 0px 0px' }}
+                    >
+                      새 쪽지
+                    </Button>
+                  </Typography>
+                </Box>
+              )}
             </Box>
-            <Divider orientation="vertical" />
           </Paper>
         </Popper>
       </Box>

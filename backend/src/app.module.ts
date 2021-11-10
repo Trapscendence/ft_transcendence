@@ -7,18 +7,34 @@ import { ChannelsModule } from './channels/channels.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
+import { MessageModule } from './message/message.module';
+import { join } from 'path';
+import { SessionModule } from './session/session.module';
 
 @Module({
   imports: [
     GraphQLModule.forRoot({
-      autoSchemaFile: 'schema.gql',
-      // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      subscriptions: {
+        'graphql-ws': true,
+      },
+      cors: {
+        origin: process.env.FRONTEND_URI,
+        credentials: true,
+      },
+      playground: {
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
     }),
     DatabaseModule,
     UsersModule,
+    MessageModule,
     ChannelsModule,
     MatchsModule,
     AchivementsModule,
+    SessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

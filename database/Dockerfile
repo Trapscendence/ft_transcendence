@@ -1,9 +1,7 @@
-FROM  postgres:14
+FROM  postgres:14.0
 LABEL maintainer="ezemango@gmail.com"
 ARG   DB_USER \
       DB_PASSWORD \
-      POSTGRES_PASSWORD \
-      PGDATA \
       DB_NAME
 RUN   echo " \
         CREATE ROLE ${DB_USER} WITH LOGIN CREATEDB PASSWORD '${DB_PASSWORD}'; \
