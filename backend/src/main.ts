@@ -5,12 +5,12 @@ import { readFileSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    httpsOptions: {
-      key: readFileSync(`/certs/live/${process.env.BACKEND_HOST}/privkey.pem`),
-      cert: readFileSync(
-        `/certs/live/${process.env.BACKEND_HOST}/fullchain.pem`,
-      ),
-    },
+    // httpsOptions: {
+    //   key: readFileSync(`/certs/live/${process.env.BACKEND_HOST}/privkey.pem`),
+    //   cert: readFileSync(
+    //     `/certs/live/${process.env.BACKEND_HOST}/fullchain.pem`,
+    //   ),
+    // },
     cors: {
       origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',

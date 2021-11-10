@@ -4,11 +4,11 @@ import { DatabaseModule } from 'src/database/database.module';
 import { UsersModule } from 'src/users/users.module';
 import { SessionController } from './session.controller';
 import { FTStrategy } from './strategy/ft.strategy';
-import { GoogleStrategy } from './strategy/google.strategy';
+// import { GoogleStrategy } from './strategy/google.strategy';
 
 @Module({
   imports: [UsersModule, DatabaseModule, PassportModule],
   controllers: [SessionController],
-  providers: [FTStrategy, GoogleStrategy],
+  providers: [FTStrategy],
 })
 export class SessionModule {}

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -n "$(certbot certificates 2>/dev/null | grep -e 'No certs found.' -e 'INVALID')" ]
+if [ -n "$(certbot certificates 2>/dev/null | grep -e 'No certificates found.' -e 'INVALID')" ]
 then
 	certbot certonly \
 		--standalone \
