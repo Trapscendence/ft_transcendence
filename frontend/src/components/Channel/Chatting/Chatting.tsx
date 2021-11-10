@@ -1,34 +1,33 @@
 import { useMutation, useReactiveVar } from '@apollo/client';
-import { Calculate } from '@mui/icons-material';
 import {
   Alert,
   Button,
   Card,
   CardActions,
   CardContent,
-  Snackbar,
   TextField,
-  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { useEffect, useRef, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { IUser } from '../../../utils/models';
 import { CHAT_MESSAGE } from '../gqls';
+import { GetMyBlacklistResponse } from '../responseModels';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
   id: string;
   alertMsg: string | null;
   muteList: string[];
+  blacklistData: GetMyBlacklistResponse | undefined;
 }
 
 export default function Chatting({
   id,
   alertMsg,
   muteList,
+  blacklistData,
 }: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
@@ -74,6 +73,14 @@ export default function Chatting({
     }
   };
 
+  const {
+    user: { blacklist },
+  } = blacklistData as GetMyBlacklistResponse;
+
+  console.log(blacklist);
+
+  console.log(blacklistData);
+
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
       <CardContent sx={{ height: '90%', position: 'relative' }}>
@@ -92,13 +99,24 @@ export default function Chatting({
         )}
         <Box sx={{ height: '100%', overflowY: 'auto' }}>
           {chattingMessages.get(id)?.map((val) => {
+            // if (
+            //   blacklist.find((blacked) => blacked.id === val.participant.id)
+            // ) {
+            //   return (
+            //     <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+            //       Message from a blacked user.
+            //     </Alert>
+            //   );
+            // }
+
             if (muteList.find((muted) => muted === val.participant.id)) {
               return (
                 <Alert severity="error" sx={{ m: 1 }} key={val.id}>
-                  Message from a muted member.
+                  Message from a muted user.
                 </Alert>
               );
             } // TODO: 배열을 순회하므로 조금 비효율적...
+
             return (
               <ChattingMessage key={val.id} IChatting={val} channelId={id} />
             );

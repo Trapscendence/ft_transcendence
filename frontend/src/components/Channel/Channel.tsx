@@ -1,31 +1,76 @@
-import { useSubscription } from '@apollo/client';
-import { Alert } from '@mui/material';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+  useQuery,
+  useSubscription,
+} from '@apollo/client';
 import { useEffect, useState } from 'react';
 
-import { chattingMessagesVar } from '../..';
+import { chattingMessagesVar, userIdVar } from '../..';
 import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
 import { Notify } from '../../utils/schemaEnums';
+import { GetCurrentChannelResponse } from '../ChannelList/responseModels';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
-import { SUBSCRIBE_CHANNEL } from './gqls';
+import {
+  GET_CHANNEL_BANNED_USERS,
+  GET_CHANNEL_MUTED_USERS,
+  GET_MY_BLACKLIST,
+  SUBSCRIBE_CHANNEL,
+} from './gqls';
 import ParticipantsList from './ParticipantsList';
-import { SubscribeChannelResponse } from './responseModels';
+import {
+  GetChannelBannedUsers,
+  GetChannelMutedUsers,
+  GetMyBlacklistResponse,
+  SubscribeChannelResponse,
+} from './responseModels';
 
 interface ChannelProps {
   channel: IChannel;
+  channelRefetch: (
+    variables?: Partial<OperationVariables> | undefined
+  ) => Promise<ApolloQueryResult<GetCurrentChannelResponse>>;
 }
 
-export default function Channel({ channel }: ChannelProps): JSX.Element {
-  const { id, title, is_private, owner, administrators, participants } =
-    channel;
+export default function Channel({
+  channel,
+  channelRefetch,
+}: ChannelProps): JSX.Element {
+  const {
+    id,
+    title,
+    is_private,
+    owner,
+    administrators,
+    participants,
+    bannedUsers,
+    mutedUsers,
+  } = channel;
 
   const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
     SUBSCRIBE_CHANNEL,
     { variables: { channel_id: id } }
   );
 
-  // TODO: 새로 들어가거나 온라인 접속했을 때, mute나 ban 목록을 다시 알려줘야 하지 않나?
-  // TODO: 프론트와 백에서 어떻게 하기로 했는지가 기억이 잘 안남...
+  const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
+    GET_MY_BLACKLIST,
+    {
+      variables: { id: userIdVar() },
+    }
+  );
+
+  // const {data: mutedUsersList} = useQuery<GetChannelMutedUsers>(GET_CHANNEL_MUTED_USERS);
+  // const {data: bannedUsersList} = useQuery<GetChannelBannedUsers>(GET_CHANNEL_BANNED_USERS);
+
+  // useEffect(()=>{
+
+  // }, [bannedUsers]);
+
+  useEffect(() => {
+    // console.log(mutedUsers); // TODO: 현재 mutedUsers가 안들어오는 이슈!
+    setMuteList(mutedUsers.map((val) => val.id));
+  }, [mutedUsers]);
 
   const [muteList, setMuteList] = useState<string[]>([]);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -86,6 +131,9 @@ export default function Channel({ channel }: ChannelProps): JSX.Element {
           setAlertMsg(null);
         }, 3000);
         break;
+      case Notify.ENTER:
+        void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선해야!
+        break;
     }
   }, [subscribeData]);
 
@@ -93,7 +141,7 @@ export default function Channel({ channel }: ChannelProps): JSX.Element {
     <>
       <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
       <ParticipantsList {...{ id, participants }} />
-      <Chatting {...{ id, alertMsg, muteList }} />
+      <Chatting {...{ id, alertMsg, muteList, blacklistData }} />
     </>
   );
 }

@@ -81,6 +81,14 @@ export const GET_CURRENT_CHANNEL = gql`
           # avatar
           # status
         }
+        bannedUsers {
+          id
+          nickname
+        }
+        mutedUsers {
+          id
+          nickname
+        }
       }
     }
   }

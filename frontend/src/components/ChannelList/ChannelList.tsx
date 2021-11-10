@@ -11,11 +11,15 @@ import { GetCurrentChannelResponse } from './responseModels';
 // TODO: channel list는 subscription으로 주기적으로 새로고침하게 하기로 했었나?
 
 export default function ChannelList(): JSX.Element {
-  const { data } = useQuery<GetCurrentChannelResponse>(GET_CURRENT_CHANNEL, {
-    variables: { id: userIdVar() },
-  });
+  const { data, refetch } = useQuery<GetCurrentChannelResponse>(
+    GET_CURRENT_CHANNEL,
+    {
+      variables: { id: userIdVar() },
+    }
+  );
 
-  if (data && data.user.channel) return <Channel channel={data.user.channel} />;
+  if (data && data.user.channel)
+    return <Channel channel={data.user.channel} channelRefetch={refetch} />;
 
   return (
     <>
