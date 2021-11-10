@@ -98,52 +98,6 @@ INSERT INTO ${schema}.user(
     }
   }
 
-  async getOrCreateUserByOAuth(
-    oauth_id: string,
-    oauth_type: string,
-  ): Promise<User | null> {
-    const selectQueryResult = await this.databaseService.executeQuery(`
-SELECT
-  id,
-  tfa_secret
-FROM
-  ${schema}.user
-WHERE
-  oauth_id = '${oauth_id}'
-AND
-  oauth_type = '${oauth_type}';
-    `);
-
-    if (selectQueryResult.length === 1) {
-      return selectQueryResult[0];
-    } else if (selectQueryResult.length === 0) {
-      const insertQueryResult = await this.databaseService.executeQuery(`
-INSERT INTO ${schema}.user(
-  nickname,
-  oauth_id,
-  oauth_type
-) VALUES (
-  '${oauth_type}-${oauth_id}',
-  '${oauth_id}',
-  '${oauth_type}'
-) RETURNING id, tfa_secret;
-      `);
-
-      if (insertQueryResult.length === 1) {
-        return insertQueryResult[0];
-      } else {
-        console.error(
-          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
-        );
-      }
-    } else {
-      console.error(
-        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
-      );
-      return null;
-    }
-  }
-
   async getUsers(
     ladder: boolean,
     offset: number,

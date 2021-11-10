@@ -48,7 +48,10 @@ export default function Channel({
     mutedUsers,
   } = channel;
 
-  const channelId = useReactiveVar(channelIdVar);
+  const { data: subscribeData } = useSubscription<SubscribeChannelResponse>(
+    SUBSCRIBE_CHANNEL,
+    { variables: { channel_id: id } }
+  );
 
   const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
     GET_MY_BLACKLIST,
@@ -69,32 +72,33 @@ export default function Channel({
     setMuteList(mutedUsers.map((val) => val.id));
   }, [mutedUsers]);
 
-  const chattingMessages = useReactiveVar(chattingMessagesVar);
+  const [muteList, setMuteList] = useState<string[]>([]);
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
-  const { data } = useSubscription<SubscribeChannelResponse>(
-    SUBSCRIBE_CHANNEL,
-    {
-      variables: { channel_id: channelId },
-      onSubscriptionData: ({ subscriptionData: { data } }): void => {
-        console.log(data); // TODO: subscribe가 두번 오는 이슈. 백엔드에 여쭤보기!
+  useEffect(() => {
+    if (!subscribeData || !subscribeData.subscribeChannel) return; // TODO: 임시 조치... 어떻게 들어오는지 확인 후 수정 필요
 
-        // if (!data || !data.subscribeChannel) return;
+    const { type, participant, text, check }: IChannelNotify =
+      subscribeData.subscribeChannel;
 
-        // const { type, participant, text, check }: ChannelNotifySummary =
-        //   data.subscribeChannel;
+    const subscribe_id = new Date().getTime().toString();
 
-        // switch (type) {
-        //   case Notify.CHAT:
-        //     if (participant && text) {
-        //       let prev: ChattingSummary[] | undefined =
-        //         chattingMessages.get(channelId);
+    console.log(type, participant, text, check);
 
-        //       if (!prev) {
-        //         prev = [];
-        //       }
+    switch (type) {
+      case Notify.CHAT:
+        if (participant && text) {
+          let prev: IChatting[] | undefined = chattingMessagesVar().get(id);
 
-        //       const duplicatedMap = new Map(chattingMessages);
-        //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
+          if (!prev) {
+            prev = [];
+          }
+
+          const duplicatedMap = new Map(chattingMessagesVar());
+          duplicatedMap.set(id, [
+            ...prev,
+            { id: subscribe_id, participant, text },
+          ]);
 
           chattingMessagesVar(duplicatedMap);
         }
@@ -131,7 +135,7 @@ export default function Channel({
         void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선해야!
         break;
     }
-  );
+  }, [subscribeData]);
 
   return (
     <>

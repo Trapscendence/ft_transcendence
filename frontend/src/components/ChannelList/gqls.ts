@@ -94,11 +94,23 @@ export const GET_CURRENT_CHANNEL = gql`
   }
 `;
 
-export const GET_CURRENT_CHANNEL_ID = gql`
-  query GetCurrentChannelId($id: ID!) {
-    user(id: $id) {
-      channel {
+export const ENTER_CHANNEL = gql`
+  mutation EnterChannel($channel_id: ID!, $user_id: ID!) {
+    enterChannel(channel_id: $channel_id, user_id: $user_id) {
+      id
+      title
+      is_private
+      owner {
         id
+        nickname
+      }
+      administrators {
+        id
+        nickname
+      }
+      participants {
+        id
+        nickname
       }
     }
   }

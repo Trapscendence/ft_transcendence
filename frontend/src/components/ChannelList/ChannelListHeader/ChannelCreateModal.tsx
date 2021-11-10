@@ -8,10 +8,9 @@ import {
   TextField,
 } from '@mui/material';
 
-import { channelIdVar } from '../../..';
-// import { currentChannelVar } from '../../..';
+import { userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL } from '../gqls';
+import { ADD_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
 import { AddChannelResponse } from '../responseModels';
 
 interface ChannelCreateModalProps {
@@ -27,23 +26,19 @@ export default function ChannelCreateModal({
   const [password, setPassword, onChangePassword] = useInput('');
 
   // TODO: loading, error 등은 나중에 고려
-  const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL, {
-    onCompleted({ addChannel }) {
-      channelIdVar(addChannel.id);
-    },
-  });
+  const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL);
 
   const onClickBtn = async (): Promise<void> => {
-    console.log(title, password);
     try {
       await addChannelFunc({
-        variables: { owner_user_id: '1', title, password },
+        variables: { owner_user_id: userIdVar(), title, password },
+        refetchQueries: [GET_CURRENT_CHANNEL, 'GetCurrentChannel'], // TODO: 맞나?
       });
     } catch (e) {
       console.error(e); // TODO: 임시! 에러 처리를 어떻게 해야할지 아직 잘 모르겠음.
     }
-    // TODO: owner_user_id 임시! 나중에 user_id를 저장해서 보내건, 쿠키를 사용해서 이 인자가 사라지건, 추후 수정 필요.
-    // TODO: 같은 user_id가 방을 만드는 등 불가능한 동작을 했을 때 어떻게 되는가? 에러가 오나? 백엔드에 물어볼 것...
+
+    handleClose();
     setTitle('');
     setPassword('');
 

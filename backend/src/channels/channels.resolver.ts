@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -16,7 +16,12 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
+import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
+import { GqlSession } from 'src/session/decorator/user.decorator';
+import { ChannelRoleGuard } from './guard/role.channel.guard';
 
+@UseGuards(GqlSessionGuard)
+@UseGuards(ChannelRoleGuard)
 @Resolver((of) => Channel)
 export class ChannelsResolver {
   constructor(
@@ -50,35 +55,32 @@ export class ChannelsResolver {
 
   @Mutation((returns) => Channel, { nullable: true })
   async enterChannel(
-    @Args('user_id', { type: () => ID! }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Channel | null> {
-    return await this.channelsService.enterChannel(user_id, channel_id);
+    return await this.channelsService.enterChannel(session.uid, channel_id);
   }
 
   @Mutation((returns) => Boolean)
   async leaveChannel(
-    @Args('user_id', { type: () => ID! }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
-    return await this.channelsService.leaveChannel(user_id, channel_id);
+    return await this.channelsService.leaveChannel(session.uid, channel_id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
   async addChannel(
+    @GqlSession() session: Record<string, any>,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
-    @Args('owner_user_id') owner_user_id: string,
   ) {
-    return await this.channelsService.addChannel(
-      title,
-      password,
-      owner_user_id,
-    );
+    return await this.channelsService.addChannel(title, password, session.uid);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
+    @GqlSession() session: Record<string, any>,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
@@ -97,7 +99,6 @@ export class ChannelsResolver {
   muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
   ): boolean {
     return this.channelsService.muteUserOnChannel(

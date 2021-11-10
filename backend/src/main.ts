@@ -28,7 +28,7 @@ async function bootstrap() {
       cookie: {
         httpOnly: true,
         path: '/',
-        secure: true,
+        secure: false,
       },
       name: 'TRAP_SESSIONID',
     }),

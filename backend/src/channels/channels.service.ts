@@ -79,6 +79,18 @@ export class ChannelsService {
     user_id: string,
     channel_id: string,
   ): Promise<Channel | null> {
+    const users = await this.databaseService.executeQuery(`
+      SELECT
+        user_id
+      FROM
+        ${schema}.channel_ban
+      WHERE
+        user_id = ${user_id}
+          AND
+        channel_id = ${channel_id}
+    `); // ban 되어있는지 확인
+    if (users.length) return null;
+
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_user(

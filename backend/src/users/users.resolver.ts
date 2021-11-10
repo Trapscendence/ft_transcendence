@@ -15,6 +15,7 @@ import { GqlSession } from 'src/session/decorator/user.decorator';
 import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
 import { UsersService } from './users.service';
 
+@UseGuards(GqlSessionGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
@@ -24,23 +25,23 @@ export class UsersResolver {
    */
 
   @Query((returns) => Int)
-  @UseGuards(GqlSessionGuard)
   async whoAmI(@GqlSession() session: Record<string, any>) {
     return session.uid;
   }
 
   @Query((returns) => User, { nullable: true })
   async user(
+    @GqlSession() session: Record<string, any>,
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
-    if ((id && nickname) || !(id || nickname))
+    if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
-    return await this.usersService.getUserByNickname(nickname);
+    if (nickname) return await this.usersService.getUserByNickname(nickname);
+    return await this.usersService.getUserById(session.uid);
   }
 
-  // NOTE: [User!]! 반환하게 수정했습니다. 확인 후 코멘트 삭제해주세요. -gmoon
   @Query((returns) => [User])
   async users(
     @Args('ladder') ladder: boolean,
@@ -62,36 +63,36 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
     // NOTE 여기서 할것인가?
-    return this.usersService.addFriend(user_id, friend_id);
+    return this.usersService.addFriend(session.uid, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFriend(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFriend(user_id, friend_id);
+    return await this.usersService.deleteFriend(session.uid, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async addToBlackLIst(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.addToBlackList(user_id, black_id);
+    return await this.usersService.addToBlackList(session.uid, black_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFromBlackList(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlSession() session: Record<string, any>,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
     // NOTE 여기서 할것인가?
-    return await this.usersService.deleteFromBlackList(user_id, black_id);
+    return await this.usersService.deleteFromBlackList(session.uid, black_id);
   }
 
   /*

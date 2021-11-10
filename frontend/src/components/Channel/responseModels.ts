@@ -1,11 +1,15 @@
-import { ChannelNotifySummary, UserSummary } from '../../utils/models';
+import { IChannelNotify, IUser } from '../../utils/models';
 
 export interface SubscribeChannelResponse {
-  subscribeChannel: ChannelNotifySummary;
+  subscribeChannel: IChannelNotify;
 }
 
 export interface GetCurrentParticipantsResponse {
-  user: { channel: { participants: UserSummary[] } };
+  user: { channel: { participants: IUser[] } };
+}
+
+export interface LeaveChannelResponse {
+  leaveChannel: boolean;
 }
 
 export interface GetMyBlacklistResponse {

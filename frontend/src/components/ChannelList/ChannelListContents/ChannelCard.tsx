@@ -8,10 +8,13 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ChannelListSummary } from '../../../utils/models';
+import { userIdVar } from '../../..';
+import { IChannelListItem } from '../../../utils/models';
+import { ENTER_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
+import { EnterChannelResponse } from '../responseModels';
 
 interface ChannelCardProps {
-  channelSummary: ChannelListSummary;
+  channelSummary: IChannelListItem;
 }
 
 export default function ChannelCard({

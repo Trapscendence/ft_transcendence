@@ -10,7 +10,7 @@ import {
 import { Box } from '@mui/system';
 import { useEffect, useRef, useState } from 'react';
 
-import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
+import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { CHAT_MESSAGE } from '../gqls';
 import { GetMyBlacklistResponse } from '../responseModels';
@@ -30,20 +30,31 @@ export default function Chatting({
   blacklistData,
 }: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
-  const [chatMessage] = useMutation(CHAT_MESSAGE);
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
-  const userId = useReactiveVar(userIdVar);
-  // const currentChannel = useReactiveVar(currentChannelVar);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
-  const channelId = useReactiveVar(channelIdVar);
+
+  const [chatMessage] = useMutation(CHAT_MESSAGE);
+  const [muted, setMuted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (muteList.find((val) => val === userIdVar())) {
+      setMuted(true);
+    } else {
+      setMuted(false);
+    }
+  }, [muteList]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chattingMessages]);
 
   const onClickBtn = () => {
-    // console.log(input);
     void chatMessage({
       variables: {
         message: input,
-        user_id: userId,
-        channel_id: channelId,
+        user_id: userIdVar(),
+        channel_id: id,
       },
     }); // TODO: void를 안쓰면 에러가 뜬다... 뭐지?
     setInput('');
