@@ -3,10 +3,13 @@ import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 
 import { userIdVar } from '../../..';
+import {
+  GET_ALL_CHANNELS,
+  GET_CURRENT_CHANNEL,
+  LEAVE_CHANNEL,
+} from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
-import { GET_ALL_CHANNELS, GET_CURRENT_CHANNEL } from '../../ChannelList/gqls';
-import { LEAVE_CHANNEL } from '../gqls';
-import { LeaveChannelResponse } from '../responseModels';
+import { LeaveChannelResponse } from '../../../utils/responseModels';
 
 interface ChannelHeaderProps {
   id: string;

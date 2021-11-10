@@ -7,24 +7,17 @@ import {
 import { useEffect, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../..';
+import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
 import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
-import { Notify } from '../../utils/schemaEnums';
-import { GetCurrentChannelResponse } from '../ChannelList/responseModels';
-import ChannelHeader from './ChannelHeader';
-import Chatting from './Chatting';
 import {
-  GET_CHANNEL_BANNED_USERS,
-  GET_CHANNEL_MUTED_USERS,
-  GET_MY_BLACKLIST,
-  SUBSCRIBE_CHANNEL,
-} from './gqls';
-import ParticipantsList from './ParticipantsList';
-import {
-  GetChannelBannedUsers,
-  GetChannelMutedUsers,
+  GetCurrentChannelResponse,
   GetMyBlacklistResponse,
   SubscribeChannelResponse,
-} from './responseModels';
+} from '../../utils/responseModels';
+import { Notify } from '../../utils/schemaEnums';
+import ChannelHeader from './ChannelHeader';
+import Chatting from './Chatting';
+import ParticipantsList from './ParticipantsList';
 
 interface ChannelProps {
   channel: IChannel;
@@ -44,7 +37,7 @@ export default function Channel({
     owner,
     administrators,
     participants,
-    bannedUsers,
+    // bannedUsers,
     mutedUsers,
   } = channel;
 

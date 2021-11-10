@@ -2,11 +2,11 @@ import { useQuery } from '@apollo/client';
 import { Divider } from '@mui/material';
 
 import { userIdVar } from '../..';
+import { GET_CURRENT_CHANNEL } from '../../utils/gqls';
+import { GetCurrentChannelResponse } from '../../utils/responseModels';
 import Channel from '../Channel';
 import ChannelListContents from './ChannelListContents';
 import ChannelListHeader from './ChannelListHeader';
-import { GET_CURRENT_CHANNEL } from './gqls';
-import { GetCurrentChannelResponse } from './responseModels';
 
 // TODO: channel list는 subscription으로 주기적으로 새로고침하게 하기로 했었나?
 

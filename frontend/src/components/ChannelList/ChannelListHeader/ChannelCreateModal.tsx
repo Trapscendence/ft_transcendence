@@ -10,8 +10,8 @@ import {
 
 import { userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
-import { AddChannelResponse } from '../responseModels';
+import { ADD_CHANNEL, GET_CURRENT_CHANNEL } from '../../../utils/gqls';
+import { AddChannelResponse } from '../../../utils/responseModels';
 
 interface ChannelCreateModalProps {
   open: boolean;

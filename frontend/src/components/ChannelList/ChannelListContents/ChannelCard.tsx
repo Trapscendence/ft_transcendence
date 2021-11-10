@@ -9,9 +9,9 @@ import {
 } from '@mui/material';
 
 import { userIdVar } from '../../..';
+import { ENTER_CHANNEL, GET_CURRENT_CHANNEL } from '../../../utils/gqls';
 import { IChannelListItem } from '../../../utils/models';
-import { ENTER_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
-import { EnterChannelResponse } from '../responseModels';
+import { EnterChannelResponse } from '../../../utils/responseModels';
 
 interface ChannelCardProps {
   channelSummary: IChannelListItem;

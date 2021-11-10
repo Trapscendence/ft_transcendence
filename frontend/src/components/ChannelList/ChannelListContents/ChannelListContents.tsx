@@ -1,9 +1,8 @@
 import { useQuery } from '@apollo/client';
 import { Grid } from '@mui/material';
-import { useEffect } from 'react';
 
-import { GET_ALL_CHANNELS } from '../gqls';
-import { GetAllChannelsResponse } from '../responseModels';
+import { GET_ALL_CHANNELS } from '../../../utils/gqls';
+import { GetAllChannelsResponse } from '../../../utils/responseModels';
 import ChannelCard from './ChannelCard';
 
 export default function ChannelListContents(): JSX.Element {

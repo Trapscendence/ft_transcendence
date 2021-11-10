@@ -12,8 +12,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { CHAT_MESSAGE } from '../gqls';
-import { GetMyBlacklistResponse } from '../responseModels';
+import { CHAT_MESSAGE } from '../../../utils/gqls';
+import { GetMyBlacklistResponse } from '../../../utils/responseModels';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
