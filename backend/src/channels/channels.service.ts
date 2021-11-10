@@ -371,33 +371,19 @@ export class ChannelsService {
     user_id: string,
   ): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
-      WITH
-        banned
-          AS (
-            DELETE FROM
-              ${schema}.channel_user
-            WHERE
-              channel_id = ${channel_id}
-                AND
-              user_id = ${user_id}
-            RETURNING
-              channel_id,
-              user_id
-          )
       INSERT INTO
         ${schema}.channel_ban(
           channel_id,
           banned_user
         )
       VALUES (
-        banned.channel_id,
-        banned.user_id
+        ${channel_id},
+        ${user_id}
       )
-      ON CONSTRAINT
-        UNIQUE (
-          ${schema}.channel_ban.channel_id,
-          ${schema}.channel_ban.banned_user
-        )
+      ON CONFLICT
+        ON CONSTRAINT
+          ban_constraint
+      DO NOTHING
       RETURNING
         *;
     `);
