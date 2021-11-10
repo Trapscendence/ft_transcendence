@@ -73,13 +73,13 @@ export default function Chatting({
     }
   };
 
-  const {
-    user: { blacklist },
-  } = blacklistData as GetMyBlacklistResponse;
+  // const {
+  //   user: { blacklist },
+  // } = blacklistData as GetMyBlacklistResponse;
 
-  console.log(blacklist);
+  // console.log(blacklist);
 
-  console.log(blacklistData);
+  // console.log(blacklistData);
 
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
