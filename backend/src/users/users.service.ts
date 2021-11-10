@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from './models/user.medel';
+import { User } from './models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 
@@ -42,17 +42,13 @@ WHERE
   }
 
   async getOrCreateUserByOAuth(
-    oauth_id: number,
+    oauth_id: string,
     oauth_type: string,
   ): Promise<User | null> {
     const selectQueryResult = await this.databaseService.executeQuery(`
 SELECT
   id,
-  nickname,
-  avatar,
-  status_message,
-  rank_score,
-  site_role
+  tfa_secret
 FROM
   ${schema}.user
 WHERE
@@ -73,15 +69,15 @@ INSERT INTO ${schema}.user(
   '${oauth_type}-${oauth_id}',
   '${oauth_id}',
   '${oauth_type}'
-) RETURNING id, nickname, avatar, status_message, rank_score, site_role;
+) RETURNING id, tfa_secret;
       `);
 
-      if (insertQueryResult.length !== 1) {
+      if (insertQueryResult.length === 1) {
+        return insertQueryResult[0];
+      } else {
         console.error(
           `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
         );
-      } else {
-        return insertQueryResult[0];
       }
     } else {
       console.error(
