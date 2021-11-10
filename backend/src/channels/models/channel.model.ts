@@ -23,9 +23,6 @@ export class Channel {
   @Field()
   title: string;
 
-  // @Field({ nullable: true }) // NOTE: password가 없으면 public
-  // password: string;
-
   @Field()
   is_private: boolean;
 
@@ -41,7 +38,7 @@ export class Channel {
   @Field((type) => [User]!)
   bannedUsers: User[];
 
-  @Field((type) => [User])
+  @Field((type) => [User]!)
   mutedUsers: User[];
 }
 
