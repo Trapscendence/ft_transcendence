@@ -77,7 +77,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
@@ -87,10 +87,9 @@ export class UsersResolver {
   @Mutation((returns) => Boolean)
   async deleteFromBlackList(
     @Args('user_id', { type: () => ID }) user_id: string,
-    @Args('black_id', { type: () => ID }) black_id: string,
-  ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
-    return await this.usersService.deleteFromBlackList(user_id, black_id);
+    @Args('black_id', { type: () => ID }) black_id: string
+  ): Promise<boolean> { // NOTE 여기서 할것인가?
+    return await this.usersService.deleteFromBlackList(user_id, black_id)
   }
 
   /*
