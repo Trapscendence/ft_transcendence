@@ -5,24 +5,30 @@ import {
   Card,
   CardActions,
   CardContent,
-  Snackbar,
   TextField,
-  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { useEffect, useRef, useState } from 'react';
 
 import { channelIdVar, chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { ChannelNotifySummary } from '../../../utils/models';
 import { CHAT_MESSAGE } from '../gqls';
+import { GetMyBlacklistResponse } from '../responseModels';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
-  notify: ChannelNotifySummary | undefined;
+  id: string;
+  alertMsg: string | null;
+  muteList: string[];
+  blacklistData: GetMyBlacklistResponse | undefined;
 }
 
-export default function Chatting({ notify }: ChattingProps): JSX.Element {
+export default function Chatting({
+  id,
+  alertMsg,
+  muteList,
+  blacklistData,
+}: ChattingProps): JSX.Element {
   const [input, setInput, onChangeInput] = useInput('');
   const [chatMessage] = useMutation(CHAT_MESSAGE);
 
@@ -56,16 +62,55 @@ export default function Chatting({ notify }: ChattingProps): JSX.Element {
     }
   };
 
+  const {
+    user: { blacklist },
+  } = blacklistData as GetMyBlacklistResponse;
+
+  console.log(blacklist);
+
+  console.log(blacklistData);
+
   return (
-    <Card variant="outlined" sx={{ width: '100%', height: '79vh', p: 2 }}>
-      <CardContent sx={{ height: '90%' }}>
-        <Box>
-          {/* {channelId &&
-            chattingMessages
-              .get(channelId)
-              ?.map((val) => (
-                <ChattingMessage key={+new Date()} chattingSummary={val} />
-              ))} */}
+    <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
+      <CardContent sx={{ height: '90%', position: 'relative' }}>
+        {alertMsg && (
+          <Alert
+            severity="info"
+            sx={{
+              position: 'absolute',
+              left: '50%',
+              transform: 'translate(-50%, 0)',
+              zIndex: 1,
+            }}
+          >
+            {alertMsg}
+          </Alert>
+        )}
+        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+          {chattingMessages.get(id)?.map((val) => {
+            // if (
+            //   blacklist.find((blacked) => blacked.id === val.participant.id)
+            // ) {
+            //   return (
+            //     <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+            //       Message from a blacked user.
+            //     </Alert>
+            //   );
+            // }
+
+            if (muteList.find((muted) => muted === val.participant.id)) {
+              return (
+                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                  Message from a muted user.
+                </Alert>
+              );
+            } // TODO: 배열을 순회하므로 조금 비효율적...
+
+            return (
+              <ChattingMessage key={val.id} IChatting={val} channelId={id} />
+            );
+          })}
+          <div ref={messagesEndRef} />
         </Box>
       </CardContent>
       <CardActions sx={{ width: '100%', height: '10%' }}>

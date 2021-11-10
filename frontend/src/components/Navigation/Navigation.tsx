@@ -8,7 +8,7 @@ import {
 } from '@mui/icons-material';
 import { Box, CircularProgress, Divider, Tab, Tabs } from '@mui/material';
 import React, { useState } from 'react';
-import { Redirect, useHistory } from 'react-router';
+import { useHistory } from 'react-router';
 
 // TODO
 // 아이콘에 Tooltip mui 추가하면 좋을 듯

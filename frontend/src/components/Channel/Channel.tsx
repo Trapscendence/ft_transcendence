@@ -1,24 +1,73 @@
-import { useQuery, useReactiveVar, useSubscription } from '@apollo/client';
-import { Redirect, useHistory } from 'react-router';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+  useQuery,
+  useSubscription,
+} from '@apollo/client';
+import { useEffect, useState } from 'react';
 
-import { channelIdVar, chattingMessagesVar } from '../..';
-import { ChannelNotifySummary, ChattingSummary } from '../../utils/models';
+import { chattingMessagesVar, userIdVar } from '../..';
+import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
 import { Notify } from '../../utils/schemaEnums';
+import { GetCurrentChannelResponse } from '../ChannelList/responseModels';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
-import { SUBSCRIBE_CHANNEL } from './gqls';
+import {
+  GET_CHANNEL_BANNED_USERS,
+  GET_CHANNEL_MUTED_USERS,
+  GET_MY_BLACKLIST,
+  SUBSCRIBE_CHANNEL,
+} from './gqls';
 import ParticipantsList from './ParticipantsList';
-import { SubscribeChannelResponse } from './responseModels';
+import {
+  GetChannelBannedUsers,
+  GetChannelMutedUsers,
+  GetMyBlacklistResponse,
+  SubscribeChannelResponse,
+} from './responseModels';
 
-export default function Channel(): JSX.Element {
-  const history = useHistory();
+interface ChannelProps {
+  channel: IChannel;
+  channelRefetch: (
+    variables?: Partial<OperationVariables> | undefined
+  ) => Promise<ApolloQueryResult<GetCurrentChannelResponse>>;
+}
+
+export default function Channel({
+  channel,
+  channelRefetch,
+}: ChannelProps): JSX.Element {
+  const {
+    id,
+    title,
+    is_private,
+    owner,
+    administrators,
+    participants,
+    bannedUsers,
+    mutedUsers,
+  } = channel;
 
   const channelId = useReactiveVar(channelIdVar);
 
-  if (!channelId) {
-    // history.push(`/channel`);
-    return <Redirect to="/channel" />;
-  }
+  const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
+    GET_MY_BLACKLIST,
+    {
+      variables: { id: userIdVar() },
+    }
+  );
+
+  // const {data: mutedUsersList} = useQuery<GetChannelMutedUsers>(GET_CHANNEL_MUTED_USERS);
+  // const {data: bannedUsersList} = useQuery<GetChannelBannedUsers>(GET_CHANNEL_BANNED_USERS);
+
+  // useEffect(()=>{
+
+  // }, [bannedUsers]);
+
+  useEffect(() => {
+    // console.log(mutedUsers); // TODO: 현재 mutedUsers가 안들어오는 이슈!
+    setMuteList(mutedUsers.map((val) => val.id));
+  }, [mutedUsers]);
 
   const chattingMessages = useReactiveVar(chattingMessagesVar);
 
@@ -47,18 +96,48 @@ export default function Channel(): JSX.Element {
         //       const duplicatedMap = new Map(chattingMessages);
         //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
 
-        //       chattingMessagesVar(duplicatedMap);
-        //     }
-        // }
-      },
+          chattingMessagesVar(duplicatedMap);
+        }
+        break;
+      case Notify.MUTE:
+        if (check) {
+          setMuteList([...muteList, (participant as IUser).id]);
+          setAlertMsg(
+            `MUTE: User '${(participant as IUser).nickname}' is muted.`
+          );
+          setTimeout(() => {
+            setAlertMsg(null);
+          }, 3000);
+        } else {
+          setMuteList(
+            muteList.filter((val) => val !== (participant as IUser).id)
+          );
+          setAlertMsg(
+            `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
+          );
+          setTimeout(() => {
+            setAlertMsg(null);
+          }, 3000);
+        }
+        break;
+      case Notify.BAN:
+        // TODO: ban 백엔드 함수가 에러가 나서 아직 구현하지 못하는 상태
+        setAlertMsg('BAN: ...');
+        setTimeout(() => {
+          setAlertMsg(null);
+        }, 3000);
+        break;
+      case Notify.ENTER:
+        void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선해야!
+        break;
     }
   );
 
   return (
     <>
-      <ChannelHeader />
-      <ParticipantsList notify={data?.subscribeChannel} />
-      <Chatting notify={data?.subscribeChannel} />
+      <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
+      <ParticipantsList {...{ id, participants }} />
+      <Chatting {...{ id, alertMsg, muteList, blacklistData }} />
     </>
   );
 }

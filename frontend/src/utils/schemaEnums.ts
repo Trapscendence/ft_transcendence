@@ -68,7 +68,7 @@ export enum UserRole {
 // }
 
 export enum Notify {
-  INOUT = 'INOUT',
+  ENTER = 'ENTER',
   CHAT = 'CHAT',
   MUTE = 'MUTE',
   KICK = 'KICK',

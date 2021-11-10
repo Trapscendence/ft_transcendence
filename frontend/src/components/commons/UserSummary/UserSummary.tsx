@@ -8,7 +8,6 @@ import {
 import React, { useState } from 'react';
 
 import { IUser } from '../../../utils/models';
-import { UserStatus } from '../../../utils/schemaEnums';
 import NicknameMenu from '../NicknameMenu';
 
 interface UserSummaryProps {

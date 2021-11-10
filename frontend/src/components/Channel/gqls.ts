@@ -42,3 +42,49 @@ export const GET_CURRENT_PARTICIPANTS = gql`
     }
   }
 `;
+
+export const LEAVE_CHANNEL = gql`
+  mutation LeaveChannel($channel_id: ID!, $user_id: ID!) {
+    leaveChannel(channel_id: $channel_id, user_id: $user_id)
+  }
+`;
+
+export const GET_MY_BLACKLIST = gql`
+  query GetMyBlacklist($id: ID!) {
+    user(id: $id) {
+      blacklist {
+        id
+      }
+    }
+  }
+`;
+// TODO: 실제로는 필수 아닌데 이렇게 써도 되나?
+// TODO: nickname, avatar 등은 안가져와도 되나?
+
+export const GET_CHANNEL_MUTED_USERS = gql`
+  query GetChannelMutedUsers($id: ID!) {
+    user(id: $id) {
+      channel {
+        mutedUsers {
+          id
+          nickname
+        }
+      }
+    }
+  }
+`;
+// TODO: 이미 쓴 쿼리에 대해 (ex. GET_CURRENT_CHANNEL) 부분으로 데이터는 못가져오나?
+
+export const GET_CHANNEL_BANNED_USERS = gql`
+  query GetChannelBannedUsers($id: ID!) {
+    user(id: $id) {
+      channel {
+        bannedUsers {
+          id
+          nickname
+        }
+      }
+    }
+  }
+`;
+// TODO: bannedUsers 등의 필드명이 banned_users로 바뀔 예정
