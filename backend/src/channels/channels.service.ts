@@ -12,7 +12,7 @@ import { schema } from 'src/utils/envs';
 import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
-import { User } from 'src/users/models/user.model';
+import { User, UserRole } from 'src/users/models/user.model';
 
 @Injectable()
 export class ChannelsService {
@@ -29,8 +29,6 @@ export class ChannelsService {
    ** ANCHOR: Query
    */
 
-  // TODO: 메모리상의 cache도 구현해서 성능 더 빠르게 개선할 수도?
-  // TODO: await를 병렬처리해서 성능 개선해야
   async getChannel(channel_id: string): Promise<Channel> {
     const array = await this.databaseService.executeQuery(`
       SELECT
@@ -73,7 +71,7 @@ export class ChannelsService {
           AS is_private
         FROM ${schema}.channel
       OFFSET ${offset} ROWS
-      LIMIT ${!limit ? 'ALL' : `${limit}`};
+      LIMIT ${limit ? limit : 'ALL'};
     `);
   }
 
@@ -142,16 +140,24 @@ export class ChannelsService {
     return await this.getChannel(channel_id);
   }
 
-  async leaveChannel(user_id: string, channel_id: string): Promise<boolean> {
+  async leaveChannel(user_id: string): Promise<boolean> {
+    // TODO owner 자동양도기능, 마지막 사람 나갈 시 자동 폭파기능 추가
     const channels = await this.databaseService.executeQuery(`
         DELETE FROM
           ${schema}.channel_user
         WHERE
           user_id = ${user_id}
             AND
-          channel_id = ${channel_id}
+          channel_id = (
+            SELECT
+              channel_id
+            FROM
+              ${schema}.channel_user
+            WHERE
+              user_id = ${user_id}
+          )
         RETURNING *;
-    `);
+    `); // 해당 채널에 유저가 있는지 확인
     if (!channels.length)
       throw new ConflictException(
         'Failed to leave channel. It seems the user is already left.',
@@ -172,13 +178,10 @@ export class ChannelsService {
       WHERE
         cu.user_id = ${owner_user_id};
     `);
-    if (
-      inChannel.length > 0 ||
-      !(await this.usersService.getUserById(owner_user_id))
-    )
+    if (inChannel.length > 0)
       throw new ConflictException('The user is already in channel');
 
-    const [{ id }] = password
+    const [{ id }] = password // 방을 생성하고 id를 리턴
       ? await this.databaseService.executeQuery(`
         INSERT INTO
           ${schema}.channel(
@@ -219,10 +222,19 @@ export class ChannelsService {
       ON CONFLICT
         ON CONSTRAINT
           uniq_user_id
-      DO NOTHING;
+        DO NOTHING
+      RETURNING *;
     `);
-    if (!channel_users.length)
+    if (!channel_users.length) {
+      // 유저가 다른 방에 있을 경우 방을 삭제하고 conflict
+      await this.databaseService.executeQuery(`
+        DELETE FROM
+          ${schema}.channel
+        WHERE
+          id = ${id};
+      `);
       throw new ConflictException('The user is in another channel.');
+    }
 
     return {
       id,
@@ -248,8 +260,8 @@ export class ChannelsService {
         c.title,
         c.password
       ) = (
-        ${title}
-        ${password === '' ? 'NULL' : password}
+        ${title},
+        ${password == null ? 'c.password' : password === '' ? 'NULL' : password}
       )
       WHERE
         c.id = ${channel_id}
@@ -270,8 +282,6 @@ export class ChannelsService {
   }
 
   async deleteChannel(channel_id: string): Promise<boolean> {
-    // TODO: 여러 쿼리를 아마 하나의 쿼리로 합칠 수 있을 듯
-
     const array = await this.databaseService.executeQuery(`
     WITH
       del1
@@ -327,11 +337,16 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
-  muteUserOnChannel(
+  async muteUserOnChannel(
     channel_id: string,
     user_id: string,
     mute_time: number,
-  ): boolean {
+  ): Promise<boolean> {
+    if (
+      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    )
+      throw new ForbiddenException('Inappropriate role');
     this.mutedUsers.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -373,6 +388,11 @@ export class ChannelsService {
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
+    if (
+      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    )
+      throw new ForbiddenException('Inappropriate role');
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.channel_user
@@ -400,6 +420,8 @@ export class ChannelsService {
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
+    if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
+      throw new ForbiddenException('Inappropriate role');
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_ban(
@@ -582,5 +604,13 @@ export class ChannelsService {
         `,
       [this.mutedUsers.getUserIds(channel_id)],
     );
+  }
+
+  async delegateOwner(owner_id: string, user_id: string): Promise<boolean> {
+    return true;
+  }
+
+  async setAdmin(user_id: string, channel_id: string): Promise<boolean> {
+    return true;
   }
 }
