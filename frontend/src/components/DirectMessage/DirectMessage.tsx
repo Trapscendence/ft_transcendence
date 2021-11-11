@@ -96,29 +96,6 @@ export default function DirectMessage(): JSX.Element {
   const myRef = useRef<null | HTMLDivElement>(null);
   const executeScroll = () => myRef?.current?.scrollIntoView();
 
-  // const [offset, setOffset] = useState<number>(0);
-
-  // const [offsetMap, setOffsetMap] = useState(new Map<string, number>());
-  // const addOffset = (key: string, value: number) => {
-  //   setOffsetMap((prev) => new Map([...prev, [key, value]]));
-  // };
-  // const upsertOffset = (key: string, value: number) => {
-  //   setOffsetMap((prev) => new Map(prev).set(key, value));
-  // };
-  // const [cachedDms, setCachedDms] = useState<Message[]>();
-
-  // const [cachedDms, setCachedDms] = useState<RecieveMessageCache[]>([]);
-  // const updateCachedDms = (index: number, value: Message[]) => {
-  //   const newDmCache = [...cachedDms];
-  //   console.log(newDmCache);
-
-  //   if (newDmCache[index]) newDmCache[index].assign(newDmCache[index], value);
-  //   else newDmCache[index] = value;
-
-  //   setCachedDms(newDmCache);
-  //   console.log(cachedDms);
-  // };
-
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Box>
@@ -160,7 +137,7 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {data?.dmUsers.map((user) => (
-                <Box onClick={executeScroll}>
+                <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={user.nickname}

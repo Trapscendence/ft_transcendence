@@ -51,13 +51,15 @@ export default function UseSearchUser({
           variant="outlined"
           size="small"
           fullWidth
-          onChange={(event) =>
-            //ANCHOR TextField 인풋값이 변경될때마다 DB에있는 닉네임과 비교해서 닉네임이 존재할 경우 '다음'버튼을 활성화시켜주는 부분
-            getUser({ variables: { nickname: event.target.value } })
-          }
         />
       )}
       filterOptions={filterOptions}
+      onInputChange={(event, value) =>
+        //ANCHOR TextField 인풋값이 변경될때마다 DB에있는 닉네임과 비교해서 닉네임이 존재할 경우 '다음'버튼을 활성화시켜주는 부분
+        {
+          getUser({ variables: { nickname: value } });
+        }
+      }
     />
   );
 }

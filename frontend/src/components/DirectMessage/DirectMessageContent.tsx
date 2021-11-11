@@ -51,12 +51,11 @@ DirectMessageContentProps): JSX.Element {
 
   const handleClick = () => {
     setOffset(0);
-    setLimit(limit + 5);
+    setLimit(limit + 1);
     console.log(offset, limit);
   };
   //ANCHOR latestDM 가져오기 -------------------------------------
 
-  let cachedDm: Message[];
   useEffect(() => {
     if (data?.DM?.messages) {
       subscribeToMore({
@@ -80,18 +79,31 @@ DirectMessageContentProps): JSX.Element {
           }
           // console.log(`PREV:`, prev);
           // console.log(`DATA:`, data);
-          return {
+          return Object.assign({}, prev, {
             // ...prev,
             //TODO 새 쪽지 왔을 때 양식 수정
             DM: {
-              ...prev.DM,
-              messages: [newDmItem],
+              messages: [...prev.DM.messages, newDmItem],
             },
-          };
+          });
         },
       });
     }
   }, [data]);
+
+  // const { data: subScriptionData } = useSubscription(RECEIVE_MESSAGE, {
+  //   variables: {
+  //     user_id: user_id,
+  //     other_id: other_id,
+  //     offset: 0,
+  //     limit: 10,
+  //   },
+  // });
+
+  // useEffect(() => {
+  //   [...subScriptionData, ...data];
+  //   console.log(data);
+  // }, [subScriptionData]);
 
   return (
     <Box
@@ -119,14 +131,17 @@ DirectMessageContentProps): JSX.Element {
         }}
       >
         {data && data.DM != undefined ? (
-          data?.DM.messages.map((message) => (
+          data?.DM.messages.map((message) => {
             //TODO DMCONTENTBOX가 시간순으로 정렬해서 출력하게 하기
-            <DMContentBox
-              content={message?.content}
-              received={message?.received}
-              time_stamp={message?.time_stamp}
-            />
-          ))
+            return (
+              <DMContentBox
+                content={message?.content}
+                received={message?.received}
+                time_stamp={message?.time_stamp}
+                key={message?.time_stamp}
+              />
+            );
+          })
         ) : (
           <div />
         )}
