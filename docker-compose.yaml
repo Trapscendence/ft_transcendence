@@ -69,7 +69,7 @@ services:
       - FRONTEND_PORT=${FRONTEND_PORT}
       - BACKEND_HOST=${BACKEND_HOST}
       - BACKEND_PORT=${BACKEND_PORT}
-      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
     build: ./backend
     networks:
       - default

@@ -1,12 +1,16 @@
 import {
   ApolloClient,
   ApolloProvider,
+  createHttpLink,
   InMemoryCache,
   makeVar,
+  split,
   // useQuery,
   // gql,
 } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 import { CssBaseline } from '@mui/material';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -15,15 +19,51 @@ import App from './App';
 import { IChatting } from './utils/models';
 
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:50000/graphql',
+  uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
   options: {
     reconnect: true,
+    connectionParams: {
+      authorization: `Bearer ${localStorage.getItem('access_token') ?? ''}`,
+    },
   },
 });
 
+const httpLink = createHttpLink({
+  uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
+});
+
+const authLink = setContext((_, { headers }) => {
+  const token: string | null = localStorage.getItem('access_token');
+  return {
+    /**
+     * FIXME: Unsafe assignment of an `any` value. eslint(@typescript-eslint/no-unsafe-assignment)
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  authLink.concat(httpLink)
+);
+
 const client = new ApolloClient({
-  uri: 'http://localhost:50000/graphql',
-  link: wsLink, // 이렇게?
+  link: splitLink,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

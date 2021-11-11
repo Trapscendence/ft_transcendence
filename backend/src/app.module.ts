@@ -9,8 +9,8 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
-import { SessionModule } from './session/session.module';
 import { PubSubModule } from './pubsub.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { PubSubModule } from './pubsub.module';
       // }, // production에선 켜야함
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
       cors: {
-        origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
         credentials: true,
       },
       playground: {
@@ -30,8 +30,6 @@ import { PubSubModule } from './pubsub.module';
           'request.credentials': 'include',
         },
       },
-      context: ({ req, connection }) =>
-        connection ? { req: { headers: connection.context } } : { req },
     }),
     DatabaseModule,
     UsersModule,
@@ -40,8 +38,7 @@ import { PubSubModule } from './pubsub.module';
     MatchsModule,
     AchivementsModule,
     PubSubModule,
-    SessionModule,
-    PubSubModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
