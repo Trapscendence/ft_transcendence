@@ -16,12 +16,13 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
-import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
-import { GqlSession } from 'src/session/decorator/user.decorator';
 import { ChannelRoleGuard } from './guard/role.channel.guard';
+import { GqlJwtAuthGuard } from 'src/auth/guards/gql-jwt.guard';
+import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 import { ChannelRole } from './decorator/role.channel.decorator';
 
-@UseGuards(GqlSessionGuard)
+@UseGuards(GqlJwtAuthGuard)
+@UseGuards(ChannelRoleGuard)
 @Resolver((of) => Channel)
 export class ChannelsResolver {
   constructor(
@@ -55,32 +56,33 @@ export class ChannelsResolver {
 
   @Mutation((returns) => Channel, { nullable: true })
   async enterChannel(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Channel | null> {
-    return await this.channelsService.enterChannel(session.uid, channel_id);
+    return await this.channelsService.enterChannel(user.id, channel_id);
   }
 
   @Mutation((returns) => Boolean)
   async leaveChannel(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
-    return await this.channelsService.leaveChannel(session.uid);
+    return await this.channelsService.leaveChannel(user.id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
   async addChannel(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
   ) {
-    return await this.channelsService.addChannel(title, password, session.uid);
+    return await this.channelsService.addChannel(title, password, user.id);
   }
 
   @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
+    @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,

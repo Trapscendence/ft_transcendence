@@ -9,13 +9,13 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
+import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { GqlJwtAuthGuard } from 'src/auth/guards/gql-jwt.guard';
 import { Channel } from 'src/channels/models/channel.model';
 import { User, UserRole } from './models/user.model';
-import { GqlSession } from 'src/session/decorator/user.decorator';
-import { GqlSessionGuard } from 'src/session/guard/gql.session.guard';
 import { UsersService } from './users.service';
 
-@UseGuards(GqlSessionGuard)
+@UseGuards(GqlJwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
@@ -25,13 +25,13 @@ export class UsersResolver {
    */
 
   @Query((returns) => Int)
-  async whoAmI(@GqlSession() session: Record<string, any>) {
-    return session.uid;
+  async whoAmI(@GqlUser() user: any) {
+    return user.id;
   }
 
   @Query((returns) => User, { nullable: true })
   async user(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
@@ -39,7 +39,7 @@ export class UsersResolver {
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
     if (nickname) return await this.usersService.getUserByNickname(nickname);
-    return await this.usersService.getUserById(session.uid);
+    return await this.usersService.getUserById(user.id);
   }
 
   @Query((returns) => [User])
@@ -63,36 +63,36 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
     // NOTE 여기서 할것인가?
-    return this.usersService.addFriend(session.uid, friend_id);
+    return this.usersService.addFriend(user.id, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFriend(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFriend(session.uid, friend_id);
+    return await this.usersService.deleteFriend(user.id, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async addToBlackLIst(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.addToBlackList(session.uid, black_id);
+    return await this.usersService.addToBlackList(user.id, black_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFromBlackList(
-    @GqlSession() session: Record<string, any>,
+    @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
     // NOTE 여기서 할것인가?
-    return await this.usersService.deleteFromBlackList(session.uid, black_id);
+    return await this.usersService.deleteFromBlackList(user.id, black_id);
   }
 
   /*

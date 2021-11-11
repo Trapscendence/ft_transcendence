@@ -9,30 +9,27 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
-import { SessionModule } from './session/session.module';
 import { PubSubModule } from './pubsub.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
-      // subscriptions: {
-      //   'graphql-ws': true,
-      // }, // production에선 켜야함
-      // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
-      cors: {
-        // origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
-        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`, // NOTE: 프론트에서 cors 허용을 위해 일단 이렇게 바꿨습니다. 나중에 충분한 테스트를 거쳐서 https 적용되면 수정 후 push 해주세요. -gmoon
-        credentials: true,
-      },
-      playground: {
-        settings: {
-          'request.credentials': 'include',
+      subscriptions: {
+        // NOTE: production에선 켜야함
+        // 'graphql-ws': {}
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams, webSocket, context) => {
+            console.log(connectionParams);
+          },
         },
       },
-      context: ({ req, connection }) =>
-        connection ? { req: { headers: connection.context } } : { req },
+      cors: {
+        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+        credentials: true,
+      },
     }),
     DatabaseModule,
     UsersModule,
@@ -41,8 +38,7 @@ import { PubSubModule } from './pubsub.module';
     MatchsModule,
     AchivementsModule,
     PubSubModule,
-    SessionModule,
-    PubSubModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
