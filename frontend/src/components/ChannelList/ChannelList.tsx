@@ -2,17 +2,17 @@ import { useQuery } from '@apollo/client';
 import { Divider } from '@mui/material';
 
 import { userIdVar } from '../..';
+import { GET_MY_CHANNEL } from '../../utils/gqls';
+import { GetMyChannelResponse } from '../../utils/responseModels';
 import Channel from '../Channel';
+import ErrorAlert from '../commons/ErrorAlert';
+import LoadingBackdrop from '../commons/LoadingBackdrop';
 import ChannelListContents from './ChannelListContents';
 import ChannelListHeader from './ChannelListHeader';
-import { GET_CURRENT_CHANNEL } from './gqls';
-import { GetCurrentChannelResponse } from './responseModels';
-
-// TODO: channel list는 subscription으로 주기적으로 새로고침하게 하기로 했었나?
 
 export default function ChannelList(): JSX.Element {
-  const { data, refetch } = useQuery<GetCurrentChannelResponse>(
-    GET_CURRENT_CHANNEL,
+  const { data, loading, error, refetch } = useQuery<GetMyChannelResponse>(
+    GET_MY_CHANNEL,
     {
       variables: { id: userIdVar() },
     }
@@ -20,6 +20,9 @@ export default function ChannelList(): JSX.Element {
 
   if (data && data.user.channel)
     return <Channel channel={data.user.channel} channelRefetch={refetch} />;
+
+  if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <>
@@ -29,3 +32,5 @@ export default function ChannelList(): JSX.Element {
     </>
   );
 }
+
+// TODO: subscription으로 데이터 갱신하도록 추후 개선

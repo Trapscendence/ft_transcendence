@@ -3,10 +3,15 @@ import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 
 import { userIdVar } from '../../..';
+import {
+  GET_CHANNELS,
+  GET_MY_CHANNEL,
+  LEAVE_CHANNEL,
+} from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
-import { GET_ALL_CHANNELS, GET_CURRENT_CHANNEL } from '../../ChannelList/gqls';
-import { LEAVE_CHANNEL } from '../gqls';
-import { LeaveChannelResponse } from '../responseModels';
+import { LeaveChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelHeaderProps {
   id: string;
@@ -23,17 +28,23 @@ export default function ChannelHeader({
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
-  const [leaveChannel] = useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
-    variables: { channel_id: id, user_id: userIdVar() },
-    refetchQueries: [
-      GET_CURRENT_CHANNEL,
-      { query: GET_ALL_CHANNELS, variables: { limit: 0, offset: 0 } },
-    ],
-  });
+  const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
+    LEAVE_CHANNEL,
+    {
+      variables: { channel_id: id, user_id: userIdVar() },
+      refetchQueries: [
+        GET_MY_CHANNEL,
+        { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
+      ],
+    }
+  );
 
   const onClickLeave = () => {
     void leaveChannel();
   };
+
+  if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <Paper

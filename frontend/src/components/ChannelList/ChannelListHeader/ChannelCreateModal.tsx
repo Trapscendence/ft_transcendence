@@ -10,8 +10,8 @@ import {
 
 import { userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL, GET_CURRENT_CHANNEL } from '../gqls';
-import { AddChannelResponse } from '../responseModels';
+import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { AddChannelResponse } from '../../../utils/responseModels';
 
 interface ChannelCreateModalProps {
   open: boolean;
@@ -32,7 +32,7 @@ export default function ChannelCreateModal({
     try {
       await addChannelFunc({
         variables: { owner_user_id: userIdVar(), title, password },
-        refetchQueries: [GET_CURRENT_CHANNEL, 'GetCurrentChannel'], // TODO: 맞나?
+        refetchQueries: [GET_MY_CHANNEL, 'GetCurrentChannel'], // TODO: 맞나?
       });
     } catch (e) {
       console.error(e); // TODO: 임시! 에러 처리를 어떻게 해야할지 아직 잘 모르겠음.

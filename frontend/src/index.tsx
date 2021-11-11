@@ -1,6 +1,8 @@
 import {
   ApolloClient,
   ApolloProvider,
+  createHttpLink,
+  from,
   InMemoryCache,
   makeVar,
   // useQuery,
@@ -15,15 +17,24 @@ import App from './App';
 import { IChatting } from './utils/models';
 
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:50000/graphql',
+  uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
   options: {
     reconnect: true,
   },
 });
 
+const httpLink = createHttpLink({
+  uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
+  credentials: 'include',
+});
+
 const client = new ApolloClient({
-  uri: 'http://localhost:50000/graphql',
-  link: wsLink, // 이렇게?
+  // link: from([wsLink, httpLink]), // 이렇게?
+  link: from([httpLink, wsLink]), // NOTE: 11/11 프론트에서 session 전달 안되던 오류.. 여기가 문제였습니다. from에 대한 지식이 없어 공부가 필요합니다. 이렇게 해놓으면 아마 웹소켓은 안될 수도 있을 것 같습니다.
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
