@@ -19,6 +19,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { ChannelRoleGuard } from './guard/role.channel.guard';
 import { GqlJwtAuthGuard } from 'src/auth/guards/gql-jwt.guard';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { ChannelRole } from './decorator/role.channel.decorator';
 
 @UseGuards(GqlJwtAuthGuard)
 @UseGuards(ChannelRoleGuard)
@@ -66,7 +67,7 @@ export class ChannelsResolver {
     @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
-    return await this.channelsService.leaveChannel(user.id, channel_id);
+    return await this.channelsService.leaveChannel(user.id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
