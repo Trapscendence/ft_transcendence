@@ -1,14 +1,33 @@
 version: "3"
 
 services:
+  # certbot:
+  #   environment:
+  #     BACKEND_HOST: ${BACKEND_HOST}
+  #   build:
+  #     context: ./certbot
+  #   networks:
+  #     - default
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - ./certbot/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./certbot/certs:/etc/letsencrypt
+  #     - ./certbot/log:/var/log/letsencrypt
+
   frontend:
+    environment:
+      REACT_APP_BACKEND_HOST: ${BACKEND_HOST}
+      REACT_APP_BACKEND_POST: ${BACKEND_PORT}
     build:
       context: ./frontend
     networks:
       - default
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT}:3000"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./frontend/src:/app/src
 
   database:
@@ -24,12 +43,13 @@ services:
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - default
     ports:
       - "5432:5432"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - db_data:/var/lib/postgresql/data
-    # networks:
-    #   - default
 
   backend:
     environment:
@@ -39,50 +59,55 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
+      - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
+      - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
+      - FORTYTWO_REDIRECT_URI=${FORTYTWO_REDIRECT_URI}
+      - GOOGLE_APP_ID=${GOOGLE_APP_ID}
+      - GOOGLE_APP_SECRET=${GOOGLE_APP_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - FRONTEND_HOST=${FRONTEND_HOST}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - BACKEND_HOST=${BACKEND_HOST}
+      - BACKEND_PORT=${BACKEND_PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
     build: ./backend
     networks:
       - default
     ports:
-      - "50000:50000"
+      - "${BACKEND_PORT}:3000"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./backend/src:/app/src
-    # networks:
-    #   - default
+      - ./certbot/certs:/certs
+    # depends_on:
+    #   - certbot
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
-    # networks:
-    #   - default
+    networks:
+      - default
     ports:
       - "5050:80"
+    depends_on:
+      - database
 
   migration:
-    build:
-      context: ./migration
     environment:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
+    build:
+      context: ./migration
+    networks:
+      - default
     depends_on:
       - database
     volumes:
       - ./migration/migrations:/mitrations
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
-    depends_on:
-      - database
-    networks:
-      - default
-    ports:
-      - "5050:80"
 
 volumes:
   db_data:
@@ -90,3 +115,11 @@ volumes:
 # networks:
 #   internal:
 #     driver: bridge # TODO 일단 local -> bridge로 수정해서 돌리긴 했는데... 코드의 의도와 왜 안되는지 파악 필요
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/16

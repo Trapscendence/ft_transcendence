@@ -1,4 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
@@ -47,7 +53,8 @@ export class ChannelsService {
         c.id = ${channel_id};
     `);
 
-    return !array.length ? null : array[0];
+    if (!array.length) throw new BadRequestException('No such channel id.');
+    return array[0];
   }
 
   async getChannels(offset: number, limit: number): Promise<Channel[]> {
@@ -78,6 +85,19 @@ export class ChannelsService {
     user_id: string,
     channel_id: string,
   ): Promise<Channel | null> {
+    const users = await this.databaseService.executeQuery(`
+      SELECT
+        user_id
+      FROM
+        ${schema}.channel_ban
+      WHERE
+        user_id = ${user_id}
+          AND
+        channel_id = ${channel_id};
+    `); // ban 되어있는지 확인
+    if (users.length)
+      throw new ForbiddenException('The user is banned from channel.');
+
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_user(
@@ -105,21 +125,21 @@ export class ChannelsService {
         'USER'
       )
       ON CONFLICT ( user_id )
-      DO NOTHING
+        DO NOTHING
       RETURNING *;
     `);
-    if (channels.length) {
-      this.pubSub.publish(`to_channel_${channel_id}`, {
-        subscribeChannel: {
-          type: Notify.ENTER,
-          participant: await this.usersService.getUserById(user_id),
-          text: null,
-          check: true,
-        },
-      });
-      return await this.getChannel(channel_id);
-    }
-    return null;
+    if (!channels.length)
+      throw new ConflictException('user may already in a channel.');
+
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.ENTER,
+        participant: await this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    });
+    return await this.getChannel(channel_id);
   }
 
   async leaveChannel(user_id: string, channel_id: string): Promise<boolean> {
@@ -132,7 +152,11 @@ export class ChannelsService {
           channel_id = ${channel_id}
         RETURNING *;
     `);
-    return channels.length ? true : false;
+    if (!channels.length)
+      throw new ConflictException(
+        'Failed to leave channel. It seems the user is already left.',
+      );
+    return true;
   }
 
   async addChannel(
@@ -152,7 +176,7 @@ export class ChannelsService {
       inChannel.length > 0 ||
       !(await this.usersService.getUserById(owner_user_id))
     )
-      return null;
+      throw new ConflictException('The user is already in channel');
 
     const [{ id }] = password
       ? await this.databaseService.executeQuery(`
@@ -180,7 +204,7 @@ export class ChannelsService {
         RETURNING id;
       `);
 
-    await this.databaseService.executeQuery(`
+    const channel_users = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_user(
           user_id,
@@ -197,6 +221,8 @@ export class ChannelsService {
           uniq_user_id
       DO NOTHING;
     `);
+    if (!channel_users.length)
+      throw new ConflictException('The user is in another channel.');
 
     return {
       id,
@@ -287,7 +313,8 @@ export class ChannelsService {
     RETURNING
       *
     `);
-    if (array.length === 0) return false;
+    if (!array.length)
+      throw new ConflictException('The channel does not exist.');
     this.mutedUsers.popChannel(channel_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -340,6 +367,7 @@ export class ChannelsService {
     });
     return true;
   }
+  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
     channel_id: string,
@@ -355,7 +383,8 @@ export class ChannelsService {
       RETURNING
         *;
     `);
-    if (!array.length) return false;
+    if (!array.length)
+      throw new ConflictException('The user is not in a the channel.');
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.KICK,
@@ -364,6 +393,7 @@ export class ChannelsService {
         check: true,
       },
     });
+    return true;
   }
 
   async banUserFromChannel(
@@ -387,7 +417,10 @@ export class ChannelsService {
       RETURNING
         *;
     `);
-    if (!array.length) return false;
+    if (!array.length)
+      throw new ConflictException(
+        'The user is already banned from the channel',
+      );
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.BAN,
@@ -413,7 +446,9 @@ export class ChannelsService {
       RETURNING
         *
     `);
-    return !!array.length;
+    if (!array.length)
+      throw new ConflictException('The user is not banned from the channel.');
+    return true;
   }
 
   async chatMessage(
@@ -421,7 +456,8 @@ export class ChannelsService {
     user_id: string,
     message: string,
   ): Promise<boolean> {
-    if (this.mutedUsers.hasUser(channel_id, user_id)) return false;
+    if (this.mutedUsers.hasUser(channel_id, user_id))
+      throw new ForbiddenException('The user is muted');
     if (message.length > 10000) throw new Error('message too long');
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -458,7 +494,7 @@ export class ChannelsService {
           AND
         cu.channel_role = 'OWNER';
     `);
-    return !array.length ? null : array[0];
+    throw new ConflictException('No such channel id.');
   }
 
   async getAdministrators(channel_id: string): Promise<User[]> {
@@ -484,7 +520,7 @@ export class ChannelsService {
   }
 
   async getParticipants(channel_id: string): Promise<User[]> {
-    return await this.databaseService.executeQuery(`
+    const array = await this.databaseService.executeQuery(`
       SELECT
         u.id,
         u.nickname,
@@ -501,6 +537,8 @@ export class ChannelsService {
       WHERE
         cu.channel_id = ${channel_id}
     `);
+    if (!array.length) throw new ConflictException('No such channel id.');
+    return array;
   }
 
   async getBannedUsers(channel_id: string): Promise<User[]> {

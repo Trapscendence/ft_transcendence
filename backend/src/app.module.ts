@@ -9,6 +9,7 @@ import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
+import { SessionModule } from './session/session.module';
 import { PubSubModule } from './pubsub.module';
 
 @Module({
@@ -20,6 +21,17 @@ import { PubSubModule } from './pubsub.module';
       //   'graphql-ws': true,
       // }, // production에선 켜야함
       // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
+      cors: {
+        origin: `https://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+        credentials: true,
+      },
+      playground: {
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
+      context: ({ req, connection }) =>
+        connection ? { req: { headers: connection.context } } : { req },
     }),
     DatabaseModule,
     UsersModule,
@@ -27,6 +39,8 @@ import { PubSubModule } from './pubsub.module';
     ChannelsModule,
     MatchsModule,
     AchivementsModule,
+    PubSubModule,
+    SessionModule,
     PubSubModule,
   ],
   controllers: [AppController],
