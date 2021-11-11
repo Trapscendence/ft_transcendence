@@ -2,14 +2,13 @@ import {
   ApolloClient,
   ApolloProvider,
   createHttpLink,
-  from,
-  HttpLink,
   InMemoryCache,
   makeVar,
   split,
   // useQuery,
   // gql,
 } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { CssBaseline } from '@mui/material';
@@ -18,6 +17,13 @@ import ReactDOM from 'react-dom';
 
 import App from './App';
 import { IChatting } from './utils/models';
+
+const cookieParser = (name: string): string | undefined => {
+  const matches = new RegExp(
+    '(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'
+  ).exec(document.cookie);
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+};
 
 const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
@@ -28,6 +34,11 @@ const wsLink = new WebSocketLink({
   // }/subscriptions`,
   options: {
     reconnect: true,
+    connectionParams: {
+      authorization: cookieParser('access_token')
+        ? `Bearer ${cookieParser('access_token') ?? ''}`
+        : '',
+    },
   },
 });
 
@@ -39,6 +50,20 @@ const httpLink = new HttpLink({
   credentials: 'include',
 });
 
+const authLink = setContext((_, { headers }) => {
+  const token: string | undefined = cookieParser('access_token');
+  return {
+    /**
+     * FIXME: Unsafe assignment of an `any` value. eslint(@typescript-eslint/no-unsafe-assignment)
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
+
 const splitLink = split(
   ({ query }) => {
     const definition = getMainDefinition(query);
@@ -47,16 +72,12 @@ const splitLink = split(
       definition.operation === 'subscription'
     );
   },
-  // from([httpLink, wsLink]),
-  // httpLink.concat(wsLink),
   wsLink,
-  httpLink
+  authLink.concat(httpLink)
 );
 
 const client = new ApolloClient({
-  // link: from([wsLink, httpLink]), // 이렇게?
-  link: from([httpLink, wsLink]), // NOTE: 11/11 프론트에서 session 전달 안되던 오류.. 여기가 문제였습니다. from에 대한 지식이 없어 공부가 필요합니다. 이렇게 해놓으면 아마 웹소켓은 안될 수도 있을 것 같습니다.
-  // link: splitLink,
+  link: splitLink,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

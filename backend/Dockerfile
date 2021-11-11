@@ -1,4 +1,4 @@
-FROM node:17-alpine3.12
+FROM node:16-alpine3.12
 
 WORKDIR /app
 
@@ -10,4 +10,5 @@ RUN npm i --silent
 
 COPY . ./
 
-CMD ["npm", "run", "start:dev"]
+ENTRYPOINT ["npm"]
+CMD ["run", "start:dev"]

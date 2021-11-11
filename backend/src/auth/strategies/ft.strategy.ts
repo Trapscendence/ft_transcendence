@@ -20,14 +20,14 @@ export class FTStrategy extends PassportStrategy(Strategy, '42') {
     profile: Profile,
     cb: VerifyCallback,
   ) {
-    const oauthID = profile.id;
+    const oauth_id = profile.id;
     const user = await this.usersService.getOrCreateUserByOAuth(
-      oauthID,
+      oauth_id,
       'FORTYTWO',
     );
 
     if (user) {
-      return cb(null, { uid: user.id });
+      return cb(null, { id: user.id });
     } else {
       return cb('Bad query result', null);
     }
