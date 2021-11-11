@@ -18,10 +18,12 @@ export class AuthController {
   @UseGuards(AuthGuard('42'))
   @Get('login/42')
   async issueAccessTokenFrom42(@Req() req: Request, @Res() res: Response) {
-    const access_token = this.authService.issueAccessToken(req.user);
+    const access_token = await this.authService.issueAccessToken(req.user);
 
     res.cookie('access_token', access_token, this.cookieOption);
-    res.status(301).redirect('/graphql');
+    res.redirect(
+      `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}/`,
+    );
   }
 
   @UseGuards(JwtAuthGuard)

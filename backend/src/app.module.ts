@@ -17,18 +17,18 @@ import { AuthModule } from './auth/auth.module';
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
-      // subscriptions: {
-      //   'graphql-ws': true,
-      // }, // production에선 켜야함
-      // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
+      subscriptions: {
+        // NOTE: production에선 켜야함
+        // 'graphql-ws': {}
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams, webSocket, context) => {
+            console.log(connectionParams);
+          },
+        },
+      },
       cors: {
         origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
         credentials: true,
-      },
-      playground: {
-        settings: {
-          'request.credentials': 'include',
-        },
       },
     }),
     DatabaseModule,

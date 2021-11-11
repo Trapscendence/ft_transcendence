@@ -18,6 +18,13 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import { IChatting } from './utils/models';
 
+const cookieParser = (name: string): string | undefined => {
+  const matches = new RegExp(
+    '(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'
+  ).exec(document.cookie);
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+};
+
 const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
@@ -25,7 +32,9 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authorization: `Bearer ${localStorage.getItem('access_token') ?? ''}`,
+      authorization: cookieParser('access_token')
+        ? `Bearer ${cookieParser('access_token') ?? ''}`
+        : '',
     },
   },
 });
@@ -34,10 +43,11 @@ const httpLink = createHttpLink({
   uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
   }/graphql`,
+  credentials: 'include',
 });
 
 const authLink = setContext((_, { headers }) => {
-  const token: string | null = localStorage.getItem('access_token');
+  const token: string | undefined = cookieParser('access_token');
   return {
     /**
      * FIXME: Unsafe assignment of an `any` value. eslint(@typescript-eslint/no-unsafe-assignment)
