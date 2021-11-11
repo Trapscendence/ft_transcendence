@@ -12,6 +12,8 @@ import { userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
 import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
 import { AddChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelCreateModalProps {
   open: boolean;
@@ -25,13 +27,13 @@ export default function ChannelCreateModal({
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
 
-  // TODO: loading, error 등은 나중에 고려
-  const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL);
+  const [addChannelFunc, { loading, error }] =
+    useMutation<AddChannelResponse>(ADD_CHANNEL);
 
   const onClickBtn = async (): Promise<void> => {
     try {
       await addChannelFunc({
-        variables: { owner_user_id: userIdVar(), title, password },
+        variables: { title, password },
         refetchQueries: [GET_MY_CHANNEL, 'GetCurrentChannel'], // TODO: 맞나?
       });
     } catch (e) {
@@ -45,6 +47,12 @@ export default function ChannelCreateModal({
     // TODO: owner_user_id 임시! 나중에 user_id를 저장해서 보내건, 쿠키를 사용해서 이 인자가 사라지건, 추후 수정 필요.
     // TODO: 같은 user_id가 방을 만드는 등 불가능한 동작을 했을 때 어떻게 되는가? 에러가 오나?
   };
+
+  if (loading) return <LoadingBackdrop loading={loading} />;
+  if (error) {
+    // console.log('??');
+    return <ErrorAlert error={error} />;
+  }
 
   return (
     <Modal

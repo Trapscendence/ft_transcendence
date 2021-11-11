@@ -131,16 +131,8 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
  */
 
 export const ADD_CHANNEL = gql`
-  mutation AddChannel(
-    $owner_user_id: String!
-    $title: String!
-    $password: String
-  ) {
-    addChannel(
-      owner_user_id: $owner_user_id
-      title: $title
-      password: $password
-    ) {
+  mutation AddChannel($title: String!, $password: String) {
+    addChannel(title: $title, password: $password) {
       id
       title
       is_private

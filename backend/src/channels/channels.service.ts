@@ -496,7 +496,8 @@ export class ChannelsService {
    ** ANCHOR: ResolveField
    */
 
-  async getOwner(channel_id: string): Promise<User> {
+  // async getOwner(channel_id: string): Promise<User> {
+  async getOwner(channel_id: string): Promise<null> {
     const array = await this.databaseService.executeQuery(`
       SELECT
         u.id id,
@@ -516,7 +517,9 @@ export class ChannelsService {
           AND
         cu.channel_role = 'OWNER';
     `);
-    throw new ConflictException('No such channel id.');
+    if (!array) throw new ConflictException('No such channel id.');
+
+    return array[0];
   }
 
   async getAdministrators(channel_id: string): Promise<User[]> {
