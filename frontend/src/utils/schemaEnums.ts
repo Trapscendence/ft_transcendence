@@ -44,10 +44,11 @@ export enum UserStatus {
 }
 
 export enum UserRole {
-  USER,
-  MODERATOR,
-  OWNER,
+  USER = 'USER',
+  MODERATOR = 'MODERATOR',
+  OWNER = 'OWNER',
 }
+// TODO: site_role하고 channel_role을 함께 쓰나?
 
 // export interface Channel {
 //   id: string;

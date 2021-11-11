@@ -1,6 +1,8 @@
 import {
   ApolloClient,
   ApolloProvider,
+  createHttpLink,
+  from,
   InMemoryCache,
   makeVar,
   // useQuery,
@@ -15,15 +17,23 @@ import App from './App';
 import { IChatting } from './utils/models';
 
 const wsLink = new WebSocketLink({
-  uri: 'ws://localhost:50000/graphql',
+  uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
   options: {
     reconnect: true,
   },
 });
 
+const httpLink = createHttpLink({
+  uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+    process.env.REACT_APP_BACKEND_PORT ?? ''
+  }/graphql`,
+  credentials: 'include',
+});
+
 const client = new ApolloClient({
-  uri: 'http://localhost:50000/graphql',
-  link: wsLink, // 이렇게?
+  link: from([wsLink, httpLink]), // 이렇게?
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

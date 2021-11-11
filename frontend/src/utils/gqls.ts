@@ -59,6 +59,14 @@ export const GET_MY_CHANNEL = gql`
   }
 `;
 
+export const GET_MY_CHANNEL_ROLE = gql`
+  query GetMyChannelRole($id: ID!) {
+    user(id: $id) {
+      channel_role
+    }
+  }
+`;
+
 export const GET_CHATTING_MESSAGES = gql`
   query getChattingMessages($channel_id: ID!) {
     chattingMessages(channel_id: $channel_id) @client
