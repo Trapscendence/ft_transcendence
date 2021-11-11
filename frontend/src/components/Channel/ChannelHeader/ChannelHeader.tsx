@@ -44,6 +44,7 @@ export default function ChannelHeader({
   };
 
   if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <Paper
@@ -55,7 +56,6 @@ export default function ChannelHeader({
         alignItems: 'center',
       }}
     >
-      <LoadingBackdrop loading={loading} />
       <Box>
         <Typography>{is_private ? 'Private' : 'Public'}</Typography>
         <Typography>Title: {title}</Typography>

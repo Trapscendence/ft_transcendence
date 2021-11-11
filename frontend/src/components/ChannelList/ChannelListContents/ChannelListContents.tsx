@@ -14,10 +14,10 @@ export default function ChannelListContents(): JSX.Element {
   });
 
   if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <Grid container>
-      <LoadingBackdrop loading={loading} />
       {data?.channels.map((val) => (
         <ChannelCard key={val.id} channelSummary={val} />
       ))}

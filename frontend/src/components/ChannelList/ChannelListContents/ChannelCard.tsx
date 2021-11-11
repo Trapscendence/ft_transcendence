@@ -36,10 +36,10 @@ export default function ChannelCard({
   };
 
   if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <Grid item xs={6} p={3}>
-      <LoadingBackdrop loading={loading} />
       <Card sx={{ minWidth: 275 }}>
         <CardContent>
           <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>

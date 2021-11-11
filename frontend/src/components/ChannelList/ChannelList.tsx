@@ -22,10 +22,10 @@ export default function ChannelList(): JSX.Element {
     return <Channel channel={data.user.channel} channelRefetch={refetch} />;
 
   if (error) return <ErrorAlert error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <>
-      <LoadingBackdrop loading={loading} />
       <ChannelListHeader />
       <Divider sx={{ my: 2, mx: -3 }} />
       <ChannelListContents />
