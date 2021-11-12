@@ -30,6 +30,8 @@ export class MutedUsers {
     if (!this.channels.get(channel_id))
       this.channels.set(channel_id, new Set<string>());
     this.channels.get(channel_id).add(user_id);
+
+    // NOTE: 현재 유저가 그 채널에 없어도 그냥 push되는 문제가 있습니다. -gmoon
   }
 
   popUser(channel_id: string, user_id: string): boolean {
@@ -41,7 +43,7 @@ export class MutedUsers {
   }
 
   getUserIds(channel_id: string): string[] {
-    const channel = this.channels.get(channel_id);
+    const channel = this.channels.get(channel_id.toString()); // NOTE: 이상하게 number로 들어와서 toString() 하지 않으면 무조건 undefined가 됩니다. -gmoon
     if (!channel) return [];
     const user_ids: string[] = [];
     for (const id of channel) {

@@ -33,7 +33,7 @@ export default function ChannelNicknameMenu({
   const [muteUser, { error: muteError }] = useMutation<MuteUserResponse>(
     MUTE_USER,
     {
-      variables: { mute_time: 10, user_id: id, channel_id: channelId }, // TODO: 우선 10초로 고정
+      variables: { mute_time: 10000, user_id: id, channel_id: channelId }, // NOTE: 일단 시간은 고정... 추후 시간 조정하도록 구현
     }
   );
 

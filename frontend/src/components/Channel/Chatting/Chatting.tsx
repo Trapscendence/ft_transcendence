@@ -61,8 +61,6 @@ export default function Chatting({
     setInput('');
   };
 
-  if (error) return <ErrorAlert error={error} />;
-
   const onKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter') {
       void chatMessage({
@@ -83,6 +81,8 @@ export default function Chatting({
   // console.log(blacklist);
 
   // console.log(blacklistData);
+
+  if (error) return <ErrorAlert error={error} />;
 
   return (
     <Card variant="outlined" sx={{ width: '100%', height: '72vh', p: 2 }}>
