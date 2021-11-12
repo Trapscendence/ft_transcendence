@@ -22,7 +22,7 @@ import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 import { ChannelRole } from './decorator/role.channel.decorator';
 
 @UseGuards(JwtAuthGuard)
-@UseGuards(ChannelRoleGuard)
+// @UseGuards(ChannelRoleGuard)
 @Resolver((of) => Channel)
 export class ChannelsResolver {
   constructor(
