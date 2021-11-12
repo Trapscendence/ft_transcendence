@@ -56,3 +56,11 @@ export interface EnterChannelResponse {
     channel: IChannel;
   };
 }
+
+export interface MuteUserResponse {
+  muteUserOnChannel: boolean;
+}
+
+export interface BanUserResponse {
+  banUserFromChannel: boolean;
+}
