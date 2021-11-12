@@ -13,6 +13,7 @@ import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User, UserRole } from 'src/users/models/user.model';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {
@@ -402,11 +403,15 @@ export class ChannelsService {
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
-    if (
-      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    )
-      throw new ForbiddenException('Inappropriate role');
+    // if (
+    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    // )
+    //   throw new ForbiddenException('Inappropriate role');
+    // NOTE: 여기도 'No such user id' 에러로 임시 주석처리합니다. -gmoon
+
+    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!', channel_id, user_id);
+
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.channel_user
@@ -422,7 +427,7 @@ export class ChannelsService {
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.KICK,
-        participant: user_id,
+        participant: this.usersService.getUserById(user_id),
         text: null,
         check: true,
       },
@@ -436,8 +441,6 @@ export class ChannelsService {
   ): Promise<boolean> {
     if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
       throw new ForbiddenException('Inappropriate role');
-
-    console.log(channel_id, user_id);
 
     const array = await this.databaseService.executeQuery(`
       INSERT INTO

@@ -3,9 +3,13 @@ import { Forum } from '@mui/icons-material';
 import { ListItemIcon, MenuItem } from '@mui/material';
 
 import { userIdVar } from '../../..';
-import { BAN_USER, GET_MY_CHANNEL_ROLE, MUTE_USER } from '../../../utils/gqls';
 import {
-  BanUserResponse,
+  BAN_AND_KICK_USER,
+  GET_MY_CHANNEL_ROLE,
+  MUTE_USER,
+} from '../../../utils/gqls';
+import {
+  BanAndKickUserResponse,
   GetMyChannelRoleResponse,
   MuteUserResponse,
 } from '../../../utils/responseModels';
@@ -37,8 +41,8 @@ export default function ChannelNicknameMenu({
     }
   );
 
-  const [banUser, { error: banError }] = useMutation<BanUserResponse>(
-    BAN_USER,
+  const [banUser, { error: banError }] = useMutation<BanAndKickUserResponse>(
+    BAN_AND_KICK_USER,
     {
       variables: { user_id: id, channel_id: channelId },
     }

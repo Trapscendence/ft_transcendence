@@ -70,14 +70,12 @@ export default function Channel({
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!subscribeData || !subscribeData.subscribeChannel) return; // TODO: 임시 조치... 어떻게 들어오는지 확인 후 수정 필요
+    if (!subscribeData) return; // NOTE: undefined 방지를 위해
 
     const { type, participant, text, check }: IChannelNotify =
       subscribeData.subscribeChannel;
 
-    const subscribe_id = new Date().getTime().toString();
-
-    console.log(type, participant, text, check);
+    // console.log(type, participant, text, check);
 
     switch (type) {
       case Notify.CHAT:
@@ -91,7 +89,7 @@ export default function Channel({
           const duplicatedMap = new Map(chattingMessagesVar());
           duplicatedMap.set(id, [
             ...prev,
-            { id: subscribe_id, participant, text },
+            { id: new Date().getTime().toString(), participant, text },
           ]);
 
           chattingMessagesVar(duplicatedMap);
@@ -99,7 +97,8 @@ export default function Channel({
         break;
       case Notify.MUTE:
         if (check) {
-          setMuteList([...muteList, (participant as IUser).id]);
+          void channelRefetch();
+          // setMuteList([...muteList, (participant as IUser).id]);
           setAlertMsg(
             `MUTE: User '${(participant as IUser).nickname}' is muted.`
           );
@@ -107,9 +106,10 @@ export default function Channel({
             setAlertMsg(null);
           }, 3000);
         } else {
-          setMuteList(
-            muteList.filter((val) => val !== (participant as IUser).id)
-          );
+          void channelRefetch();
+          // setMuteList(
+          //   muteList.filter((val) => val !== (participant as IUser).id)
+          // );
           setAlertMsg(
             `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
           );
@@ -118,15 +118,17 @@ export default function Channel({
           }, 3000);
         }
         break;
-      case Notify.BAN:
-        // TODO: ban 백엔드 함수가 에러가 나서 아직 구현하지 못하는 상태
-        setAlertMsg('BAN: ...');
+      case Notify.KICK:
+        setAlertMsg(
+          `BAN: User '${(participant as IUser).nickname}' is banned.`
+        );
         setTimeout(() => {
           setAlertMsg(null);
-        }, 3000);
+        }, 3000); // NOTE: kick은 ban할 때만 사용, kick 성공한 사람만 문구 뜨도록
+        void channelRefetch();
         break;
       case Notify.ENTER:
-        void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선해야!
+        void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선할 수...
         break;
     }
   }, [subscribeData]);

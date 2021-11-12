@@ -61,6 +61,7 @@ export interface MuteUserResponse {
   muteUserOnChannel: boolean;
 }
 
-export interface BanUserResponse {
+export interface BanAndKickUserResponse {
   banUserFromChannel: boolean;
+  kickUserFromChannel: boolean;
 }
