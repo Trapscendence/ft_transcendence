@@ -43,7 +43,7 @@ export default function ChannelHeader({
     void leaveChannel();
   };
 
-  if (error) return <ErrorAlert error={error} />;
+  if (error) return <ErrorAlert name="ChannelHeader" error={error} />;
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (

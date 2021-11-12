@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Forum } from '@mui/icons-material';
-import { ListItemIcon, MenuItem, Typography } from '@mui/material';
+import { ListItemIcon, MenuItem } from '@mui/material';
 
 import { userIdVar } from '../../..';
 import { BAN_USER, GET_MY_CHANNEL_ROLE, MUTE_USER } from '../../../utils/gqls';
@@ -44,11 +44,26 @@ export default function ChannelNicknameMenu({
     }
   );
 
-  if (channelRoleError) return <ErrorAlert error={channelRoleError} />;
+  if (channelRoleError)
+    return (
+      <ErrorAlert
+        name="ChannelNicknameMenu: channelRoleError"
+        error={channelRoleError}
+      />
+    );
   if (targetChannelRoleError)
-    return <ErrorAlert error={targetChannelRoleError} />;
-  if (muteError) return <ErrorAlert error={muteError} />;
-  if (banError) return <ErrorAlert error={banError} />;
+    return (
+      <ErrorAlert
+        name="ChannelNicknameMenu: targetChannelRoleError"
+        error={targetChannelRoleError}
+      />
+    );
+  if (muteError)
+    return (
+      <ErrorAlert name="ChannelNicknameMenu: muteError" error={muteError} />
+    );
+  if (banError)
+    return <ErrorAlert name="ChannelNicknameMenu: banError" error={banError} />;
 
   if (
     (channelRoleData && channelRoleData.user.channel_role === 'USER') ||

@@ -35,7 +35,7 @@ export default function ChannelCard({
     void enterChannel({ variables: { channel_id: id } });
   };
 
-  if (error) return <ErrorAlert error={error} />;
+  if (error) return <ErrorAlert name="ChannelCard" error={error} />;
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (

@@ -49,10 +49,7 @@ export default function ChannelCreateModal({
   };
 
   if (loading) return <LoadingBackdrop loading={loading} />;
-  if (error) {
-    // console.log('??');
-    return <ErrorAlert error={error} />;
-  }
+  if (error) return <ErrorAlert name="ChannelCreateModal" error={error} />;
 
   return (
     <Modal

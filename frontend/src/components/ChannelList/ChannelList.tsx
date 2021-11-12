@@ -24,7 +24,7 @@ export default function ChannelList(): JSX.Element {
   if (data && data.user.channel)
     return <Channel channel={data.user.channel} channelRefetch={refetch} />;
 
-  if (error) return <ErrorAlert error={error} />;
+  if (error) return <ErrorAlert name="ChannelList" error={error} />;
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
