@@ -162,6 +162,16 @@ export class ChannelsService {
       throw new ConflictException(
         'Failed to leave channel. It seems the user is already left.',
       );
+
+    this.pubSub.publish(`to_channel_${channels[0].channel_id}`, {
+      subscribeChannel: {
+        type: Notify.ENTER,
+        participant: await this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    }); // NOTE: 임시라 check 등도 다 동일합니다. 그냥 프론트에서 subscription 오는지 여부만 체크하고 새로고침하게 임시 구현하려는 목적입니다.
+
     return true;
   }
 
