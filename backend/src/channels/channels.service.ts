@@ -85,11 +85,11 @@ export class ChannelsService {
   ): Promise<Channel | null> {
     const users = await this.databaseService.executeQuery(`
       SELECT
-        user_id
+        banned_user
       FROM
         ${schema}.channel_ban
       WHERE
-        user_id = ${user_id}
+        banned_user = ${user_id}
           AND
         channel_id = ${channel_id};
     `); // ban 되어있는지 확인

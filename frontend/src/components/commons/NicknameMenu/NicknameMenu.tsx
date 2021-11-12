@@ -23,21 +23,31 @@ export default function NicknameMenu({
   channelId,
   id,
 }: NicknameMenuProps): JSX.Element {
-  const [muteUser] = useMutation<MuteUserResponse>(MUTE_USER, {
-    variables: { mute_time: 60, user_id: id, channel_id: channelId }, // TODO: 테스트를 위해 1분으로 고정
-  });
-
-  const [banUser] = useMutation<BanUserResponse>(BAN_USER, {
-    variables: { user_id: id, channel_id: channelId },
-  });
-
   const { data: channelRoleData, error: channelRoleError } =
     useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
       variables: { id: userIdVar() },
     });
 
+  const [muteUser, { error: muteError }] = useMutation<MuteUserResponse>(
+    MUTE_USER,
+    {
+      variables: { mute_time: 60, user_id: id, channel_id: channelId }, // TODO: 테스트를 위해 1분으로 고정
+    }
+  );
+
+  const [banUser, { error: banError }] = useMutation<BanUserResponse>(
+    BAN_USER,
+    {
+      variables: { user_id: id, channel_id: channelId },
+    }
+  );
+
   // TODO: mute, ban, block이 있어야 할 것 같은데, 현재는 mute, ban, kick이 있음.
   // TODO: channel_role에 따라 나타나고 안나타나게
+
+  if (channelRoleError) return <ErrorAlert error={channelRoleError} />;
+  if (muteError) return <ErrorAlert error={muteError} />;
+  if (banError) return <ErrorAlert error={banError} />;
 
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

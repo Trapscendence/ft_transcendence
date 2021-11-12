@@ -32,7 +32,7 @@ export default function ChannelCard({
   );
 
   const onClickBtn = () => {
-    void enterChannel({ variables: { channel_id: id, user_id: userIdVar() } });
+    void enterChannel({ variables: { channel_id: id } });
   };
 
   if (error) return <ErrorAlert error={error} />;

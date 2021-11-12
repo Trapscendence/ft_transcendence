@@ -160,8 +160,8 @@ export const ADD_CHANNEL = gql`
 // TODO: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
 
 export const ENTER_CHANNEL = gql`
-  mutation EnterChannel($channel_id: ID!, $user_id: ID!) {
-    enterChannel(channel_id: $channel_id, user_id: $user_id) {
+  mutation EnterChannel($channel_id: ID!) {
+    enterChannel(channel_id: $channel_id) {
       id
       title
       is_private
