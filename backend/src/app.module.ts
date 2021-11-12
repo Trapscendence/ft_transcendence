@@ -22,7 +22,10 @@ import { AuthModule } from './auth/auth.module';
         // 'graphql-ws': {}
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
-            console.log(connectionParams);
+            if (connectionParams.authorization) {
+              const token = connectionParams.authorization.split(' ')[1];
+              return { authorization: token };
+            }
           },
         },
       },
