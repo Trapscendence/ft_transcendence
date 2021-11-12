@@ -188,8 +188,8 @@ export const CHAT_MESSAGE = gql`
 `; // TODO: 나중에 user_id 등은 쿠키 사용으로 사라질 예정
 
 export const LEAVE_CHANNEL = gql`
-  mutation LeaveChannel($channel_id: ID!, $user_id: ID!) {
-    leaveChannel(channel_id: $channel_id, user_id: $user_id)
+  mutation LeaveChannel {
+    leaveChannel
   }
 `;
 

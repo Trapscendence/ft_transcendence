@@ -31,7 +31,7 @@ export default function ChannelHeader({
   const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
     LEAVE_CHANNEL,
     {
-      variables: { channel_id: id, user_id: userIdVar() },
+      // variables: { channel_id: id, user_id: userIdVar() },
       refetchQueries: [
         GET_MY_CHANNEL,
         { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
