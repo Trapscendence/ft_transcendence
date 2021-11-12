@@ -436,6 +436,9 @@ export class ChannelsService {
   ): Promise<boolean> {
     if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
       throw new ForbiddenException('Inappropriate role');
+
+    console.log(channel_id, user_id);
+
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_ban(
@@ -460,7 +463,7 @@ export class ChannelsService {
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.BAN,
-        participant: user_id,
+        participant: this.usersService.getUserById(user_id),
         text: null,
         check: true,
       },
@@ -510,8 +513,7 @@ export class ChannelsService {
    ** ANCHOR: ResolveField
    */
 
-  // async getOwner(channel_id: string): Promise<User> {
-  async getOwner(channel_id: string): Promise<null> {
+  async getOwner(channel_id: string): Promise<User> {
     const array = await this.databaseService.executeQuery(`
       SELECT
         u.id id,
