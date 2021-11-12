@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { MenuItem } from '@mui/material';
+import { Forum } from '@mui/icons-material';
+import { ListItemIcon, MenuItem, Typography } from '@mui/material';
 
 import { userIdVar } from '../../..';
 import { BAN_USER, GET_MY_CHANNEL_ROLE, MUTE_USER } from '../../../utils/gqls';
@@ -60,9 +61,15 @@ export default function ChannelNicknameMenu({
   return (
     <>
       <MenuItem key={1} onClick={() => banUser()}>
+        <ListItemIcon>
+          <Forum fontSize="small" />
+        </ListItemIcon>
         Ban
       </MenuItem>
       <MenuItem key={2} onClick={() => muteUser()}>
+        <ListItemIcon>
+          <Forum fontSize="small" />
+        </ListItemIcon>
         Mute
       </MenuItem>
     </>
