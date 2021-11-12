@@ -23,7 +23,6 @@ export default function ChannelListHeader(): JSX.Element {
       >
         Create a new channel
       </Button>
-      <ChannelCreateModal {...{ open, handleClose }} />
       <Button variant="contained" color="secondary" sx={{ m: 1, p: 2 }}>
         Random channel
       </Button>
@@ -39,6 +38,7 @@ export default function ChannelListHeader(): JSX.Element {
           />
         </FormGroup>
       </Box>
+      <ChannelCreateModal {...{ open, handleClose }} />
     </Box>
   );
 }

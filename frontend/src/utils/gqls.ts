@@ -59,6 +59,14 @@ export const GET_MY_CHANNEL = gql`
   }
 `;
 
+export const GET_MY_CHANNEL_ROLE = gql`
+  query GetMyChannelRole($id: ID!) {
+    user(id: $id) {
+      channel_role
+    }
+  }
+`;
+
 export const GET_CHATTING_MESSAGES = gql`
   query getChattingMessages($channel_id: ID!) {
     chattingMessages(channel_id: $channel_id) @client
@@ -123,16 +131,8 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
  */
 
 export const ADD_CHANNEL = gql`
-  mutation AddChannel(
-    $owner_user_id: String!
-    $title: String!
-    $password: String
-  ) {
-    addChannel(
-      owner_user_id: $owner_user_id
-      title: $title
-      password: $password
-    ) {
+  mutation AddChannel($title: String!, $password: String) {
+    addChannel(title: $title, password: $password) {
       id
       title
       is_private

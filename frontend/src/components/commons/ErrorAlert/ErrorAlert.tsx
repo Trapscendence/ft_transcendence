@@ -7,7 +7,7 @@ interface ErrorAlertProps {
 }
 
 export default function ErrorAlert({ error }: ErrorAlertProps): JSX.Element {
-  return <Alert severity="error">error:{error.message}</Alert>;
+  return <Alert severity="error">error: {error.message}</Alert>;
 
   // return (
   //   <Snackbar

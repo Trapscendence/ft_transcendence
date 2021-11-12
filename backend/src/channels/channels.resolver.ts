@@ -1,4 +1,4 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { ForbiddenException, Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -11,7 +11,7 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { PUB_SUB } from 'src/pubsub.module';
-import { User } from 'src/users/models/user.model';
+import { User, UserRole } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
@@ -19,6 +19,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { ChannelRoleGuard } from './guard/role.channel.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { ChannelRole } from './decorator/role.channel.decorator';
 
 @UseGuards(JwtAuthGuard)
 @UseGuards(ChannelRoleGuard)
@@ -41,7 +42,7 @@ export class ChannelsResolver {
     return await this.channelsService.getChannel(channel_id);
   }
 
-  @Query((returns) => [Channel], { name: 'channels', nullable: true }) // TODO: 제대로 하려면 수정 필요할 듯? 필터링 부분...
+  @Query((returns) => [Channel], { name: 'channels', nullable: true })
   async getChannels(
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number, // 0일 경우 모두 불러옴
@@ -66,7 +67,7 @@ export class ChannelsResolver {
     @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
-    return await this.channelsService.leaveChannel(user.id, channel_id);
+    return await this.channelsService.leaveChannel(user.id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
@@ -78,6 +79,7 @@ export class ChannelsResolver {
     return await this.channelsService.addChannel(title, password, user.id);
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
     @GqlUser() user: any,
@@ -88,26 +90,32 @@ export class ChannelsResolver {
     return await this.channelsService.editChannel(channel_id, title, password);
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async deleteChannel(
+    @ChannelRole() channel_role: UserRole,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ) {
+    if (channel_role === UserRole.MODERATOR)
+      throw new ForbiddenException('The user is not the owner of the channel');
     return await this.channelsService.deleteChannel(channel_id);
   }
 
-  @Mutation((returns) => Boolean) // TODO: User 여기서 어떻게 쓰는지 알아보기
-  muteUserOnChannel(
+  @UseGuards(ChannelRoleGuard)
+  @Mutation((returns) => Boolean)
+  async muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('mute_time', { type: () => Int! }) mute_time: number,
-  ): boolean {
-    return this.channelsService.muteUserOnChannel(
+  ): Promise<boolean> {
+    return await this.channelsService.muteUserOnChannel(
       channel_id,
       user_id,
       mute_time,
     );
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   unmuteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -116,6 +124,7 @@ export class ChannelsResolver {
     return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async kickUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -124,6 +133,7 @@ export class ChannelsResolver {
     return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async banUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -132,6 +142,7 @@ export class ChannelsResolver {
     return await this.channelsService.banUserFromChannel(channel_id, user_id);
   }
 
+  @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async unbanUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -188,7 +199,7 @@ export class ChannelsResolver {
   }
 
   @Subscription((returns) => Channel)
-  subscribeChannelUpdate() {
+  subscribeChannelList() {
     return this.pubSub.asyncIterator('new_channel');
   }
 }

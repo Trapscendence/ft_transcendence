@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
@@ -8,6 +8,19 @@ import { Channel } from 'src/channels/models/channel.model';
 @Injectable()
 export class UsersService {
   constructor(private databaseService: DatabaseService) {}
+
+  async getSiteRole(id: string): Promise<UserRole> {
+    const site_role = await this.databaseService.executeQuery(`
+      SELECT
+        site_role
+      FROM
+        ${schema}.user
+      WHERE
+        id = ${id};
+    `)[0];
+    if (!site_role) throw new ConflictException('No such user id');
+    return site_role;
+  }
 
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
@@ -321,6 +334,8 @@ INSERT INTO ${schema}.user(
       WHERE
         user_id = ${id};
     `);
-    return array.length ? array[0].channel_role : null;
+    if (!array.length)
+      throw new ConflictException('The user is not in a channel.');
+    return array[0].channel_role;
   }
 }

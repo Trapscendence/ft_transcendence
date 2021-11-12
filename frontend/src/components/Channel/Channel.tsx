@@ -131,7 +131,10 @@ export default function Channel({
     }
   }, [subscribeData]);
 
-  if (subscribeError) return <ErrorAlert error={subscribeError} />;
+  if (subscribeError) {
+    console.log(subscribeError);
+    return <ErrorAlert error={subscribeError} />;
+  }
 
   return (
     <>

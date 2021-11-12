@@ -1,4 +1,5 @@
 import { IChannel, IChannelListItem, IChannelNotify, IUser } from './models';
+import { UserRole } from './schemaEnums';
 
 export interface SubscribeChannelResponse {
   subscribeChannel: IChannelNotify;
@@ -31,6 +32,12 @@ export interface AddChannelResponse {
 export interface GetMyChannelResponse {
   user: {
     channel: IChannel;
+  };
+}
+
+export interface GetMyChannelRoleResponse {
+  user: {
+    channel_role: UserRole;
   };
 }
 

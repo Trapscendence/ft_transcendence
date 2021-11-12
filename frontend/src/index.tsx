@@ -29,6 +29,9 @@ const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
   }/graphql`,
+  // uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+  //   process.env.REACT_APP_BACKEND_PORT ?? ''
+  // }/subscriptions`,
   options: {
     reconnect: true,
     connectionParams: {
@@ -39,7 +42,8 @@ const wsLink = new WebSocketLink({
   },
 });
 
-const httpLink = createHttpLink({
+// const httpLink = createHttpLink({
+const httpLink = new HttpLink({
   uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
   }/graphql`,
