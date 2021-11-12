@@ -42,8 +42,7 @@ const wsLink = new WebSocketLink({
   },
 });
 
-// const httpLink = createHttpLink({
-const httpLink = new HttpLink({
+const httpLink = createHttpLink({
   uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
   }/graphql`,

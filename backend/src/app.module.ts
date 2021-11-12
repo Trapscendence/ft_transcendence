@@ -23,8 +23,7 @@ import { AuthModule } from './auth/auth.module';
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
-              const token = connectionParams.authorization.split(' ')[1];
-              return { authorization: token };
+              return connectionParams;
             }
           },
         },
