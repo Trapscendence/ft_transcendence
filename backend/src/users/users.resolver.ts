@@ -10,12 +10,12 @@ import {
   Parent,
 } from '@nestjs/graphql';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
-import { GqlJwtAuthGuard } from 'src/auth/guards/gql-jwt.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { Channel } from 'src/channels/models/channel.model';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 
-@UseGuards(GqlJwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}

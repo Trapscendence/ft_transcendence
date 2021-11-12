@@ -6,7 +6,7 @@ then
 		--standalone \
 		--non-interactive \
 		--agree-tos \
-		-m admin@seheon.email \
+		-m anonymouse@gmail.com \
 		-d ${BACKEND_HOST} \
 		-d www.${BACKEND_HOST}
 fi
