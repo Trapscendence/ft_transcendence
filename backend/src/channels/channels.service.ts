@@ -342,11 +342,15 @@ export class ChannelsService {
     user_id: string,
     mute_time: number,
   ): Promise<boolean> {
-    if (
-      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    )
-      throw new ForbiddenException('Inappropriate role');
+    // if (
+    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    // )
+    //   throw new ForbiddenException('Inappropriate role');
+
+    // NOTE -gmoon
+    // usersService.getSiteRole(user_id)) 에서 site_role 등록이 안돼 'No such user id' 에러가 발생합니다. 따라서 임시로 주석처리 합니다.
+
     this.mutedUsers.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
