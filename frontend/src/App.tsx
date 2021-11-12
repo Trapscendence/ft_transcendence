@@ -1,7 +1,9 @@
+import { useQuery } from '@apollo/client';
 import { GlobalStyles } from '@mui/material';
 import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
+import { userIdVar } from '.';
 import DirectMessage from './components/DirectMessage';
 import Navigation from './components/Navigation';
 import SocialDrawer from './components/SocialDrawer';
@@ -13,9 +15,25 @@ import MyProfilePage from './routes/MyProfilePage';
 import ProfilePage from './routes/ProfilePage';
 import RankPage from './routes/RankPage';
 import UserRankPage from './routes/UserRankPage';
+import { WHO_AM_I } from './utils/gqls';
+import { WhoAmIResponse } from './utils/responseModels';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
+  const { error, loading, data } = useQuery<WhoAmIResponse>(WHO_AM_I);
+
+  if (error) {
+    console.error(error);
+  }
+
+  if (loading) {
+    userIdVar('');
+  }
+
+  if (data) {
+    userIdVar(`${data?.whoAmI}`);
+  }
+
   return (
     <BrowserRouter>
       <GlobalStyles

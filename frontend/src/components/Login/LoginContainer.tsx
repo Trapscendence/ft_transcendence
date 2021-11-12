@@ -1,41 +1,38 @@
-import { gql, useMutation } from '@apollo/client';
+import { useState } from 'react';
 
-import { useInput } from '../../hooks/useInput';
+// import { popupWindowCenter } from '../../utils/popupWindowCenter';
 import Login from './Login';
 
-// 임시
-const POST_SIGNIN = gql`
-  mutation PostSignin($id: String!, $password: String!) {
-    signin(id: $id, password: $password) {
-      token
-    }
-  }
-`;
-
 function LoginContainer(): JSX.Element {
-  const [id, setId, onChangeId] = useInput('');
-  const [password, setPassword, onChangePassword] = useInput('');
-  const [postSignin, { loading, error }] = useMutation(POST_SIGNIN);
-  const onClickBtn = async (): Promise<void> => {
-    try {
-      await postSignin({ variables: { id, password } });
-    } catch (e) {
-      console.error(e);
+  const [buttonsEnabledState, setButtonsEnabledState] = useState<boolean>(true);
+
+  const onClickLoginButton = (oauthStrategy: 'google' | '42'): void => {
+    if (
+      process.env.REACT_APP_BACKEND_HOST &&
+      process.env.REACT_APP_BACKEND_PORT
+    ) {
+      setButtonsEnabledState(false);
+
+      const loginURI = `http://${process.env.REACT_APP_BACKEND_HOST}:${process.env.REACT_APP_BACKEND_PORT}/auth/login/${oauthStrategy}`;
+      // popupWindow = popupWindowCenter(
+      //   loginURI,
+      //   `Login with ${oauthStrategy}`,
+      //   400,
+      //   800
+      // );
+      location.replace(loginURI);
+    } else {
+      throw `Undefined environment variables: ${
+        process.env.REACT_APP_BACKEND_HOST ? '' : 'REACT_APP_BACKEND_HOST'
+      } ${process.env.REACT_APP_BACKEND_PORT ? '' : 'REACT_APP_BACKEND_PORT'}`;
     }
-    setId('');
-    setPassword('');
   };
 
   return (
     <Login
       {...{
-        id,
-        onChangeId,
-        password,
-        onChangePassword,
-        onClickBtn,
-        loading,
-        error,
+        onClickLoginButton,
+        buttonsEnabledState,
       }}
     />
   );

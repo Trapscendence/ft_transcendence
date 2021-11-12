@@ -16,6 +16,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
+import Test from './Test';
 import { IChatting } from './utils/models';
 
 const cookieParser = (name: string): string | undefined => {
@@ -29,9 +30,6 @@ const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
     process.env.REACT_APP_BACKEND_PORT ?? ''
   }/graphql`,
-  // uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-  //   process.env.REACT_APP_BACKEND_PORT ?? ''
-  // }/subscriptions`,
   options: {
     reconnect: true,
     connectionParams: {
@@ -107,6 +105,7 @@ ReactDOM.render(
     <ApolloProvider client={client}>
       <CssBaseline />
       <App />
+      {/* <Test></Test> */}
     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
