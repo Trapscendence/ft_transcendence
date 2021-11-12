@@ -65,7 +65,7 @@ export class ChannelsResolver {
   @Mutation((returns) => Boolean)
   async leaveChannel(
     @GqlUser() user: any,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    // @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user.id);
   }
@@ -79,7 +79,7 @@ export class ChannelsResolver {
     return await this.channelsService.addChannel(title, password, user.id);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
     @GqlUser() user: any,
@@ -90,7 +90,7 @@ export class ChannelsResolver {
     return await this.channelsService.editChannel(channel_id, title, password);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async deleteChannel(
     @ChannelRole() channel_role: UserRole,
@@ -101,7 +101,7 @@ export class ChannelsResolver {
     return await this.channelsService.deleteChannel(channel_id);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -115,7 +115,7 @@ export class ChannelsResolver {
     );
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   unmuteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -124,7 +124,7 @@ export class ChannelsResolver {
     return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async kickUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -133,7 +133,7 @@ export class ChannelsResolver {
     return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async banUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -142,7 +142,7 @@ export class ChannelsResolver {
     return await this.channelsService.banUserFromChannel(channel_id, user_id);
   }
 
-  @UseGuards(ChannelRoleGuard)
+  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Boolean)
   async unbanUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
