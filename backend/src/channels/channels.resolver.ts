@@ -18,7 +18,7 @@ import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { ChannelRoleGuard } from './guard/channel-role.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { ChannelRoles } from './decorators/channel-roles.decorator';
 
 @Resolver((of) => Channel)
@@ -56,32 +56,31 @@ export class ChannelsResolver {
 
   @Mutation((returns) => Channel, { nullable: true })
   async enterChannel(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Channel | null> {
-    return await this.channelsService.enterChannel(user.id, channel_id);
+    return await this.channelsService.enterChannel(user_id, channel_id);
   }
 
   @Mutation((returns) => Boolean)
   async leaveChannel(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
-    return await this.channelsService.leaveChannel(user.id);
+    return await this.channelsService.leaveChannel(user_id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
   async addChannel(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
   ) {
-    return await this.channelsService.addChannel(title, password, user.id);
+    return await this.channelsService.addChannel(title, password, user_id);
   }
 
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
-    @GqlUser() user: any,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
