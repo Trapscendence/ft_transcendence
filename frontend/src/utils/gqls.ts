@@ -220,6 +220,18 @@ export const BAN_AND_KICK_USER = gql`
   }
 `;
 
+export const ADD_TO_BLACKLIST = gql`
+  mutation AddToBlackList($black_id: ID!) {
+    addToBlackList(black_id: $black_id)
+  }
+`;
+
+export const DELETE_FROM_BLACKLIST = gql`
+  mutation DeleteFromBlackList($black_id: ID!) {
+    deleteFromBlackList(black_id: $black_id)
+  }
+`;
+
 /*
  ** ANCHOR: Subscription
  */

@@ -70,3 +70,11 @@ export interface WhoAmIResponse {
   // whoAmI: { whoAmI: number };
   whoAmI: number;
 }
+
+export interface AddToBlackListResponse {
+  addToBlackList: boolean;
+}
+
+export interface DeleteFromBlackListResponse {
+  deleteFromBlackList: boolean;
+}

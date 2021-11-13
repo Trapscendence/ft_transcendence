@@ -241,13 +241,21 @@ INSERT INTO ${schema}.user(
     black_id: string,
   ): Promise<boolean> {
     if (user_id === black_id) throw new Error('One cannot block themself');
+    // const array: Array<User> = await this.databaseService.executeQuery(`
+    //   DELETE FROM
+    //     ${schema}.friend f
+    //   WHERE
+    //     ( f.user_id = ${user_id} AND f.friend_id = ${black_id} )
+    //   RETURNING *;
+    // `);
+
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.friend f
+        ${schema}.block b
       WHERE
-        ( f.user_id = ${user_id} AND f.friend_id = ${black_id} )
+        ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
-    `);
+    `); // NOTE: 수정했습니다.
 
     return array.length === 0 ? false : true;
   }

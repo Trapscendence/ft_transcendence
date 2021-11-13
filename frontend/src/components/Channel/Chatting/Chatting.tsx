@@ -21,7 +21,7 @@ interface ChattingProps {
   id: string;
   alertMsg: string | null;
   muteList: string[];
-  blacklistData: GetMyBlacklistResponse | undefined;
+  blacklistData: GetMyBlacklistResponse;
 }
 
 export default function Chatting({
@@ -30,6 +30,10 @@ export default function Chatting({
   muteList,
   blacklistData,
 }: ChattingProps): JSX.Element {
+  const {
+    user: { blacklist },
+  } = blacklistData;
+
   const [input, setInput, onChangeInput] = useInput('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
@@ -103,6 +107,13 @@ export default function Chatting({
             //     </Alert>
             //   );
             // }
+            if (blacklist.find((black) => black.id === val.participant.id)) {
+              return (
+                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                  Message from a blacklist user.
+                </Alert>
+              );
+            }
 
             if (muteList.find((muted) => muted === val.participant.id)) {
               return (

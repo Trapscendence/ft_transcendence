@@ -47,12 +47,10 @@ export default function Channel({
       variables: { channel_id: id },
     });
 
-  const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
-    GET_MY_BLACKLIST,
-    {
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
       variables: { id: userIdVar() },
-    }
-  );
+    });
 
   // const {data: mutedUsersList} = useQuery<GetChannelMutedUsers>(GET_CHANNEL_MUTED_USERS);
   // const {data: bannedUsersList} = useQuery<GetChannelBannedUsers>(GET_CHANNEL_BANNED_USERS);
@@ -133,16 +131,26 @@ export default function Channel({
     }
   }, [subscribeData]);
 
-  if (subscribeError) {
-    console.log(subscribeError);
+  if (subscribeError)
     return <ErrorAlert name="Channel: subscribeError" error={subscribeError} />;
-  }
+
+  if (blacklistError)
+    return <ErrorAlert name="Channel: blacklistError" error={blacklistError} />;
+
+  if (!blacklistData) return <div>error</div>;
 
   return (
     <>
       <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
       <ParticipantsList {...{ id, participants }} />
-      <Chatting {...{ id, alertMsg, muteList, blacklistData }} />
+      <Chatting
+        {...{
+          id,
+          alertMsg,
+          muteList,
+          blacklistData,
+        }}
+      />
     </>
   );
 }
