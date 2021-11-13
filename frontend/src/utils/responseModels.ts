@@ -67,5 +67,6 @@ export interface BanAndKickUserResponse {
 }
 
 export interface WhoAmIResponse {
+  // whoAmI: { whoAmI: number };
   whoAmI: number;
 }

@@ -16,7 +16,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
-import Test from './Test';
 import { IChatting } from './utils/models';
 
 const cookieParser = (name: string): string | undefined => {
@@ -90,10 +89,9 @@ const client = new ApolloClient({
   }),
 });
 
-export const isLoginVar = makeVar(false); // TODO: 위치 어디에 해야? 따로 파일을 만들어야 하려나?
-export const tokenVar = makeVar('');
-export const userIdVar = makeVar<string | null>('1'); // TODO: User? UserSummary? id? // 로그인이 없으니 그냥 "1"로...
-// export const channelIdVar = makeVar<string | null>(null);
+// export const isLoginVar = makeVar(false); // TODO: 위치 어디에 해야? 따로 파일을 만들어야 하려나?
+// export const tokenVar = makeVar('');
+export const userIdVar = makeVar<string | null>(null); // TODO: User? UserSummary? id? // 로그인이 없으니 그냥 "1"로...
 export const chattingMessagesVar = makeVar<Map<string, IChatting[]>>(
   new Map<string, IChatting[]>()
 );
@@ -105,7 +103,6 @@ ReactDOM.render(
     <ApolloProvider client={client}>
       <CssBaseline />
       <App />
-      {/* <Test></Test> */}
     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')

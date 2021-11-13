@@ -4,6 +4,7 @@ import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { userIdVar } from '.';
+import LoadingBackdrop from './components/commons/LoadingBackdrop';
 import DirectMessage from './components/DirectMessage';
 import Navigation from './components/Navigation';
 import SocialDrawer from './components/SocialDrawer';
@@ -20,19 +21,11 @@ import { WhoAmIResponse } from './utils/responseModels';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
-  const { error, loading, data } = useQuery<WhoAmIResponse>(WHO_AM_I);
+  const { loading, data } = useQuery<WhoAmIResponse>(WHO_AM_I);
 
-  if (error) {
-    console.error(error);
-  }
-
-  if (loading) {
-    userIdVar('');
-  }
-
-  if (data) {
-    userIdVar(`${data?.whoAmI}`);
-  }
+  // if (error) console.error(error);
+  if (loading) return <LoadingBackdrop loading={loading} />;
+  if (data) userIdVar(data.whoAmI.toString());
 
   return (
     <BrowserRouter>
@@ -52,8 +45,7 @@ function App(): JSX.Element {
         }}
       >
         <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/login" component={LoginPage} />
+          <RestrictRoute exact path="/" component={HomePage} />
           <RestrictRoute exact path="/channel" component={ChannelListPage} />
           <RestrictRoute exact path="/rank" component={RankPage} />
           <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
@@ -64,6 +56,7 @@ function App(): JSX.Element {
             component={ProfilePage}
           />
           <RestrictRoute exact path="/admin" component={AdminPage} />
+          <Route exact path="/login" component={LoginPage} />
         </Switch>
       </Box>
       <DirectMessage />
