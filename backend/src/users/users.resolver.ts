@@ -79,7 +79,8 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
+    // NOTE: addToBlackLIst -> addToBlackList 함수명 수정했습니다.
     @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
@@ -91,7 +92,6 @@ export class UsersResolver {
     @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return await this.usersService.deleteFromBlackList(user.id, black_id);
   }
 

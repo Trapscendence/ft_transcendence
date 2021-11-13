@@ -65,7 +65,7 @@ export class ChannelsResolver {
   @Mutation((returns) => Boolean)
   async leaveChannel(
     @GqlUser() user: any,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    // @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user.id);
   }

@@ -38,7 +38,7 @@ export default function Channel({
     owner,
     administrators,
     participants,
-    // bannedUsers,
+    // bannedUsers, // NOTE: 나중에 Channel 세팅 구현되면, bannedUsers 필요할 것
     mutedUsers,
   } = channel;
 
@@ -47,38 +47,29 @@ export default function Channel({
       variables: { channel_id: id },
     });
 
-  const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
-    GET_MY_BLACKLIST,
-    {
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
       variables: { id: userIdVar() },
-    }
-  );
+    });
 
-  // const {data: mutedUsersList} = useQuery<GetChannelMutedUsers>(GET_CHANNEL_MUTED_USERS);
-  // const {data: bannedUsersList} = useQuery<GetChannelBannedUsers>(GET_CHANNEL_BANNED_USERS);
-
-  // useEffect(()=>{
-
-  // }, [bannedUsers]);
-
-  useEffect(() => {
-    // console.log(mutedUsers); // TODO: 현재 mutedUsers가 안들어오는 이슈!
-    setMuteList(mutedUsers.map((val) => val.id));
-  }, [mutedUsers]);
-
-  const [muteList, setMuteList] = useState<string[]>([]);
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
+  const displayAlertMsg = (msg: string) => {
+    setAlertMsg(msg);
+    setTimeout(() => {
+      setAlertMsg(null);
+    }, 3000);
+  };
+
   useEffect(() => {
-    if (!subscribeData || !subscribeData.subscribeChannel) return; // TODO: 임시 조치... 어떻게 들어오는지 확인 후 수정 필요
+    if (!subscribeData) return; // NOTE: undefined 방지를 위해
 
     const { type, participant, text, check }: IChannelNotify =
       subscribeData.subscribeChannel;
 
-    const subscribe_id = new Date().getTime().toString();
-
     console.log(type, participant, text, check);
 
+    // TODO: switch 개선 가능
     switch (type) {
       case Notify.CHAT:
         if (participant && text) {
@@ -91,7 +82,7 @@ export default function Channel({
           const duplicatedMap = new Map(chattingMessagesVar());
           duplicatedMap.set(id, [
             ...prev,
-            { id: subscribe_id, participant, text },
+            { id: new Date().getTime().toString(), participant, text },
           ]);
 
           chattingMessagesVar(duplicatedMap);
@@ -99,48 +90,50 @@ export default function Channel({
         break;
       case Notify.MUTE:
         if (check) {
-          setMuteList([...muteList, (participant as IUser).id]);
-          setAlertMsg(
+          void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가하는 식으로 추후 개선 가능
+          displayAlertMsg(
             `MUTE: User '${(participant as IUser).nickname}' is muted.`
           );
-          setTimeout(() => {
-            setAlertMsg(null);
-          }, 3000);
         } else {
-          setMuteList(
-            muteList.filter((val) => val !== (participant as IUser).id)
-          );
-          setAlertMsg(
+          void channelRefetch();
+          displayAlertMsg(
             `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
           );
-          setTimeout(() => {
-            setAlertMsg(null);
-          }, 3000);
         }
         break;
-      case Notify.BAN:
-        // TODO: ban 백엔드 함수가 에러가 나서 아직 구현하지 못하는 상태
-        setAlertMsg('BAN: ...');
-        setTimeout(() => {
-          setAlertMsg(null);
-        }, 3000);
+      case Notify.KICK: // NOTE: kick은 ban할 때만 사용, kick 성공한 사람만 문구 뜨도록
+        void channelRefetch();
+        displayAlertMsg(
+          `BAN: User '${(participant as IUser).nickname}' is banned.`
+        );
         break;
       case Notify.ENTER:
-        void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가, 제거하게 개선해야!
+        void channelRefetch();
+        break;
+      case Notify.EDIT:
+        void channelRefetch();
         break;
     }
   }, [subscribeData]);
 
-  if (subscribeError) {
-    console.log(subscribeError);
-    return <ErrorAlert error={subscribeError} />;
-  }
+  if (subscribeError)
+    return <ErrorAlert name="Channel: subscribeError" error={subscribeError} />;
+  if (blacklistError)
+    return <ErrorAlert name="Channel: blacklistError" error={blacklistError} />;
+  if (!blacklistData) return <ErrorAlert name="Channel: !blacklistData" />;
 
   return (
     <>
       <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
       <ParticipantsList {...{ id, participants }} />
-      <Chatting {...{ id, alertMsg, muteList, blacklistData }} />
+      <Chatting
+        {...{
+          id,
+          alertMsg,
+          mutedUsers,
+          blacklistData,
+        }}
+      />
     </>
   );
 }
