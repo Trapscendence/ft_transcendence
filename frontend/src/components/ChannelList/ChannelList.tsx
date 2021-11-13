@@ -15,9 +15,6 @@ export default function ChannelList(): JSX.Element {
     GET_MY_CHANNEL,
     {
       variables: { id: userIdVar() },
-      // onCompleted: (data) => {
-      //   console.log(data);
-      // },
     }
   );
 

@@ -126,6 +126,12 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
 `;
 // TODO: bannedUsers 등의 필드명이 banned_users로 바뀔 예정
 
+export const WHO_AM_I = gql`
+  query whoAmI {
+    whoAmI
+  }
+`;
+
 /*
  ** ANCHOR: Mutation
  */

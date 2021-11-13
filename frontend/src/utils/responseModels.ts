@@ -1,4 +1,4 @@
-import { IChannel, IChannelListItem, IChannelNotify, IUser } from './models';
+import { IChannel, IChannelListItem, IChannelNotify } from './models';
 import { UserRole } from './schemaEnums';
 
 export interface SubscribeChannelResponse {
@@ -64,4 +64,9 @@ export interface MuteUserResponse {
 export interface BanAndKickUserResponse {
   banUserFromChannel: boolean;
   kickUserFromChannel: boolean;
+}
+
+export interface WhoAmIResponse {
+  // whoAmI: { whoAmI: number };
+  whoAmI: number;
 }
