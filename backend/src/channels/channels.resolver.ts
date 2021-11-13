@@ -17,13 +17,11 @@ import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { ChannelRoleGuard } from './guard/channel-role.guard';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { ChannelRoles } from './decorators/channel-roles.decorator';
 
 @Resolver((of) => Channel)
 @UseGuards(ChannelRoleGuard)
-@UseGuards(JwtAuthGuard)
 export class ChannelsResolver {
   constructor(
     private readonly channelsService: ChannelsService,
