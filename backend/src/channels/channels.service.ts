@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
@@ -181,31 +182,18 @@ export class ChannelsService {
     if (inChannel.length > 0)
       throw new ConflictException('The user is already in channel');
 
-    const [{ id }] = password // 방을 생성하고 id를 리턴
-      ? await this.databaseService.executeQuery(`
-        INSERT INTO
-          ${schema}.channel(
-            title,
-            password
-          )
-          VALUES (
-            '${title}',
-            '${password}'
-          )
-          RETURNING id;
-      `)
-      : await this.databaseService.executeQuery(`
-        INSERT INTO
-          ${schema}.channel(
-            title,
-            password
-          )
-        VALUES (
-          '${title}',
-          NULL
+    const [{ id }] = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${schema}.channel(
+          title,
+          password
         )
-        RETURNING id;
-      `);
+      VALUES (
+        '${title}',
+        ${password ? `'${password}'` : 'NULL'}
+      )
+      RETURNING id;
+    `);
 
     const channel_users = await this.databaseService.executeQuery(`
       INSERT INTO
@@ -225,6 +213,7 @@ export class ChannelsService {
         DO NOTHING
       RETURNING *;
     `);
+
     if (!channel_users.length) {
       // 유저가 다른 방에 있을 경우 방을 삭제하고 conflict
       await this.databaseService.executeQuery(`
@@ -490,6 +479,37 @@ export class ChannelsService {
       },
     });
     return true;
+  }
+
+  async updateChannelRole(
+    channel_id: string,
+    user_id: string,
+    role: UserRole,
+  ): Promise<boolean> {
+    const updateChannel = await this.databaseService.executeQuery(`
+      UPDATE
+        ${schema}.channel_user
+      SET
+        channel_role = '${role}'
+      WHERE
+        user_id = '${user_id}'
+        AND
+        channel_id = '${channel_id}'
+      RETURNING
+        user_id
+    ;`);
+
+    if (updateChannel.length === 0) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not in the channel(id: ${channel_id})`,
+      );
+    } else if (updateChannel.length !== 1) {
+      throw new InternalServerErrorException(
+        `The user(id: ${user_id}) is on more than one channel`,
+      );
+    } else {
+      return true;
+    }
   }
 
   /*

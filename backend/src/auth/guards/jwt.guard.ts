@@ -15,12 +15,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       const ctx = GqlExecutionContext.create(context).getContext();
 
       if (ctx.authorization) {
-        return { headers: { authorization: ctx.authorization } };
-      } else if (ctx.req) {
-        return ctx.req;
-      } else {
-        throw `What?`;
+        ctx.req = { headers: { authorization: ctx.authorization } };
       }
+      return ctx.req;
     } else {
       throw `Unexcepted context type: ${context.getType()}`;
     }

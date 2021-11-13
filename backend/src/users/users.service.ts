@@ -9,19 +9,6 @@ import { Channel } from 'src/channels/models/channel.model';
 export class UsersService {
   constructor(private databaseService: DatabaseService) {}
 
-  async getSiteRole(id: string): Promise<UserRole> {
-    const site_role = await this.databaseService.executeQuery(`
-      SELECT
-        site_role
-      FROM
-        ${schema}.user
-      WHERE
-        id = ${id};
-    `)[0];
-    if (!site_role) throw new ConflictException('No such user id');
-    return site_role;
-  }
-
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
       SELECT
@@ -326,7 +313,8 @@ INSERT INTO ${schema}.user(
   }
 
   async getChannelRole(id: string): Promise<UserRole | null> {
-    const array: User[] = await this.databaseService.executeQuery(`
+    const select_channel_role: User[] = await this.databaseService
+      .executeQuery(`
       SELECT
         channel_role
       FROM
@@ -334,8 +322,32 @@ INSERT INTO ${schema}.user(
       WHERE
         user_id = ${id};
     `);
-    if (!array.length)
-      throw new ConflictException('The user is not in a channel.');
-    return array[0].channel_role;
+
+    if (select_channel_role.length === 0) {
+      throw new ConflictException(`This user(id: ${id}) is not in a channel`);
+    } else if (select_channel_role.length !== 1) {
+      throw `FATAL ERROR: User(id: ${id}) belongs to more than one channel`;
+    } else {
+      return select_channel_role[0].channel_role;
+    }
+  }
+
+  async getSiteRole(id: string): Promise<UserRole> {
+    const select_site_role: User[] = await this.databaseService.executeQuery(`
+      SELECT
+        site_role
+      FROM
+        ${schema}.user
+      WHERE
+        id = ${id};
+    `);
+
+    if (select_site_role.length === 0) {
+      throw new ConflictException(`The user(id: ${id}) does not exist`);
+    } else if (select_site_role.length !== 1) {
+      throw `FATAL ERROR: User with (id: ${id}) is not only one`;
+    } else {
+      return select_site_role[0].site_role;
+    }
   }
 }
