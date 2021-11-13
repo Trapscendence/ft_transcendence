@@ -17,6 +17,10 @@ export interface AddChannelResponse {
   addChannel: IChannel;
 }
 
+export interface EditChannelResponse {
+  editChannel: IChannel;
+}
+
 export interface GetMyChannelResponse {
   user: {
     channel: IChannel;

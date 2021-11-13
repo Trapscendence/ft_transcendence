@@ -264,15 +264,33 @@ export class ChannelsService {
     title: string,
     password: string,
   ): Promise<Channel> {
+    // const array = await this.databaseService.executeQuery(`
+    //   UPDATE
+    //     ${schema}.channel c
+    //   SET (
+    //     c.title,
+    //     c.password
+    //   ) = (
+    //     '${title}',
+    //     ${password == null ? 'c.password' : password === '' ? 'NULL' : password}
+    //   )
+    //   WHERE
+    //     c.id = ${channel_id}
+    //   RETURNING
+    //     c.id id,
+    //     c.title title,
+    //     ${password === '' ? 'false' : 'true'} is_private;
+    // `);
+
     const array = await this.databaseService.executeQuery(`
       UPDATE
         ${schema}.channel c
       SET (
-        c.title,
-        c.password
+        title,
+        password
       ) = (
-        ${title},
-        ${password == null ? 'c.password' : password === '' ? 'NULL' : password}
+        '${title}',
+        '${password == null ? 'NULL' : password}'
       )
       WHERE
         c.id = ${channel_id}
@@ -281,6 +299,8 @@ export class ChannelsService {
         c.title title,
         ${password === '' ? 'false' : 'true'} is_private;
     `);
+    // NOTE: 위와 같이 수정했습니다. 컴파일만 되게 한거라 password 등은 맞는지 모르겠네요. -gmoon
+
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.EDIT,
@@ -409,8 +429,6 @@ export class ChannelsService {
     // )
     //   throw new ForbiddenException('Inappropriate role');
     // NOTE: 여기도 'No such user id' 에러로 임시 주석처리합니다. -gmoon
-
-    console.log('!!!!!!!!!!!!!!!!!!!!!!!!!', channel_id, user_id);
 
     const array = await this.databaseService.executeQuery(`
       DELETE FROM

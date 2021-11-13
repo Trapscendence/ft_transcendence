@@ -139,7 +139,38 @@ export const ADD_CHANNEL = gql`
     }
   }
 `;
-// TODO: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
+// NOTE: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
+
+export const EDIT_CHANNEL = gql`
+  mutation EditChannel($title: String!, $password: String, $channel_id: ID!) {
+    editChannel(title: $title, password: $password, channel_id: $channel_id) {
+      id
+      title
+      is_private
+      owner {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      administrators {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      participants {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      bannedUsers {
+        id
+      }
+    }
+  }
+`;
 
 export const ENTER_CHANNEL = gql`
   mutation EnterChannel($channel_id: ID!) {

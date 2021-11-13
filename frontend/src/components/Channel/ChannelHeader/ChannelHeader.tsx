@@ -1,16 +1,23 @@
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useState } from 'react';
 
+import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
+  GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
 } from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
-import { LeaveChannelResponse } from '../../../utils/responseModels';
+import {
+  GetMyChannelRoleResponse,
+  LeaveChannelResponse,
+} from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
+import ChannelEditModal from './ChannelEditModal';
 
 interface ChannelHeaderProps {
   id: string;
@@ -27,6 +34,8 @@ export default function ChannelHeader({
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+
   const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
     LEAVE_CHANNEL,
     {
@@ -37,11 +46,30 @@ export default function ChannelHeader({
     }
   );
 
+  const { data: channelRoleData, error: channelRoleError } =
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
+      variables: { id: userIdVar() },
+    });
+
   const onClickLeave = () => {
     void leaveChannel();
   };
 
+  const handleOpen = (): void => {
+    setOpen(true);
+  };
+  const handleClose = (): void => {
+    setOpen(false);
+  };
+
   if (error) return <ErrorAlert name="ChannelHeader" error={error} />;
+  if (channelRoleError)
+    return (
+      <ErrorAlert
+        name="ChannelHeader: channelRoleError"
+        error={channelRoleError}
+      />
+    );
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
@@ -63,10 +91,16 @@ export default function ChannelHeader({
         </Typography>
       </Box>
       <Box>
-        <Button variant="contained" onClick={onClickLeave}>
+        {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
+          <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+            Edit Channel
+          </Button>
+        )}
+        <Button variant="contained" sx={{ m: 1 }} onClick={onClickLeave}>
           Leave Channel
         </Button>
       </Box>
+      <ChannelEditModal {...{ open, handleClose, id }} />
     </Paper>
   );
 }
