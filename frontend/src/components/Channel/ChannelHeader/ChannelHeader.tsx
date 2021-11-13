@@ -2,7 +2,6 @@ import { useMutation } from '@apollo/client';
 import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 
-import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
@@ -22,7 +21,7 @@ interface ChannelHeaderProps {
 }
 
 export default function ChannelHeader({
-  id,
+  id, // NOTE: setting에서 사용되지 않을까? 근데 그러려면 ban 목록도 있어야하지 않나?
   title,
   is_private,
   owner,
@@ -31,7 +30,6 @@ export default function ChannelHeader({
   const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
     LEAVE_CHANNEL,
     {
-      // variables: { channel_id: id, user_id: userIdVar() },
       refetchQueries: [
         GET_MY_CHANNEL,
         { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
@@ -60,6 +58,9 @@ export default function ChannelHeader({
         <Typography>{is_private ? 'Private' : 'Public'}</Typography>
         <Typography>Title: {title}</Typography>
         <Typography>Owner: {owner.nickname}</Typography>
+        <Typography>
+          Administrators: {administrators.map((val) => val.nickname).join(', ')}
+        </Typography>
       </Box>
       <Box>
         <Button variant="contained" onClick={onClickLeave}>

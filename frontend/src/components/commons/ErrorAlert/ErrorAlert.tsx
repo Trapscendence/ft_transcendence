@@ -3,7 +3,7 @@ import { Alert } from '@mui/material';
 
 interface ErrorAlertProps {
   // children: React.ReactNode; // TODO: 물음표 붙이는건가?
-  error: ApolloError;
+  error?: ApolloError;
   name: string;
 }
 
@@ -13,7 +13,7 @@ export default function ErrorAlert({
 }: ErrorAlertProps): JSX.Element {
   return (
     <Alert severity="error">
-      {name}: {error.message}
+      {name}: {error?.message}
     </Alert>
   );
 

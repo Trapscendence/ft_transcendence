@@ -8,7 +8,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { userIdVar } from '../../..';
 import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
 import { IChannelListItem } from '../../../utils/models';
 import { EnterChannelResponse } from '../../../utils/responseModels';

@@ -6,7 +6,6 @@ import gql from 'graphql-tag';
 
 export const GET_CHANNELS = gql`
   query GetChannels($limit: Int!, $offset: Int!) {
-    # query GetChannels($limit: Float!, $offset: Float!) { // NOTE: 에러 테스트 용
     channels(limit: $limit, offset: $offset) {
       id
       title
@@ -67,27 +66,6 @@ export const GET_MY_CHANNEL_ROLE = gql`
   }
 `;
 
-export const GET_CHATTING_MESSAGES = gql`
-  query getChattingMessages($channel_id: ID!) {
-    chattingMessages(channel_id: $channel_id) @client
-  }
-`;
-
-// export const GET_MY_CHANNEL_PARTICIPANTS = gql`
-//   query GetCurrentParticipants($id: ID!) {
-//     user(id: $id) {
-//       channel {
-//         participants {
-//           id
-//           nickname
-//           # avatar
-//           # status
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export const GET_MY_BLACKLIST = gql`
   query GetMyBlacklist($id: ID!) {
     user(id: $id) {
@@ -110,7 +88,6 @@ export const GET_MY_CHANNEL_MUTED_USERS = gql`
     }
   }
 `;
-// TODO: 이미 쓴 쿼리에 대해 (ex. GET_CURRENT_CHANNEL) 부분으로 데이터는 못가져오나?
 
 export const GET_MY_CHANNEL_BANNED_USERS = gql`
   query GetMyChannelBannedUsers($id: ID!) {
@@ -124,7 +101,6 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
     }
   }
 `;
-// TODO: bannedUsers 등의 필드명이 banned_users로 바뀔 예정
 
 export const WHO_AM_I = gql`
   query whoAmI {
@@ -191,7 +167,7 @@ export const CHAT_MESSAGE = gql`
   mutation ChatMessage($message: String!, $user_id: ID!, $channel_id: ID!) {
     chatMessage(message: $message, user_id: $user_id, channel_id: $channel_id)
   }
-`; // TODO: 나중에 user_id 등은 쿠키 사용으로 사라질 예정
+`;
 
 export const LEAVE_CHANNEL = gql`
   mutation LeaveChannel {
