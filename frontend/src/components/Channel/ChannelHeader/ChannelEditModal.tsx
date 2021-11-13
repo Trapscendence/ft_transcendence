@@ -33,7 +33,6 @@ export default function ChannelEditModal({
   const onClickBtn = async (): Promise<void> => {
     await editChannelFunc({
       variables: { title, password, channel_id: id },
-      refetchQueries: [GET_MY_CHANNEL],
     });
 
     handleClose();

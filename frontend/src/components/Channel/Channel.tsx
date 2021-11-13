@@ -67,7 +67,7 @@ export default function Channel({
     const { type, participant, text, check }: IChannelNotify =
       subscribeData.subscribeChannel;
 
-    // console.log(type, participant, text, check);
+    console.log(type, participant, text, check);
 
     // TODO: switch 개선 가능
     switch (type) {
@@ -108,6 +108,9 @@ export default function Channel({
         );
         break;
       case Notify.ENTER:
+        void channelRefetch();
+        break;
+      case Notify.EDIT:
         void channelRefetch();
         break;
     }
