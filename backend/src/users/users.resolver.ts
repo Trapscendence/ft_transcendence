@@ -1,4 +1,5 @@
 import { Inject } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -8,11 +9,10 @@ import {
   ID,
   ResolveField,
   Parent,
-  Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
-import { User, UserStatus } from './models/user.medel';
+import { User } from './models/user.medel';
 import { Channel } from 'src/channels/models/channel.medel';
 import { UsersService } from './users.service';
 
@@ -26,6 +26,12 @@ export class UsersResolver {
   /*
    ** ANCHOR: User
    */
+
+  @Query((returns) => Int)
+  @UseGuards(GqlSessionGuard)
+  async whoAmI(@GqlSession() session: Record<string, any>) {
+    return session.uid;
+  }
 
   @Query((returns) => User, { nullable: true })
   async user(
@@ -76,7 +82,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
