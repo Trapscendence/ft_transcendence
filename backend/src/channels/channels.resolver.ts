@@ -16,14 +16,14 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
-import { ChannelRoleGuard } from './guard/role.channel.guard';
+import { ChannelRoleGuard } from './guard/channel-role.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
-import { ChannelRole } from './decorator/role.channel.decorator';
+import { ChannelRoles } from './decorators/channel-roles.decorator';
 
-@UseGuards(JwtAuthGuard)
-// @UseGuards(ChannelRoleGuard)
 @Resolver((of) => Channel)
+@UseGuards(ChannelRoleGuard)
+@UseGuards(JwtAuthGuard)
 export class ChannelsResolver {
   constructor(
     private readonly channelsService: ChannelsService,
@@ -79,7 +79,6 @@ export class ChannelsResolver {
     return await this.channelsService.addChannel(title, password, user.id);
   }
 
-  // @UseGuards(ChannelRoleGuard)
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
     @GqlUser() user: any,
@@ -90,18 +89,24 @@ export class ChannelsResolver {
     return await this.channelsService.editChannel(channel_id, title, password);
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @ChannelRoles(UserRole.OWNER)
   @Mutation((returns) => Boolean)
   async deleteChannel(
-    @ChannelRole() channel_role: UserRole,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
   ) {
-    if (channel_role === UserRole.MODERATOR)
-      throw new ForbiddenException('The user is not the owner of the channel');
     return await this.channelsService.deleteChannel(channel_id);
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
+  async chatMessage(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('message') message: string,
+  ) {
+    return await this.channelsService.chatMessage(channel_id, user_id, message);
+  }
+
+  @ChannelRoles(UserRole.MODERATOR)
   @Mutation((returns) => Boolean)
   async muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -115,7 +120,7 @@ export class ChannelsResolver {
     );
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @ChannelRoles(UserRole.MODERATOR)
   @Mutation((returns) => Boolean)
   unmuteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -124,7 +129,7 @@ export class ChannelsResolver {
     return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @ChannelRoles(UserRole.MODERATOR)
   @Mutation((returns) => Boolean)
   async kickUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -133,7 +138,7 @@ export class ChannelsResolver {
     return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @ChannelRoles(UserRole.MODERATOR)
   @Mutation((returns) => Boolean)
   async banUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -142,7 +147,7 @@ export class ChannelsResolver {
     return await this.channelsService.banUserFromChannel(channel_id, user_id);
   }
 
-  // @UseGuards(ChannelRoleGuard)
+  @ChannelRoles(UserRole.MODERATOR)
   @Mutation((returns) => Boolean)
   async unbanUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -151,19 +156,37 @@ export class ChannelsResolver {
     return await this.channelsService.unbanUserFromChannel(channel_id, user_id);
   }
 
-  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
-  async chatMessage(
+  @ChannelRoles(UserRole.OWNER)
+  @Mutation((returns) => Boolean)
+  async authorizeUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('message') message: string,
+  ): Promise<boolean> {
+    // TODO: 본인을 authorize할 때 에러 발생
+    return await this.channelsService.updateChannelRole(
+      channel_id,
+      user_id,
+      UserRole.MODERATOR,
+    );
+  }
+
+  @ChannelRoles(UserRole.OWNER)
+  @Mutation((returns) => Boolean)
+  async unauthorizeUserOnChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
   ) {
-    return await this.channelsService.chatMessage(channel_id, user_id, message);
+    // TODO: 본인을 unauthorize할 때 에러 발생
+    return await this.channelsService.updateChannelRole(
+      channel_id,
+      user_id,
+      UserRole.USER,
+    );
   }
 
   /*
    ** ANCHOR: Channel ResolveField
    */
-
   @ResolveField('owner', (returns) => User)
   async owner(@Parent() channel: Channel): Promise<User> {
     return await this.channelsService.getOwner(channel.id);

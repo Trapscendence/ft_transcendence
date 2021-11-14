@@ -1,3 +1,3 @@
 export class JwtDTO {
-  readonly id: number;
+  readonly id: string;
 }
