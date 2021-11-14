@@ -1,22 +1,32 @@
+import { useQuery } from '@apollo/client';
 import { GlobalStyles } from '@mui/material';
 import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
+import { userIdVar } from '.';
+import LoadingBackdrop from './components/commons/LoadingBackdrop';
 import DirectMessage from './components/DirectMessage';
 import Navigation from './components/Navigation';
 import SocialDrawer from './components/SocialDrawer';
 import AdminPage from './routes/AdminPage';
 import ChannelListPage from './routes/ChannelListPage';
-import ChannelPage from './routes/ChannelPage';
 import HomePage from './routes/HomePage';
 import LoginPage from './routes/LoginPage';
 import MyProfilePage from './routes/MyProfilePage';
 import ProfilePage from './routes/ProfilePage';
 import RankPage from './routes/RankPage';
 import UserRankPage from './routes/UserRankPage';
+import { WHO_AM_I } from './utils/gqls';
+import { WhoAmIResponse } from './utils/responseModels';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
+  const { loading, data } = useQuery<WhoAmIResponse>(WHO_AM_I);
+
+  // if (error) console.error(error);
+  if (loading) return <LoadingBackdrop loading={loading} />;
+  if (data) userIdVar(data.whoAmI.toString());
+
   return (
     <BrowserRouter>
       <GlobalStyles
@@ -35,14 +45,8 @@ function App(): JSX.Element {
         }}
       >
         <Switch>
-          <Route exact path="/" component={HomePage} />
-          <Route exact path="/login" component={LoginPage} />
+          <RestrictRoute exact path="/" component={HomePage} />
           <RestrictRoute exact path="/channel" component={ChannelListPage} />
-          <RestrictRoute
-            exact
-            path="/channel/:channelid"
-            component={ChannelPage}
-          />
           <RestrictRoute exact path="/rank" component={RankPage} />
           <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
           <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
@@ -52,6 +56,7 @@ function App(): JSX.Element {
             component={ProfilePage}
           />
           <RestrictRoute exact path="/admin" component={AdminPage} />
+          <Route exact path="/login" component={LoginPage} />
         </Switch>
       </Box>
       <DirectMessage />

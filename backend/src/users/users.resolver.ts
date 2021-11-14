@@ -12,10 +12,13 @@ import {
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
-import { User } from './models/user.medel';
 import { Channel } from 'src/channels/models/channel.medel';
+import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
@@ -28,23 +31,23 @@ export class UsersResolver {
    */
 
   @Query((returns) => Int)
-  @UseGuards(GqlSessionGuard)
-  async whoAmI(@GqlSession() session: Record<string, any>) {
-    return session.uid;
+  async whoAmI(@GqlUser() user: any) {
+    return user.id;
   }
 
   @Query((returns) => User, { nullable: true })
   async user(
+    @GqlUser() user: any,
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
-    if ((id && nickname) || !(id || nickname))
+    if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
-    return await this.usersService.getUserByNickname(nickname);
+    if (nickname) return await this.usersService.getUserByNickname(nickname);
+    return await this.usersService.getUserById(user.id);
   }
 
-  // NOTE: [User!]! 반환하게 수정했습니다. 확인 후 코멘트 삭제해주세요. -gmoon
   @Query((returns) => [User])
   async users(
     @Args('ladder') ladder: boolean,
@@ -66,27 +69,28 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
     // NOTE 여기서 할것인가?
-    return this.usersService.addFriend(user_id, friend_id);
+    return this.usersService.addFriend(user.id, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFriend(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFriend(user_id, friend_id);
+    return await this.usersService.deleteFriend(user.id, friend_id);
   }
 
   @Mutation((returns) => Boolean)
   async addToBlackList(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    // NOTE: addToBlackLIst -> addToBlackList 함수명 수정했습니다.
+    @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.addToBlackList(user_id, black_id);
+    return await this.usersService.addToBlackList(user.id, black_id);
   }
 
   @Mutation((returns) => Boolean)
@@ -94,7 +98,6 @@ export class UsersResolver {
     @Args('user_id', { type: () => ID }) user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return await this.usersService.deleteFromBlackList(user_id, black_id);
   }
 
@@ -118,6 +121,12 @@ export class UsersResolver {
   async getChannelByUserId(@Parent() user: User): Promise<Channel | null> {
     const { id } = user;
     return await this.usersService.getChannelByUserId(id);
+  }
+
+  @ResolveField('channel_role', (returns) => UserRole, { nullable: true })
+  async getChannelRole(@Parent() user: User): Promise<UserRole | null> {
+    const { id } = user;
+    return await this.usersService.getChannelRole(id);
   }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {

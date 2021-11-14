@@ -1,20 +1,60 @@
+import { useMutation, useQuery } from '@apollo/client';
 import { Menu, MenuItem, MenuList } from '@mui/material';
+
+import { userIdVar } from '../../..';
+import {
+  ADD_TO_BLACKLIST,
+  DELETE_FROM_BLACKLIST,
+  GET_MY_BLACKLIST,
+} from '../../../utils/gqls';
+import {
+  AddToBlackListResponse,
+  DeleteFromBlackListResponse,
+  GetMyBlacklistResponse,
+} from '../../../utils/responseModels';
+import ErrorAlert from '../ErrorAlert';
+import ChannelNicknameMenu from './ChannelNicknameMenu';
 
 interface NicknameMenuProps {
   anchorEl: null | HTMLElement;
   open: boolean;
   handleClose: () => void;
+  channelId?: string;
+  id: string;
 }
 
 export default function NicknameMenu({
   anchorEl,
   open,
   handleClose,
+  channelId,
+  id,
 }: NicknameMenuProps): JSX.Element {
-  // NOTE
-  // 이게 common 컴포넌트가 맞을까?
-  // 참가자 닉네임 클릭시는 친구창 닉네임 클릭시랑 다른 메뉴가 뜰텐데...
-  // 그냥 따로 구현하는게 편할까?
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+      variables: { id: userIdVar() },
+    });
+
+  const [addToBlackList] = useMutation<AddToBlackListResponse>(
+    ADD_TO_BLACKLIST,
+    {
+      variables: { black_id: id },
+      refetchQueries: [GET_MY_BLACKLIST],
+    }
+  );
+
+  const [deleteFromBlackList] = useMutation<DeleteFromBlackListResponse>(
+    DELETE_FROM_BLACKLIST,
+    {
+      variables: { black_id: id },
+      refetchQueries: [GET_MY_BLACKLIST],
+    }
+  );
+
+  if (blacklistError)
+    return (
+      <ErrorAlert name="NicknameMenu: blacklistError" error={blacklistError} />
+    );
 
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -23,6 +63,14 @@ export default function NicknameMenu({
         <MenuItem>DM</MenuItem>
         <MenuItem>Observe the match</MenuItem>
         <MenuItem>Ask a match</MenuItem>
+        {blacklistData?.user.blacklist.find((black) => black.id === id) ? (
+          <MenuItem onClick={() => deleteFromBlackList()}>
+            Delete from blacklist
+          </MenuItem>
+        ) : (
+          <MenuItem onClick={() => addToBlackList()}>Add to blacklist</MenuItem>
+        )}
+        {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
       </MenuList>
     </Menu>
   );

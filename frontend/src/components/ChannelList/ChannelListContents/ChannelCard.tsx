@@ -1,3 +1,4 @@
+import { useMutation } from '@apollo/client';
 import {
   Button,
   Card,
@@ -7,16 +8,34 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ChannelListSummary } from '../../../utils/models';
+import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { IChannelListItem } from '../../../utils/models';
+import { EnterChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelCardProps {
-  channelSummary: ChannelListSummary;
+  channelSummary: IChannelListItem;
 }
 
 export default function ChannelCard({
   channelSummary,
 }: ChannelCardProps): JSX.Element {
-  const { title, is_private, owner, participants } = channelSummary;
+  const { id, title, is_private, owner, participants } = channelSummary;
+
+  const [enterChannel, { loading, error }] = useMutation<EnterChannelResponse>(
+    ENTER_CHANNEL,
+    {
+      refetchQueries: [GET_MY_CHANNEL],
+    }
+  );
+
+  const onClickBtn = () => {
+    void enterChannel({ variables: { channel_id: id } });
+  };
+
+  if (error) return <ErrorAlert name="ChannelCard" error={error} />;
+  if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
     <Grid item xs={6} p={3}>
@@ -32,18 +51,15 @@ export default function ChannelCard({
             Owner: {owner.nickname}
           </Typography>
           <Typography variant="body2">
-            Participants: {participants.map((val) => val.nickname).join()}
+            Participants: {participants.map((val) => val.nickname).join(', ')}
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Enter channel</Button>
+          <Button size="small" onClick={onClickBtn}>
+            Enter channel
+          </Button>
         </CardActions>
       </Card>
     </Grid>
   );
 }
-
-// TODO
-// * Public, Private 등에 아이콘 넣기. 필터 선택에도 마찬가지...? Owner 등에도!
-// * participants 백엔드를 아직 테스트 안해봤음.
-// * 현재 스키마에 isPrivate이 아니라 private임. isPrivate으로 바뀌면 다시 테스트 필요

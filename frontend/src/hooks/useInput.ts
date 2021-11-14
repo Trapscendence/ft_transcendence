@@ -13,3 +13,5 @@ export const useInput = (
   };
   return [value, setValue, onChange];
 };
+
+// TODO: enter로 입력되게 개선 필요? 지금은 따로 onKeyPress 함수 쓰는 중... 이게 맞을 수도

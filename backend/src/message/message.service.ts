@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { DM, Message } from './model/message.model';

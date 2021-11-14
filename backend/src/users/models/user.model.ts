@@ -6,7 +6,7 @@ import {
   ObjectType,
   registerEnumType,
 } from '@nestjs/graphql';
-import { Channel } from 'src/channels/models/channel.medel';
+import { Channel } from 'src/channels/models/channel.model';
 import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
@@ -18,9 +18,9 @@ export enum UserStatus {
 }
 
 export enum UserRole {
-  USER,
-  MODERATOR,
-  OWNER,
+  USER = 'USER',
+  MODERATOR = 'MODERATOR',
+  OWNER = 'OWNER',
 }
 
 registerEnumType(UserStatus, {
@@ -74,5 +74,8 @@ export class User {
   channel: Channel;
 
   @Field((type) => UserRole)
-  role: UserRole;
+  site_role: UserRole;
+
+  @Field((type) => UserRole, { nullable: true })
+  channel_role: UserRole;
 }
