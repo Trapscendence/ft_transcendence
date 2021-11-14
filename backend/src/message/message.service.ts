@@ -271,6 +271,9 @@ export class MessageService {
     `);
 
     if (array.length !== 0) {
+      this.pubSub.publish(`new_message_to${user_id}`, {
+        receiveMessage: array[0],
+      })
       array[0].received = true;
       array[0].checked = false;
       this.pubSub.publish(`message_to_${other_id}`, {

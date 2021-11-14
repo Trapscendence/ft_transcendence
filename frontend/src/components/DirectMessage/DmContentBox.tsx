@@ -43,7 +43,13 @@ export default function DMContentBox({
         {content}
       </Box>
       <Typography variant="caption" display="block" gutterBottom>
-        {new Date(+time_stamp).toLocaleString('ko-KR')}
+        {new Date(+time_stamp).toLocaleString('ko-kr', {
+          // year: 'numeric',
+          // month: 'numeric',
+          // day: 'numeric',
+          // hour: '2-digit',
+          // minute: '2-digit',
+        })}{' '}
       </Typography>
     </Stack>
   ) : (
@@ -58,11 +64,11 @@ export default function DMContentBox({
       <Box style={myDmStyle}>{content}</Box>
       <Typography variant="caption" display="block" gutterBottom>
         {new Date(+time_stamp).toLocaleString('ko-kr', {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+          // year: 'numeric',
+          // month: 'numeric',
+          // day: 'numeric',
+          // hour: '2-digit',
+          // minute: '2-digit',
         })}
       </Typography>
     </Box>

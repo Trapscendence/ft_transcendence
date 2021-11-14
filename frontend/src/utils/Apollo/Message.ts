@@ -20,8 +20,12 @@ export interface DM {
   checked_date: string;
 }
 
-export interface RecieveMessageData {
+export interface ReceiveMessageData {
   receiveMessage: Message;
+}
+
+export interface SendMessageData {
+  sendMessage: Message;
 }
 
 export interface DmsData {

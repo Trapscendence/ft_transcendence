@@ -29,7 +29,6 @@ export class UsersResolver {
   /*
    ** ANCHOR: User
    */
-
   @Query((returns) => Int)
   async whoAmI(@GqlUser() user: any) {
     return user.id;

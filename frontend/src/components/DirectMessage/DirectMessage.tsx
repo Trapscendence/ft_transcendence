@@ -22,7 +22,7 @@ import {
   DmUsersVars,
   DmVars,
   Message,
-  RecieveMessageData,
+  ReceiveMessageData,
 } from '../../utils/Apollo/Message';
 import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
 import DirectMessageContent from './DirectMessageContent';
@@ -96,19 +96,6 @@ export default function DirectMessage(): JSX.Element {
   const myRef = useRef<null | HTMLDivElement>(null);
   const executeScroll = () => myRef?.current?.scrollIntoView();
 
-  const [offset, setOffset] = useState<number>(0);
-  // const [cachedDms, setCachedDms] = useState<RecieveMessageCache[]>([]);
-  // const updateCachedDms = (index: number, value: Message[]) => {
-  //   const newDmCache = [...cachedDms];
-  //   console.log(newDmCache);
-
-  //   if (newDmCache[index]) newDmCache[index].assign(newDmCache[index], value);
-  //   else newDmCache[index] = value;
-
-  //   setCachedDms(newDmCache);
-  //   console.log(cachedDms);
-  // };
-
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
       <Box>
@@ -150,12 +137,11 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {data?.dmUsers.map((user) => (
-                <Box onClick={executeScroll}>
+                <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
                     nickname={user.nickname}
                     ID={user.id}
-                    setOffset={setOffset}
                   />
                   <Divider light />
                 </Box>
@@ -182,11 +168,8 @@ export default function DirectMessage(): JSX.Element {
                   user_id={userId}
                   other_id={selectedIndex}
                   scroll_ref={myRef}
-                  offset={offset}
-                  setOffset={setOffset}
-                  // cachedDm={cachedDms[+selectedIndex]}
-                  // updateCachedDms={updateCachedDms}
-                  // messages={dms[selectedIndex - 1].messages}
+                  // offset={offset}
+                  // setOffset={setOffset}
                 />
               ) : newDm ? (
                 <NewDirectMessage />
