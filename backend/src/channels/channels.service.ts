@@ -253,24 +253,6 @@ export class ChannelsService {
     title: string,
     password: string,
   ): Promise<Channel> {
-    // const array = await this.databaseService.executeQuery(`
-    //   UPDATE
-    //     ${schema}.channel c
-    //   SET (
-    //     c.title,
-    //     c.password
-    //   ) = (
-    //     '${title}',
-    //     ${password == null ? 'c.password' : password === '' ? 'NULL' : password}
-    //   )
-    //   WHERE
-    //     c.id = ${channel_id}
-    //   RETURNING
-    //     c.id id,
-    //     c.title title,
-    //     ${password === '' ? 'false' : 'true'} is_private;
-    // `);
-
     const array = await this.databaseService.executeQuery(`
       UPDATE
         ${schema}.channel c
