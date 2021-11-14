@@ -3,11 +3,19 @@ import { Alert } from '@mui/material';
 
 interface ErrorAlertProps {
   // children: React.ReactNode; // TODO: 물음표 붙이는건가?
-  error: ApolloError;
+  error?: ApolloError;
+  name: string;
 }
 
-export default function ErrorAlert({ error }: ErrorAlertProps): JSX.Element {
-  return <Alert severity="error">error: {error.message}</Alert>;
+export default function ErrorAlert({
+  error,
+  name,
+}: ErrorAlertProps): JSX.Element {
+  return (
+    <Alert severity="error">
+      {name}: {error?.message}
+    </Alert>
+  );
 
   // return (
   //   <Snackbar

@@ -1,17 +1,23 @@
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useState } from 'react';
 
 import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
+  GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
 } from '../../../utils/gqls';
 import { IUser } from '../../../utils/models';
-import { LeaveChannelResponse } from '../../../utils/responseModels';
+import {
+  GetMyChannelRoleResponse,
+  LeaveChannelResponse,
+} from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
+import ChannelEditModal from './ChannelEditModal';
 
 interface ChannelHeaderProps {
   id: string;
@@ -22,16 +28,17 @@ interface ChannelHeaderProps {
 }
 
 export default function ChannelHeader({
-  id,
+  id, // NOTE: setting에서 사용되지 않을까? 근데 그러려면 ban 목록도 있어야하지 않나?
   title,
   is_private,
   owner,
   administrators,
 }: ChannelHeaderProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+
   const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
     LEAVE_CHANNEL,
     {
-      variables: { channel_id: id, user_id: userIdVar() },
       refetchQueries: [
         GET_MY_CHANNEL,
         { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
@@ -39,11 +46,30 @@ export default function ChannelHeader({
     }
   );
 
+  const { data: channelRoleData, error: channelRoleError } =
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
+      variables: { id: userIdVar() },
+    });
+
   const onClickLeave = () => {
     void leaveChannel();
   };
 
-  if (error) return <ErrorAlert error={error} />;
+  const handleOpen = (): void => {
+    setOpen(true);
+  };
+  const handleClose = (): void => {
+    setOpen(false);
+  };
+
+  if (error) return <ErrorAlert name="ChannelHeader" error={error} />;
+  if (channelRoleError)
+    return (
+      <ErrorAlert
+        name="ChannelHeader: channelRoleError"
+        error={channelRoleError}
+      />
+    );
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
@@ -60,12 +86,21 @@ export default function ChannelHeader({
         <Typography>{is_private ? 'Private' : 'Public'}</Typography>
         <Typography>Title: {title}</Typography>
         <Typography>Owner: {owner.nickname}</Typography>
+        <Typography>
+          Administrators: {administrators.map((val) => val.nickname).join(', ')}
+        </Typography>
       </Box>
       <Box>
-        <Button variant="contained" onClick={onClickLeave}>
+        {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
+          <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+            Edit Channel
+          </Button>
+        )}
+        <Button variant="contained" sx={{ m: 1 }} onClick={onClickLeave}>
           Leave Channel
         </Button>
       </Box>
+      <ChannelEditModal {...{ open, handleClose, id }} />
     </Paper>
   );
 }

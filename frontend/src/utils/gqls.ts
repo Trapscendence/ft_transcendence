@@ -6,7 +6,6 @@ import gql from 'graphql-tag';
 
 export const GET_CHANNELS = gql`
   query GetChannels($limit: Int!, $offset: Int!) {
-    # query GetChannels($limit: Float!, $offset: Float!) { // NOTE: 에러 테스트 용
     channels(limit: $limit, offset: $offset) {
       id
       title
@@ -67,27 +66,6 @@ export const GET_MY_CHANNEL_ROLE = gql`
   }
 `;
 
-export const GET_CHATTING_MESSAGES = gql`
-  query getChattingMessages($channel_id: ID!) {
-    chattingMessages(channel_id: $channel_id) @client
-  }
-`;
-
-// export const GET_MY_CHANNEL_PARTICIPANTS = gql`
-//   query GetCurrentParticipants($id: ID!) {
-//     user(id: $id) {
-//       channel {
-//         participants {
-//           id
-//           nickname
-//           # avatar
-//           # status
-//         }
-//       }
-//     }
-//   }
-// `;
-
 export const GET_MY_BLACKLIST = gql`
   query GetMyBlacklist($id: ID!) {
     user(id: $id) {
@@ -110,7 +88,6 @@ export const GET_MY_CHANNEL_MUTED_USERS = gql`
     }
   }
 `;
-// TODO: 이미 쓴 쿼리에 대해 (ex. GET_CURRENT_CHANNEL) 부분으로 데이터는 못가져오나?
 
 export const GET_MY_CHANNEL_BANNED_USERS = gql`
   query GetMyChannelBannedUsers($id: ID!) {
@@ -124,7 +101,12 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
     }
   }
 `;
-// TODO: bannedUsers 등의 필드명이 banned_users로 바뀔 예정
+
+export const WHO_AM_I = gql`
+  query whoAmI {
+    whoAmI
+  }
+`;
 
 /*
  ** ANCHOR: Mutation
@@ -157,11 +139,42 @@ export const ADD_CHANNEL = gql`
     }
   }
 `;
-// TODO: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
+// NOTE: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
+
+export const EDIT_CHANNEL = gql`
+  mutation EditChannel($title: String!, $password: String, $channel_id: ID!) {
+    editChannel(title: $title, password: $password, channel_id: $channel_id) {
+      id
+      title
+      is_private
+      owner {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      administrators {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      participants {
+        id
+        nickname
+        # avatar
+        # status
+      }
+      bannedUsers {
+        id
+      }
+    }
+  }
+`;
 
 export const ENTER_CHANNEL = gql`
-  mutation EnterChannel($channel_id: ID!, $user_id: ID!) {
-    enterChannel(channel_id: $channel_id, user_id: $user_id) {
+  mutation EnterChannel($channel_id: ID!) {
+    enterChannel(channel_id: $channel_id) {
       id
       title
       is_private
@@ -185,11 +198,44 @@ export const CHAT_MESSAGE = gql`
   mutation ChatMessage($message: String!, $user_id: ID!, $channel_id: ID!) {
     chatMessage(message: $message, user_id: $user_id, channel_id: $channel_id)
   }
-`; // TODO: 나중에 user_id 등은 쿠키 사용으로 사라질 예정
+`;
 
 export const LEAVE_CHANNEL = gql`
-  mutation LeaveChannel($channel_id: ID!, $user_id: ID!) {
-    leaveChannel(channel_id: $channel_id, user_id: $user_id)
+  mutation LeaveChannel {
+    leaveChannel
+  }
+`;
+
+export const MUTE_USER = gql`
+  mutation MuteUserOnChannel(
+    $mute_time: Int!
+    $user_id: ID!
+    $channel_id: ID!
+  ) {
+    muteUserOnChannel(
+      mute_time: $mute_time
+      user_id: $user_id
+      channel_id: $channel_id
+    )
+  }
+`;
+
+export const BAN_AND_KICK_USER = gql`
+  mutation BanAndKickUserFromChannel($user_id: ID!, $channel_id: ID!) {
+    banUserFromChannel(user_id: $user_id, channel_id: $channel_id)
+    kickUserFromChannel(user_id: $user_id, channel_id: $channel_id)
+  }
+`;
+
+export const ADD_TO_BLACKLIST = gql`
+  mutation AddToBlackList($black_id: ID!) {
+    addToBlackList(black_id: $black_id)
+  }
+`;
+
+export const DELETE_FROM_BLACKLIST = gql`
+  mutation DeleteFromBlackList($black_id: ID!) {
+    deleteFromBlackList(black_id: $black_id)
   }
 `;
 

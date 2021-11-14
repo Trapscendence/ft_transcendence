@@ -89,7 +89,6 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return await this.usersService.deleteFromBlackList(user_id, black_id);
   }
 

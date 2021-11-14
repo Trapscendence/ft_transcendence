@@ -8,7 +8,6 @@ import {
   Typography,
 } from '@mui/material';
 
-import { userIdVar } from '../../..';
 import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
 import { IChannelListItem } from '../../../utils/models';
 import { EnterChannelResponse } from '../../../utils/responseModels';
@@ -32,10 +31,10 @@ export default function ChannelCard({
   );
 
   const onClickBtn = () => {
-    void enterChannel({ variables: { channel_id: id, user_id: userIdVar() } });
+    void enterChannel({ variables: { channel_id: id } });
   };
 
-  if (error) return <ErrorAlert error={error} />;
+  if (error) return <ErrorAlert name="ChannelCard" error={error} />;
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (

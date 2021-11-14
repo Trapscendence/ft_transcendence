@@ -9,29 +9,30 @@ import {
 } from '@mui/material';
 
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
-import { AddChannelResponse } from '../../../utils/responseModels';
+import { EDIT_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { EditChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
-interface ChannelCreateModalProps {
+interface ChannelEditModalProps {
   open: boolean;
   handleClose: () => void;
+  id: string;
 }
 
-export default function ChannelCreateModal({
+export default function ChannelEditModal({
   open,
   handleClose,
-}: ChannelCreateModalProps): JSX.Element {
+  id,
+}: ChannelEditModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
-  const [addChannelFunc, { loading, error }] =
-    useMutation<AddChannelResponse>(ADD_CHANNEL);
+  const [editChannelFunc, { loading, error }] =
+    useMutation<EditChannelResponse>(EDIT_CHANNEL);
 
   const onClickBtn = async (): Promise<void> => {
-    await addChannelFunc({
-      variables: { title, password },
-      refetchQueries: [GET_MY_CHANNEL],
+    await editChannelFunc({
+      variables: { title, password, channel_id: id },
     });
 
     handleClose();
@@ -40,7 +41,7 @@ export default function ChannelCreateModal({
   };
 
   if (loading) return <LoadingBackdrop loading={loading} />;
-  if (error) return <ErrorAlert name="ChannelCreateModal" error={error} />;
+  if (error) return <ErrorAlert name="ChannelEditModal" error={error} />;
 
   return (
     <Modal
@@ -85,7 +86,7 @@ export default function ChannelCreateModal({
         </CardContent>
         <CardActions>
           <Button variant="contained" onClick={onClickBtn}>
-            Make Channel
+            Edit Channel
           </Button>
         </CardActions>
       </Card>
