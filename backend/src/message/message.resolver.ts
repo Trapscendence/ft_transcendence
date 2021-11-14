@@ -11,7 +11,7 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';

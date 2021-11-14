@@ -12,7 +12,7 @@ import {
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
-import { Channel } from 'src/channels/models/channel.medel';
+import { Channel } from 'src/channels/models/channel.model';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
