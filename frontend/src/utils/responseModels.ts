@@ -52,8 +52,8 @@ export interface BanAndKickUserResponse {
   kickUserFromChannel: boolean;
 }
 
-export interface WhoAmIResponse {
-  whoAmI: number;
+export interface GetMyIdResponse {
+  user: { id: string };
 }
 
 export interface AddToBlackListResponse {

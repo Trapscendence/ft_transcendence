@@ -11,7 +11,8 @@ import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
-import { Context } from 'graphql-ws';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 @Module({
   imports: [
@@ -48,6 +49,6 @@ import { Context } from 'graphql-ws';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }, AppService],
 })
 export class AppModule {}

@@ -15,6 +15,7 @@ import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 
@@ -30,14 +31,14 @@ export class UsersResolver {
    ** ANCHOR: User
    */
 
-  @Query((returns) => Int)
-  async whoAmI(@GqlUser() user: any) {
-    return user.id;
+  @Query((returns) => ID)
+  async getMyID(@UserID() user_id: string) {
+    return user_id;
   }
 
   @Query((returns) => User, { nullable: true })
   async user(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
@@ -45,7 +46,7 @@ export class UsersResolver {
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
     if (nickname) return await this.usersService.getUserByNickname(nickname);
-    return await this.usersService.getUserById(user.id);
+    return await this.usersService.getUserById(user_id);
   }
 
   @Query((returns) => [User])
@@ -68,7 +69,7 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
     return this.usersService.addFriend(user.id, friend_id);
@@ -76,27 +77,26 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean)
   async deleteFriend(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFriend(user.id, friend_id);
+    return await this.usersService.deleteFriend(user_id, friend_id);
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackList(
-    // NOTE: addToBlackLIst -> addToBlackList 함수명 수정했습니다.
-    @GqlUser() user: any,
+  async addToBlackLIst(
+    @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.addToBlackList(user.id, black_id);
+    return await this.usersService.addToBlackList(user_id, black_id);
   }
 
   @Mutation((returns) => Boolean)
   async deleteFromBlackList(
-    @GqlUser() user: any,
+    @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFromBlackList(user.id, black_id);
+    return await this.usersService.deleteFromBlackList(user_id, black_id);
   }
 
   /*

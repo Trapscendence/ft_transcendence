@@ -102,9 +102,11 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
   }
 `;
 
-export const WHO_AM_I = gql`
-  query whoAmI {
-    whoAmI
+export const GET_MY_ID = gql`
+  query GetMyId {
+    user {
+      id
+    }
   }
 `;
 
