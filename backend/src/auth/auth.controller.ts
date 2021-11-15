@@ -1,8 +1,8 @@
 import { Controller, UseGuards, Get, Req, Res } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt.guard';
 import { Request, Response } from 'express';
+import { Public } from './decorator/public.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -15,8 +15,9 @@ export class AuthController {
     secure: false,
   };
 
-  @UseGuards(AuthGuard('42'))
   @Get('login/42')
+  @UseGuards(AuthGuard('42'))
+  @Public()
   async issueAccessTokenFrom42(@Req() req: Request, @Res() res: Response) {
     const access_token = await this.authService.issueAccessToken(req.user);
 
@@ -26,13 +27,11 @@ export class AuthController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('logout')
   async deleteJWT(@Res() res: Response) {
     res.cookie('access_token', '', this.cookieOption);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('test')
   returnUserID(@Req() req) {
     return `JWT OK, id: ${req.user.id}`;
