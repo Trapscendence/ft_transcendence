@@ -147,7 +147,6 @@ export class ChannelsResolver {
   @Mutation((returns) => Boolean)
   async delegateUserOnChannel(
     @UserID() my_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
   ): Promise<boolean> {
     if (my_id === user_id) {
@@ -156,8 +155,20 @@ export class ChannelsResolver {
       );
     }
 
+    const myChannelId: string = (
+      await this.usersService.getChannelByUserId(my_id)
+    )?.id;
+    const usersChannelId: string = (
+      await this.usersService.getChannelByUserId(user_id)
+    )?.id;
+
+    if (myChannelId !== usersChannelId) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not on your channel(id: ${myChannelId})`,
+      );
+    }
+
     return await this.channelsService.updateChannelRole(
-      channel_id,
       user_id,
       UserRole.ADMIN,
     );
@@ -167,7 +178,6 @@ export class ChannelsResolver {
   @Mutation((returns) => Boolean)
   async relegateUserOnChannel(
     @UserID() my_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
   ) {
     if (my_id === user_id) {
@@ -176,11 +186,20 @@ export class ChannelsResolver {
       );
     }
 
-    return await this.channelsService.updateChannelRole(
-      channel_id,
-      user_id,
-      UserRole.USER,
-    );
+    const myChannelId: string = (
+      await this.usersService.getChannelByUserId(my_id)
+    )?.id;
+    const usersChannelId: string = (
+      await this.usersService.getChannelByUserId(user_id)
+    )?.id;
+
+    if (myChannelId !== usersChannelId) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not on your channel(id: ${myChannelId})`,
+      );
+    }
+
+    return await this.channelsService.updateChannelRole(user_id, UserRole.USER);
   }
 
   @ChannelRoles(UserRole.OWNER) // TODO: to be site role

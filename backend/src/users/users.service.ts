@@ -292,8 +292,11 @@ INSERT INTO ${schema}.user(
     `);
   }
 
-  async getChannelByUserId(id: string): Promise<Channel | null> {
-    const array: Channel[] = await this.databaseService.executeQuery(`
+  async getChannelByUserId(
+    id: string,
+  ): Promise<{ id: string; title: string; is_private: boolean } | null> {
+    const array: { id: string; title: string; is_private: boolean }[] =
+      await this.databaseService.executeQuery(`
       SELECT
         c.id
           AS id,
@@ -321,8 +324,8 @@ INSERT INTO ${schema}.user(
   }
 
   async getChannelRole(id: string): Promise<UserRole | null> {
-    const select_channel_role: User[] = await this.databaseService
-      .executeQuery(`
+    const select_channel_role: { channel_role: UserRole }[] = await this
+      .databaseService.executeQuery(`
       SELECT
         channel_role
       FROM
@@ -333,8 +336,6 @@ INSERT INTO ${schema}.user(
 
     if (select_channel_role.length === 0) {
       throw new ConflictException(`This user(id: ${id}) is not in a channel`);
-    } else if (select_channel_role.length !== 1) {
-      throw `FATAL ERROR: User(id: ${id}) belongs to more than one channel`;
     } else {
       return select_channel_role[0].channel_role;
     }

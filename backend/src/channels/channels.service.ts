@@ -513,11 +513,7 @@ export class ChannelsService {
     return true;
   }
 
-  async updateChannelRole(
-    channel_id: string,
-    user_id: string,
-    role: UserRole,
-  ): Promise<boolean> {
+  async updateChannelRole(user_id: string, role: UserRole): Promise<boolean> {
     const updateChannel = await this.databaseService.executeQuery(`
       UPDATE
         ${schema}.channel_user
@@ -525,15 +521,13 @@ export class ChannelsService {
         channel_role = '${role}'
       WHERE
         user_id = '${user_id}'
-        AND
-        channel_id = '${channel_id}'
       RETURNING
         user_id
     ;`);
 
     if (updateChannel.length === 0) {
       throw new ConflictException(
-        `The user(id: ${user_id}) is not in the channel(id: ${channel_id})`,
+        `The user(id: ${user_id}) is not on any channel`,
       );
     } else {
       return true;
