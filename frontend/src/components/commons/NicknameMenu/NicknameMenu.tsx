@@ -56,6 +56,8 @@ export default function NicknameMenu({
       <ErrorAlert name="NicknameMenu: blacklistError" error={blacklistError} />
     );
 
+  if (id === userIdVar()) return <></>;
+
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
       <MenuList autoFocusItem={open}>
