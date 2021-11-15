@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, UseGuards } from '@nestjs/common';
+import { ConflictException, Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -61,10 +61,7 @@ export class ChannelsResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async leaveChannel(
-    @UserID() user_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-  ): Promise<Boolean> {
+  async leaveChannel(@UserID() user_id: string): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user_id);
   }
 
@@ -77,33 +74,16 @@ export class ChannelsResolver {
     return await this.channelsService.addChannel(title, password, user_id);
   }
 
-  @Mutation((returns) => Channel, { nullable: true })
-  async editChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('title') title: string,
-    @Args('password', { nullable: true }) password: string,
-  ): Promise<Channel> {
-    return await this.channelsService.editChannel(channel_id, title, password);
-  }
-
-  @ChannelRoles(UserRole.OWNER)
-  @Mutation((returns) => Boolean)
-  async deleteChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-  ) {
-    return await this.channelsService.deleteChannel(channel_id);
-  }
-
   @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
   async chatMessage(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('message') message: string,
   ) {
     return await this.channelsService.chatMessage(channel_id, user_id, message);
   }
 
-  @ChannelRoles(UserRole.MODERATOR)
+  @ChannelRoles(UserRole.ADMIN)
   @Mutation((returns) => Boolean)
   async muteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -117,7 +97,7 @@ export class ChannelsResolver {
     );
   }
 
-  @ChannelRoles(UserRole.MODERATOR)
+  @ChannelRoles(UserRole.ADMIN)
   @Mutation((returns) => Boolean)
   unmuteUserOnChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -126,16 +106,16 @@ export class ChannelsResolver {
     return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
   }
 
-  @ChannelRoles(UserRole.MODERATOR)
+  @ChannelRoles(UserRole.ADMIN)
   @Mutation((returns) => Boolean)
   async kickUserFromChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
   ): Promise<boolean> {
     return await this.channelsService.kickUserFromChannel(channel_id, user_id);
   }
 
-  @ChannelRoles(UserRole.MODERATOR)
+  @ChannelRoles(UserRole.ADMIN)
   @Mutation((returns) => Boolean)
   async banUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -144,7 +124,7 @@ export class ChannelsResolver {
     return await this.channelsService.banUserFromChannel(channel_id, user_id);
   }
 
-  @ChannelRoles(UserRole.MODERATOR)
+  @ChannelRoles(UserRole.ADMIN)
   @Mutation((returns) => Boolean)
   async unbanUserFromChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -154,26 +134,48 @@ export class ChannelsResolver {
   }
 
   @ChannelRoles(UserRole.OWNER)
+  @Mutation((returns) => Channel, { nullable: true })
+  async editChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
+    @Args('title') title: string,
+    @Args('password', { nullable: true }) password: string,
+  ): Promise<Channel> {
+    return await this.channelsService.editChannel(channel_id, title, password);
+  }
+
+  @ChannelRoles(UserRole.OWNER)
   @Mutation((returns) => Boolean)
-  async authorizeUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+  async delegateUserOnChannel(
+    @UserID() my_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
   ): Promise<boolean> {
-    // TODO: 본인을 authorize할 때 에러 발생
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self delegate (me: ${my_id}, target: ${user_id})`,
+      );
+    }
+
     return await this.channelsService.updateChannelRole(
       channel_id,
       user_id,
-      UserRole.MODERATOR,
+      UserRole.ADMIN,
     );
   }
 
   @ChannelRoles(UserRole.OWNER)
   @Mutation((returns) => Boolean)
-  async unauthorizeUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+  async relegateUserOnChannel(
+    @UserID() my_id: string,
+    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
   ) {
-    // TODO: 본인을 unauthorize할 때 에러 발생
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self relegate (me: ${my_id}, target: ${user_id})`,
+      );
+    }
+
     return await this.channelsService.updateChannelRole(
       channel_id,
       user_id,
@@ -181,9 +183,18 @@ export class ChannelsResolver {
     );
   }
 
+  @ChannelRoles(UserRole.OWNER) // TODO: to be site role
+  @Mutation((returns) => Boolean)
+  async deleteChannel(
+    @Args('channel_id', { type: () => ID! }) channel_id: string,
+  ) {
+    return await this.channelsService.deleteChannel(channel_id);
+  }
+
   /*
    ** ANCHOR: Channel ResolveField
    */
+
   @ResolveField('owner', (returns) => User)
   async owner(@Parent() channel: Channel): Promise<User> {
     return await this.channelsService.getOwner(channel.id);

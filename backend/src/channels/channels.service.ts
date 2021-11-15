@@ -4,17 +4,15 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
-import { Notify, ChannelNotify, Channel } from './models/channel.model';
+import { Notify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User, UserRole } from 'src/users/models/user.model';
-import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {
@@ -25,6 +23,7 @@ export class ChannelsService {
   ) {
     this.mutedUsers = new MutedUsers();
   }
+
   private mutedUsers: MutedUsers;
 
   /*
@@ -143,38 +142,54 @@ export class ChannelsService {
   }
 
   async leaveChannel(user_id: string): Promise<boolean> {
-    // TODO owner 자동양도기능, 마지막 사람 나갈 시 자동 폭파기능 추가
-    const channels = await this.databaseService.executeQuery(`
-        DELETE FROM
-          ${schema}.channel_user
-        WHERE
-          user_id = ${user_id}
-            AND
-          channel_id = (
-            SELECT
-              channel_id
-            FROM
-              ${schema}.channel_user
-            WHERE
-              user_id = ${user_id}
-          )
-        RETURNING *;
-    `); // 해당 채널에 유저가 있는지 확인
-    if (!channels.length)
-      throw new ConflictException(
-        'Failed to leave channel. It seems the user is already left.',
-      );
+    const myChannel = await this.databaseService.executeQuery(`
+    DELETE FROM
+    ${schema}.channel_user
+    WHERE
+    user_id = ${user_id}
+    RETURNING channel_id, channel_role
+    `);
 
-    this.pubSub.publish(`to_channel_${channels[0].channel_id}`, {
+    if (myChannel.length === 0) {
+      throw new ConflictException(
+        `This user(id: ${user_id}) does not belong to any channel`,
+      );
+    }
+
+    const { channel_id, channel_role } = myChannel[0];
+
+    this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.ENTER,
         participant: await this.usersService.getUserById(user_id),
         text: null,
-        check: true,
+        check: false,
       },
-    }); // NOTE: 임시라 check 등도 다 동일합니다. 그냥 프론트에서 subscription 오는지 여부만 체크하고 새로고침하게 임시 구현하려는 목적입니다.
+    }); // 'user_id가 나갔습니다' 정보 전송
 
-    return true;
+    if (channel_role !== UserRole.OWNER) {
+      return true;
+    }
+
+    const participantsResult = await this.databaseService.executeQuery(`
+      SELECT
+        user_id,
+        channel_role
+      FROM
+        ${schema}.channel_user
+      WHERE
+        channel_id = ${channel_id}
+      ORDER BY
+        channel_role DESC
+    ;`);
+
+    const successor = participantsResult[0]?.user_id;
+
+    if (successor === undefined) {
+      return this.deleteChannel(channel_id);
+    } else {
+      return this.updateChannelRole(channel_id, successor, UserRole.OWNER);
+    }
   }
 
   async addChannel(
@@ -344,14 +359,12 @@ export class ChannelsService {
     user_id: string,
     mute_time: number,
   ): Promise<boolean> {
-    // if (
-    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    // )
-    //   throw new ForbiddenException('Inappropriate role');
-
-    // NOTE -gmoon
-    // usersService.getSiteRole(user_id)) 에서 site_role 등록이 안돼 'No such user id' 에러가 발생합니다. 따라서 임시로 주석처리 합니다.
+    if (
+      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    ) {
+      throw new ForbiddenException('Inappropriate role');
+    }
 
     this.mutedUsers.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
@@ -388,18 +401,17 @@ export class ChannelsService {
     });
     return true;
   }
-  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
-    // if (
-    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    // )
-    //   throw new ForbiddenException('Inappropriate role');
-    // NOTE: 여기도 'No such user id' 에러로 임시 주석처리합니다. -gmoon
+    if (
+      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    ) {
+      throw new ForbiddenException('Inappropriate role');
+    }
 
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
@@ -523,10 +535,6 @@ export class ChannelsService {
       throw new ConflictException(
         `The user(id: ${user_id}) is not in the channel(id: ${channel_id})`,
       );
-    } else if (updateChannel.length !== 1) {
-      throw new InternalServerErrorException(
-        `The user(id: ${user_id}) is on more than one channel`,
-      );
     } else {
       return true;
     }
@@ -646,13 +654,5 @@ export class ChannelsService {
         `,
       [this.mutedUsers.getUserIds(channel_id)],
     );
-  }
-
-  async delegateOwner(owner_id: string, user_id: string): Promise<boolean> {
-    return true;
-  }
-
-  async setAdmin(user_id: string, channel_id: string): Promise<boolean> {
-    return true;
   }
 }
