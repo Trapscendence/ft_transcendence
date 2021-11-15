@@ -1,16 +1,32 @@
 import { useQuery } from '@apollo/client';
-import { Avatar, Button, Skeleton, Stack } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useState } from 'react';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
 
-function MyProfilePage(): JSX.Element {
+export default function ProfilePage(): JSX.Element {
   const avartarStyle = {
     height: '150px',
     width: '150px',
   };
+  const paperStyle = {
+    height: '200px',
+    width: '100%',
+  };
+  const typoStyle = {
+    margin: '10px',
+  };
+
   const avatar = '';
   const nickname = 'seohchoi';
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
@@ -18,13 +34,13 @@ function MyProfilePage(): JSX.Element {
   });
   const [buttonActive, setButtonActive] = useState(true);
 
-  const handleOnclick = (value: string) => {
-    //TODO value를 other_id(selectedIndex)에 넣기
-    //TODO 위를 위해서 dm 리스트 동적으로 받아오기
-    return value;
-  };
+  // const handleOnclick = (value: string) => {
+  //   //TODO value를 other_id(selectedIndex)에 넣기
+  //   //TODO 위를 위해서 dm 리스트 동적으로 받아오기
+  //   return value;
+  // };
   return (
-    <div>
+    <Box>
       <Stack
         // direction="row"
         // justifyContent="flex-start"
@@ -49,9 +65,9 @@ function MyProfilePage(): JSX.Element {
             sx={{ width: '400px' }}
             justifyContent="center"
           >
-            <Skeleton variant="text" />
-            <Skeleton variant="text" />
-            <Skeleton variant="text" />
+            <Typography variant="body2">랭킹</Typography>
+            <Typography variant="h5">닉네임</Typography>
+            <Typography variant="body2">월렛 레벨</Typography>
           </Stack>
           <Stack
             id="search-var-Stack"
@@ -60,7 +76,7 @@ function MyProfilePage(): JSX.Element {
             alignItems="flex-end"
           >
             {data ? (
-              <div
+              <Box
                 style={{
                   display: 'flex',
                   width: '400px',
@@ -69,9 +85,9 @@ function MyProfilePage(): JSX.Element {
                   justifyContent: 'space-between',
                 }}
               >
-                <div style={{ width: '320px' }}>
+                <Box style={{ width: '320px' }}>
                   <UseSearchUser {...{ users: data, setButtonActive }} />
-                </div>
+                </Box>
                 <Button
                   variant="contained"
                   disabled={buttonActive}
@@ -82,20 +98,27 @@ function MyProfilePage(): JSX.Element {
                 >
                   다음
                 </Button>
-              </div>
+              </Box>
             ) : (
               <Skeleton variant="rectangular" width={'50'} height={'10'} />
             )}
           </Stack>
         </Stack>
 
-        <Skeleton variant="rectangular" width={'100%'} height={200} />
-        <Skeleton variant="rectangular" width={'100%'} height={200} />
-        <Skeleton variant="rectangular" width={'100%'} height={200} />
-        <Skeleton variant="rectangular" width={'100%'} height={200} />
+        <Typography variant="h6" style={typoStyle}>
+          전적
+        </Typography>
+        <Paper style={paperStyle}></Paper>
+        <Typography variant="h6" style={typoStyle}>
+          업적
+        </Typography>
+        <Paper style={paperStyle}></Paper>
+        <Typography variant="h6" style={typoStyle}>
+          랭킹
+        </Typography>
+
+        <Paper style={paperStyle}></Paper>
       </Stack>
-    </div>
+    </Box>
   );
 }
-
-export default MyProfilePage;

@@ -1,8 +1,8 @@
 import { Box } from '@mui/system';
 
-import Profile from '../../components/ProfilePage';
+import MyProfile from '../../components/MyProfileSetting';
 
-function ProfilePage(): JSX.Element {
+function MyProfileSetting(): JSX.Element {
   return (
     <Box
       // display="flex"
@@ -12,9 +12,9 @@ function ProfilePage(): JSX.Element {
       height="100vh"
       // bgcolor="gray"
     >
-      <Profile />
+      <MyProfile />
     </Box>
   );
 }
 
-export default ProfilePage;
+export default MyProfileSetting;

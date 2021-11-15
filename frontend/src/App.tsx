@@ -10,7 +10,7 @@ import ChannelListPage from './routes/ChannelListPage';
 import ChannelPage from './routes/ChannelPage';
 import HomePage from './routes/HomePage';
 import LoginPage from './routes/LoginPage';
-import MyProfilePage from './routes/MyProfilePage';
+import MyProfileSetting from './routes/MyProfileSetting';
 import ProfilePage from './routes/ProfilePage';
 import RankPage from './routes/RankPage';
 import UserRankPage from './routes/UserRankPage';
@@ -45,7 +45,11 @@ function App(): JSX.Element {
           />
           <RestrictRoute exact path="/rank" component={RankPage} />
           <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
-          <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
+          <RestrictRoute
+            exact
+            path="/myprofilesetting"
+            component={MyProfileSetting}
+          />
           <RestrictRoute
             exact
             path="/profile/:userid"
