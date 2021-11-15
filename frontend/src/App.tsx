@@ -16,16 +16,16 @@ import MyProfilePage from './routes/MyProfilePage';
 import ProfilePage from './routes/ProfilePage';
 import RankPage from './routes/RankPage';
 import UserRankPage from './routes/UserRankPage';
-import { WHO_AM_I } from './utils/gqls';
-import { WhoAmIResponse } from './utils/responseModels';
+import { GET_MY_ID } from './utils/gqls';
+import { GetMyIdResponse } from './utils/responseModels';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
-  const { loading, data } = useQuery<WhoAmIResponse>(WHO_AM_I);
+  const { loading, data } = useQuery<GetMyIdResponse>(GET_MY_ID);
 
   // if (error) console.error(error);
   if (loading) return <LoadingBackdrop loading={loading} />;
-  if (data) userIdVar(data.whoAmI.toString());
+  if (data) userIdVar(data.user?.id);
 
   return (
     <BrowserRouter>
