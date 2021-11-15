@@ -63,7 +63,7 @@ export class ChannelsResolver {
   @Mutation((returns) => Boolean)
   async leaveChannel(
     @UserID() user_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    // @Args('channel_id', { type: () => ID! }) channel_id: string,
   ): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user_id);
   }
