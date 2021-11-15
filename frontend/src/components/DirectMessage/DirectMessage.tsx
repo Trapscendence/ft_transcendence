@@ -65,7 +65,7 @@ export default function DirectMessage(): JSX.Element {
   const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
     {
-      variables: { limit: 10, offset: 0, user_id: userIdVar() },
+      variables: { limit: 10, offset: 0 },
     }
   );
   //TODO getDmUsers는 처음로딩할 때 쓰이고 그 이후부터 newDmUser 섭스크립션을 해서 새로 온 애들을 맨 위로 올리게 하기
@@ -164,7 +164,6 @@ export default function DirectMessage(): JSX.Element {
               {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
               {selectedIndex != '0' ? (
                 <DirectMessageContent
-                  user_id={userIdVar()}
                   other_id={selectedIndex}
                   scroll_ref={myRef}
                   // offset={offset}

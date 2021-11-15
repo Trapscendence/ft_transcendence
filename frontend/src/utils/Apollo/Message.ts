@@ -35,12 +35,10 @@ export interface DmsData {
 export interface DmUsersVars {
   limit: number;
   offset: number;
-  user_id: string | null;
 }
 
 export interface DmVars {
   limit: number;
   offset: number;
-  user_id: string | null;
   other_id: string;
 }
