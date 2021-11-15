@@ -30,11 +30,12 @@ export default function ChannelCard({
     }
   );
 
-  const onClickBtn = () => {
-    void enterChannel({ variables: { channel_id: id } });
+  const onClickBtn = async () => {
+    await enterChannel({ variables: { channel_id: id } });
   };
 
   if (error) return <ErrorAlert name="ChannelCard" error={error} />;
+
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
