@@ -63,7 +63,9 @@ export default function NicknameMenu({
         <MenuItem>DM</MenuItem>
         <MenuItem>Observe the match</MenuItem>
         <MenuItem>Ask a match</MenuItem>
-        {blacklistData?.user.blacklist.find((black) => black.id === id) ? (
+        {blacklistData &&
+        blacklistData.user &&
+        blacklistData.user.blacklist.find((black) => black.id === id) ? (
           <MenuItem onClick={() => deleteFromBlackList()}>
             Delete from blacklist
           </MenuItem>
