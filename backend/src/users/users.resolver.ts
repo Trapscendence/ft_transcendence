@@ -29,6 +29,7 @@ export class UsersResolver {
   /*
    ** ANCHOR: User
    */
+
   @Query((returns) => Int)
   async whoAmI(@GqlUser() user: any) {
     return user.id;
@@ -64,14 +65,12 @@ export class UsersResolver {
   /*
    ** ANCHOR: Social
    */
-  // NOTE: 나중에 분리할 수도...?
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
     @GqlUser() user: any,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return this.usersService.addFriend(user.id, friend_id);
   }
 
@@ -94,10 +93,10 @@ export class UsersResolver {
 
   @Mutation((returns) => Boolean)
   async deleteFromBlackList(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
-    return await this.usersService.deleteFromBlackList(user_id, black_id);
+    return await this.usersService.deleteFromBlackList(user.id, black_id);
   }
 
   /*

@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -16,7 +16,10 @@ import { UsersService } from 'src/users/users.service';
 import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
 import { PUB_SUB } from '../pubsub.module';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => DM)
 export class MessageResolver {
   constructor(
@@ -31,10 +34,10 @@ export class MessageResolver {
 
   @Query((returns) => DM, { nullable: true })
   async DM(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): Promise<DM> {
-    return await this.messageService.getDM(user_id, other_id);
+    return await this.messageService.getDM(user.id, other_id);
   }
 
   /*
@@ -68,11 +71,11 @@ export class MessageResolver {
 
   @Query((returns) => [User])
   async dmUsers(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
-    return await this.messageService.getDmUsers(user_id, offset, limit);
+    return await this.messageService.getDmUsers(user.id, offset, limit);
   }
 
   /*
@@ -81,32 +84,33 @@ export class MessageResolver {
 
   @Mutation((returns) => Message, { nullable: true })
   async sendMessage(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('other_id', { type: () => ID }) other_id: string,
     @Args('text') text: string,
   ): Promise<Message> {
-    return await this.messageService.insertMessage(user_id, other_id, text);
+    return await this.messageService.insertMessage(user.id, other_id, text);
   }
 
   @Mutation((returns) => Boolean, { nullable: true })
   updateCheckdate(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @GqlUser() user: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): null {
-    this.messageService.setCheckDate(user_id, other_id);
+    this.messageService.setCheckDate(user.id, other_id);
     return null;
   }
 
   /*
    ** ANCHOR: DM subscription
    */
+
   @Subscription((returns) => Message)
-  async receiveMessage(@Args('user_id', { type: () => ID }) user_id: string) {
-    return this.pubSub.asyncIterator(`message_to_${user_id}`);
+  async receiveMessage(@GqlUser() user: any) {
+    return this.pubSub.asyncIterator(`message_to_${user.id}`);
   }
 
   @Subscription((returns) => User)
-  newDmUser(@Args('user_id') user_id: string) {
-    return this.pubSub.asyncIterator(`new_message_to_${user_id}`);
+  newDmUser(@GqlUser() user: any) {
+    return this.pubSub.asyncIterator(`new_message_to_${user.id}`);
   }
 }

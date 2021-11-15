@@ -1,4 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
@@ -27,7 +32,8 @@ export class UsersService {
       WHERE
         id = ${id};
       `);
-    return array.length ? array[0] : null;
+    if (array.length) return array[0];
+    throw new NotFoundException('No such user.');
   }
 
   async getUserByNickname(nickname: string): Promise<User | null> {
@@ -49,7 +55,8 @@ export class UsersService {
       WHERE
         nickname = '${nickname}';
     `);
-    return array.length ? array[0] : null;
+    if (array.length) return array[0];
+    throw new NotFoundException('No such user.');
   }
 
   async getOrCreateUserByOAuth(
@@ -57,30 +64,30 @@ export class UsersService {
     oauth_type: string,
   ): Promise<User | null> {
     const selectQueryResult = await this.databaseService.executeQuery(`
-SELECT
-  id,
-  tfa_secret
-FROM
-  ${schema}.user
-WHERE
-  oauth_id = '${oauth_id}'
-AND
-  oauth_type = '${oauth_type}';
-    `);
+      SELECT
+        id,
+        tfa_secret
+      FROM
+        ${schema}.user
+      WHERE
+        oauth_id = '${oauth_id}'
+      AND
+        oauth_type = '${oauth_type}';
+          `);
 
     if (selectQueryResult.length === 1) {
       return selectQueryResult[0];
     } else if (selectQueryResult.length === 0) {
       const insertQueryResult = await this.databaseService.executeQuery(`
-INSERT INTO ${schema}.user(
-  nickname,
-  oauth_id,
-  oauth_type
-) VALUES (
-  '${oauth_type}-${oauth_id}',
-  '${oauth_id}',
-  '${oauth_type}'
-) RETURNING id, tfa_secret;
+      INSERT INTO ${schema}.user(
+        nickname,
+        oauth_id,
+        oauth_type
+      ) VALUES (
+        '${oauth_type}-${oauth_id}',
+        '${oauth_id}',
+        '${oauth_type}'
+      ) RETURNING id, tfa_secret;
       `);
 
       if (insertQueryResult.length === 1) {
@@ -89,12 +96,13 @@ INSERT INTO ${schema}.user(
         console.error(
           `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
         );
+        throw new BadRequestException('Failed to create oauth user');
       }
     } else {
       console.error(
         `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
       );
-      return null;
+      throw new BadRequestException('wrong data from oauth');
     }
   }
 
@@ -123,6 +131,7 @@ INSERT INTO ${schema}.user(
   }
 
   async createUser(nickname: string): Promise<User | null> {
+    // Deprecated
     nickname = sqlEscaper(nickname);
     const existingUser = await this.databaseService.executeQuery(`
       SELECT
@@ -152,7 +161,7 @@ INSERT INTO ${schema}.user(
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error("One cannot be their's own friend");
+      throw new BadRequestException('One cannot be their own friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       INSERT INTO ${schema}.friend( my_id, friend_id )
       VALUES
@@ -174,7 +183,7 @@ INSERT INTO ${schema}.user(
 
   async deleteFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error('One cannot have themself as a friend');
+      throw new BadRequestException('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.friend f
@@ -207,34 +216,30 @@ INSERT INTO ${schema}.user(
   }
 
   async addToBlackList(user_id: string, black_id: string): Promise<boolean> {
-    if (user_id === black_id) throw new Error('One cannot block themself');
+    if (user_id === black_id)
+      throw new BadRequestException('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
       INSERT INTO ${schema}.block( blocker_id, blocked_id )
       VALUES
-        (
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${black_id} )
-        )
+      (
+        ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
+        ( SELECT id from ${schema}.user WHERE id = ${black_id} )
+      )
       ON CONFLICT
         ON CONSTRAINT block_pk
       DO NOTHING
       RETURNING *;
     `);
-    return array.length === 0 ? false : true;
+    if (!array.length) throw new BadRequestException('No such user.');
+    return true;
   }
 
   async deleteFromBlackList(
     user_id: string,
     black_id: string,
   ): Promise<boolean> {
-    if (user_id === black_id) throw new Error('One cannot block themself');
-    // const array: Array<User> = await this.databaseService.executeQuery(`
-    //   DELETE FROM
-    //     ${schema}.friend f
-    //   WHERE
-    //     ( f.user_id = ${user_id} AND f.friend_id = ${black_id} )
-    //   RETURNING *;
-    // `);
+    if (user_id === black_id)
+      throw new BadRequestException('One cannot block themself');
 
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
@@ -244,7 +249,7 @@ INSERT INTO ${schema}.user(
       RETURNING *;
     `); // NOTE: 수정했습니다.
 
-    return array.length === 0 ? false : true;
+    return !!array.length;
   }
 
   /*

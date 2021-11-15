@@ -11,6 +11,7 @@ import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
+import { Context } from 'graphql-ws';
 
 @Module({
   imports: [
@@ -18,8 +19,12 @@ import { AuthModule } from './auth/auth.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {
-        // NOTE: production에선 켜야함
-        // 'graphql-ws': {}
+        // NOTE: production에선 grapqh-ws를 켜야함
+        // 'graphql-ws': {
+        //   onConnect: (ctx: Context<unknown>) => {
+        //     console.log(ctx.connectionParams.authrization);
+        //   },
+        // },
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
