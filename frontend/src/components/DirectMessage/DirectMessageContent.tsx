@@ -16,7 +16,7 @@ import DMContentBox from './DmContentBox';
 import SendNewMessage from './SendNewMessage';
 
 interface DirectMessageContentProps {
-  user_id: string;
+  user_id: string | null;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
   // offset: number;

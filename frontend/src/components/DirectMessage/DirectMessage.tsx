@@ -16,6 +16,7 @@ import {
 import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 
+import { userIdVar } from '../..';
 import {
   DmsData,
   DmUsersData,
@@ -60,13 +61,11 @@ export default function DirectMessage(): JSX.Element {
     p: 4,
   };
 
-  //ANCHOR userId를  '자신의 닉네임'으로 수정할 것
-  const userId = '1';
   //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
   const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
     {
-      variables: { limit: 10, offset: 0, user_id: userId },
+      variables: { limit: 10, offset: 0, user_id: userIdVar() },
     }
   );
   //TODO getDmUsers는 처음로딩할 때 쓰이고 그 이후부터 newDmUser 섭스크립션을 해서 새로 온 애들을 맨 위로 올리게 하기
@@ -165,7 +164,7 @@ export default function DirectMessage(): JSX.Element {
               {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
               {selectedIndex != '0' ? (
                 <DirectMessageContent
-                  user_id={userId}
+                  user_id={userIdVar()}
                   other_id={selectedIndex}
                   scroll_ref={myRef}
                   // offset={offset}

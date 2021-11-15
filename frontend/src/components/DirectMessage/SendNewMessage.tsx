@@ -17,7 +17,7 @@ import {
 //ANCHOR 새로운 DM 보내기
 
 interface SendNewMessageContentProps {
-  user_id: string;
+  user_id: string | null;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
   handleClick: () => void;
