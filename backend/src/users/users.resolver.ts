@@ -13,7 +13,6 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
-import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { User, UserRole } from './models/user.model';
@@ -72,7 +71,7 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    return this.usersService.addFriend(user.id, friend_id);
+    return this.usersService.addFriend(user_id, friend_id);
   }
 
   @Mutation((returns) => Boolean)

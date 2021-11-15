@@ -7,5 +7,5 @@ certs
 schema.gql*
 
 .env
-
+.DS_store
 _*

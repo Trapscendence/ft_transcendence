@@ -17,7 +17,7 @@ import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
 import { PUB_SUB } from '../pubsub.module';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { GqlUser } from 'src/auth/decorator/gql-user.decorator';
+import { UserID } from 'src/auth/decorator/user-id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => DM)
@@ -34,10 +34,10 @@ export class MessageResolver {
 
   @Query((returns) => DM, { nullable: true })
   async DM(
-    @GqlUser() user: any,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): Promise<DM> {
-    return await this.messageService.getDM(user.id, other_id);
+    return await this.messageService.getDM(user_id, other_id);
   }
 
   /*
@@ -71,11 +71,11 @@ export class MessageResolver {
 
   @Query((returns) => [User])
   async dmUsers(
-    @GqlUser() user: any,
+    @UserID() user_id: any,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
-    return await this.messageService.getDmUsers(user.id, offset, limit);
+    return await this.messageService.getDmUsers(user_id, offset, limit);
   }
 
   /*
@@ -84,19 +84,19 @@ export class MessageResolver {
 
   @Mutation((returns) => Message, { nullable: true })
   async sendMessage(
-    @GqlUser() user: any,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
     @Args('text') text: string,
   ): Promise<Message> {
-    return await this.messageService.insertMessage(user.id, other_id, text);
+    return await this.messageService.insertMessage(user_id, other_id, text);
   }
 
   @Mutation((returns) => Boolean, { nullable: true })
   updateCheckdate(
-    @GqlUser() user: any,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): null {
-    this.messageService.setCheckDate(user.id, other_id);
+    this.messageService.setCheckDate(user_id, other_id);
     return null;
   }
 
@@ -105,12 +105,12 @@ export class MessageResolver {
    */
 
   @Subscription((returns) => Message)
-  async receiveMessage(@GqlUser() user: any) {
-    return this.pubSub.asyncIterator(`message_to_${user.id}`);
+  async receiveMessage(@UserID() user_id: any) {
+    return this.pubSub.asyncIterator(`message_to_${user_id}`);
   }
 
   @Subscription((returns) => User)
-  newDmUser(@GqlUser() user: any) {
-    return this.pubSub.asyncIterator(`new_message_to_${user.id}`);
+  newDmUser(@UserID() user_id: any) {
+    return this.pubSub.asyncIterator(`new_message_to_${user_id}`);
   }
 }
