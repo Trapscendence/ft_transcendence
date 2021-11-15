@@ -2,6 +2,7 @@ import {
   ApolloClient,
   ApolloProvider,
   createHttpLink,
+  from,
   InMemoryCache,
   makeVar,
   split,
@@ -9,6 +10,7 @@ import {
   // gql,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { CssBaseline } from '@mui/material';
@@ -72,31 +74,50 @@ const splitLink = split(
   authLink.concat(httpLink)
 );
 
-const client = new ApolloClient({
-  link: splitLink,
-  cache: new InMemoryCache({
-    typePolicies: {
-      Query: {
-        fields: {
-          chattingMessages: {
-            read({ args }) {
-              console.log(args);
-            },
-          },
-        },
-      },
-    },
-  }),
+const errorLink = onError(({ graphQLErrors, networkError }) => {
+  if (graphQLErrors)
+    graphQLErrors.forEach(({ message, locations, path }) =>
+      console.log(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+      )
+    );
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+  if (networkError) console.log(`[Network error]: ${networkError}`);
 });
 
-// export const isLoginVar = makeVar(false); // TODO: 위치 어디에 해야? 따로 파일을 만들어야 하려나?
-// export const tokenVar = makeVar('');
-export const userIdVar = makeVar<string | null>(null); // TODO: User? UserSummary? id? // 로그인이 없으니 그냥 "1"로...
+const client = new ApolloClient({
+  link: from([errorLink, splitLink]),
+  cache: new InMemoryCache({
+    // typePolicies: {
+    //   Query: {
+    //     fields: {
+    //       chattingMessages: {
+    //         read({ args }) {
+    //           console.log(args);
+    //         },
+    //       },
+    //     },
+    //   },
+    // },
+  }),
+  defaultOptions: {
+    watchQuery: {
+      errorPolicy: 'all',
+    },
+    query: {
+      errorPolicy: 'all',
+    },
+    mutate: {
+      errorPolicy: 'all',
+    },
+  },
+});
+
+export const userIdVar = makeVar<string | null>(null);
 export const chattingMessagesVar = makeVar<Map<string, IChatting[]>>(
   new Map<string, IChatting[]>()
 );
-// TODO: chattingSummarysVar 등으로 이름 수정하면 나을듯... 저 작명도 별로지만 T_T
-// TODO: 일단은 캐시 생각 안하고 id 등만 저장해서 쿼리 재요청하는 식으로 모두 구현해보자
 
 ReactDOM.render(
   <React.StrictMode>

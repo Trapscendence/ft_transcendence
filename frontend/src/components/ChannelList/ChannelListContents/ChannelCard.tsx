@@ -27,9 +27,6 @@ export default function ChannelCard({
     ENTER_CHANNEL,
     {
       refetchQueries: [GET_MY_CHANNEL],
-      onError: (err) => {
-        console.log(err);
-      },
     }
   );
 
