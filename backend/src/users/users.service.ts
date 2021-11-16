@@ -25,7 +25,7 @@ export class UsersService {
       FROM
         ${schema}.user
       WHERE
-        id = ${id};
+        id = '${id}';
       `);
     return array.length ? array[0] : null;
   }
@@ -202,7 +202,7 @@ INSERT INTO ${schema}.user(
         ${schema}.friend f
           ON
         u.id = f.friend_id
-      WHERE f.my_id = ${id};
+      WHERE f.my_id = '${id}';
     `);
   }
 
@@ -242,7 +242,7 @@ INSERT INTO ${schema}.user(
       WHERE
         ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
-    `); // NOTE: 수정했습니다.
+    `);
 
     return array.length === 0 ? false : true;
   }
@@ -263,7 +263,7 @@ INSERT INTO ${schema}.user(
       FROM
         ${schema}.user
       WHERE
-        id = ${id}
+        id = '${id}'
       INNER JOIN
         id ON ${schema}.user.id = ${schema}.friend.my_id;
     `);
@@ -292,11 +292,8 @@ INSERT INTO ${schema}.user(
     `);
   }
 
-  async getChannelByUserId(
-    id: string,
-  ): Promise<{ id: string; title: string; is_private: boolean } | null> {
-    const array: { id: string; title: string; is_private: boolean }[] =
-      await this.databaseService.executeQuery(`
+  async getChannelByUserId(id: string): Promise<Channel | null> {
+    const array: Channel[] = await this.databaseService.executeQuery(`
       SELECT
         c.id
           AS id,
@@ -316,11 +313,23 @@ INSERT INTO ${schema}.user(
       INNER JOIN
         ${schema}.channel_user cu
           ON
-            cu.user_id = ${id}
+            cu.user_id = '${id}'
               AND
             cu.channel_id = c.id
     `);
     return array.length ? array[0] : null;
+  }
+
+  async getChannelIdByUserId(id: string): Promise<string | null> {
+    const selectChannelId: string[] = await this.databaseService.executeQuery(`
+      SELECT
+        channel_id
+      FROM
+        ${schema}.channel_user
+      WHERE
+        user_id = '${id}'
+    `);
+    return selectChannelId.length ? selectChannelId[0] : null;
   }
 
   async getChannelRole(id: string): Promise<UserRole | null> {
@@ -331,11 +340,11 @@ INSERT INTO ${schema}.user(
       FROM
         ${schema}.channel_user
       WHERE
-        user_id = ${id};
+        user_id = '${id}';
     `);
 
     if (select_channel_role.length === 0) {
-      throw new ConflictException(`This user(id: ${id}) is not in a channel`);
+      throw new ConflictException(`This user(id: '${id}') is not in a channel`);
     } else {
       return select_channel_role[0].channel_role;
     }
@@ -348,7 +357,7 @@ INSERT INTO ${schema}.user(
       FROM
         ${schema}.user
       WHERE
-        id = ${id};
+        id = '${id}';
     `);
 
     if (select_site_role.length === 0) {

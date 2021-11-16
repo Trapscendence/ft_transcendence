@@ -27,19 +27,19 @@ export class Channel {
   is_private: boolean;
 
   @Field()
-  owner: User;
+  owner?: User;
 
   @Field((type) => [User])
-  administrators: User[];
+  administrators?: User[];
 
   @Field((type) => [User])
-  participants: User[];
+  participants?: User[];
 
   @Field((type) => [User]!)
-  banned_users: User[];
+  banned_users?: User[];
 
   @Field((type) => [User])
-  muted_users: User[];
+  muted_users?: User[];
 }
 
 @ObjectType()

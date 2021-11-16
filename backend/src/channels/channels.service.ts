@@ -195,9 +195,6 @@ export class ChannelsService {
   }
 
   async addChannel(title: string, password: string): Promise<string> {
-    const saltRounds = 10; // Recommended (~10 hashes/sec), see https://www.npmjs.com/package/bcrypt#a-note-on-rounds
-    const hashedPassword: string = await bcrypt.hash(password, saltRounds);
-
     const insertChannel: { id }[] = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel(
@@ -206,7 +203,7 @@ export class ChannelsService {
         )
       VALUES (
         '${title}',
-        ${password ? `'${hashedPassword}'` : 'NULL'}
+        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
       )
       RETURNING id;
     `);
@@ -214,7 +211,7 @@ export class ChannelsService {
 
     if (channel_id === undefined) {
       throw new InternalServerErrorException(
-        `Failed to insert channel(title: ${title}, password: ${password})`,
+        `Failed to insert channel(title: ${title}, hashed-password: -)`,
       );
     } else {
       this.muted_users.pushChannel(channel_id);
@@ -229,22 +226,21 @@ export class ChannelsService {
   ): Promise<Channel> {
     const array = await this.databaseService.executeQuery(`
       UPDATE
-        ${schema}.channel c
+        ${schema}.channel
       SET (
         title,
         password
       ) = (
         '${title}',
-        '${password == null ? 'NULL' : password}'
+        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
       )
       WHERE
-        c.id = ${channel_id}
+        id = ${channel_id}
       RETURNING
-        c.id id,
-        c.title title,
+        id,
+        title,
         ${password === '' ? 'false' : 'true'} is_private;
     `);
-    // NOTE: 위와 같이 수정했습니다. 컴파일만 되게 한거라 password 등은 맞는지 모르겠네요. -gmoon
 
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -259,45 +255,45 @@ export class ChannelsService {
 
   async deleteChannel(channel_id: string): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
-    WITH
-      del1
-        AS (
-          DELETE FROM
-            ${schema}.channel_ban cb
-          WHERE
-            cb.channel_id
-              IN (
-                SELECT
-                  c.id id
-                FROM
-                  ${schema}.channel c
-                WHERE
-                  c.id = ${channel_id}
-              )
-          RETURNING
-            cb.channel_id id
-        ),
-        del2
+      WITH
+        del1
           AS (
             DELETE FROM
-              ${schema}.channel_user cu
+              ${schema}.channel_ban cb
             WHERE
-              cu.channel_id
-              IN (
-                SELECT
-                  c.id id
-                FROM
-                  ${schema}.channel c
-                WHERE
-                  c.id = ${channel_id}
-              )
-          )
-    DELETE FROM
-      ${schema}.channel c
-    WHERE
-       c.id = ${channel_id}
-    RETURNING
-      *
+              cb.channel_id
+                IN (
+                  SELECT
+                    c.id id
+                  FROM
+                    ${schema}.channel c
+                  WHERE
+                    c.id = ${channel_id}
+                )
+            RETURNING
+              cb.channel_id id
+          ),
+          del2
+            AS (
+              DELETE FROM
+                ${schema}.channel_user cu
+              WHERE
+                cu.channel_id
+                IN (
+                  SELECT
+                    c.id id
+                  FROM
+                    ${schema}.channel c
+                  WHERE
+                    c.id = ${channel_id}
+                )
+            )
+      DELETE FROM
+        ${schema}.channel c
+      WHERE
+        c.id = ${channel_id}
+      RETURNING
+        *
     `);
     if (!array.length)
       throw new ConflictException('The channel does not exist.');
@@ -313,106 +309,36 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
-  async muteUserOnChannel(
-    channel_id: string,
-    user_id: string,
-    mute_time: number,
-  ): Promise<boolean> {
-    if (
-      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    ) {
-      throw new ForbiddenException('Inappropriate role');
-    }
-
-    this.muted_users.pushUser(channel_id, user_id);
-    this.pubSub.publish(`to_channel_${channel_id}`, {
-      subscribeChannel: {
-        type: Notify.MUTE,
-        participant: this.usersService.getUserById(user_id),
-        text: null,
-        check: true,
-      },
-    });
-    setTimeout((): void => {
-      if (!this.muted_users.popUser(channel_id, user_id)) return;
-      this.pubSub.publish(`to_channel_${channel_id}`, {
-        subscribeChannel: {
-          type: Notify.MUTE,
-          participant: this.usersService.getUserById(user_id),
-          text: null,
-          check: false,
-        },
-      });
-    }, mute_time * 1000);
-    return true;
-  }
-
-  unmuteUserFromChannel(channel_id: string, user_id: string): boolean {
-    if (!this.muted_users.popUser(channel_id, user_id)) return false;
-    this.pubSub.publish(`to_channel_${channel_id}`, {
-      subscribeChannel: {
-        type: Notify.MUTE,
-        participant: this.usersService.getUserById(user_id),
-        text: null,
-        check: false,
-      },
-    });
-    return true;
-  }
-
   async updateChannelMute(
     channel_id: string,
     user_id: string,
-    mute_time: number,
+    mute: boolean,
   ): Promise<void> {
-    const mute: boolean = mute_time === 0;
-
     if (this.muted_users.hasUser(channel_id, user_id) === mute) {
       throw new ConflictException(
         `The user(id: ${user_id}) is already ${
-          mute_time ? 'muted' : 'unmuted'
+          mute ? 'muted' : 'unmuted'
         } in this channel(id: ${channel_id})`,
       );
     }
 
     if (mute) {
       this.muted_users.pushUser(channel_id, user_id);
-      this.pubSub.publish(`to_channel_${channel_id}`, {
-        subscribeChannel: {
-          type: Notify.MUTE,
-          participant: this.usersService.getUserById(user_id),
-          text: null,
-          check: true,
-        },
-      });
-      setTimeout((): void => {
-        this.updateChannelMute(channel_id, user_id, 0);
-      }, mute_time * 1000);
     } else {
       this.muted_users.popUser(channel_id, user_id);
-      this.pubSub.publish(`to_channel_${channel_id}`, {
-        subscribeChannel: {
-          type: Notify.MUTE,
-          participant: this.usersService.getUserById(user_id),
-          text: null,
-          check: false,
-        },
-      });
     }
+
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.MUTE,
+        participant: this.usersService.getUserById(user_id),
+        text: null,
+        check: mute,
+      },
+    });
   }
 
-  async kickUserFromChannel(
-    channel_id: string,
-    user_id: string,
-  ): Promise<boolean> {
-    if (
-      (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
-      (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
-    ) {
-      throw new ForbiddenException('Inappropriate role');
-    }
-
+  async kickUser(channel_id: string, user_id: string): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.channel_user
@@ -421,10 +347,14 @@ export class ChannelsService {
           AND
         user_id = ${user_id}
       RETURNING
-        *;
+        user_id;
     `);
-    if (!array.length)
-      throw new ConflictException('The user is not in a the channel.');
+
+    if (array.length === 0) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not in the channel(id: ${channel_id})`,
+      );
+    }
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.KICK,
@@ -436,62 +366,16 @@ export class ChannelsService {
     return true;
   }
 
-  async banUserFromChannel(
+  async updateChannelBan(
     channel_id: string,
     user_id: string,
+    ban: boolean,
   ): Promise<boolean> {
-    if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
-      throw new ForbiddenException('Inappropriate role');
-
-    const array = await this.databaseService.executeQuery(`
-      INSERT INTO
-        ${schema}.channel_ban(
-          channel_id,
-          banned_user
-        )
-      VALUES (
-        ${channel_id},
-        ${user_id}
-      )
-      ON CONFLICT
-        ON CONSTRAINT
-          ban_constraint
-      DO NOTHING
-      RETURNING
-        *;
-    `);
-    if (!array.length)
-      throw new ConflictException(
-        'The user is already banned from the channel',
-      );
-    this.pubSub.publish(`to_channel_${channel_id}`, {
-      subscribeChannel: {
-        type: Notify.BAN,
-        participant: this.usersService.getUserById(user_id),
-        text: null,
-        check: true,
-      },
-    });
-    return true;
-  }
-
-  async unbanUserFromChannel(
-    channel_id: string,
-    user_id: string,
-  ): Promise<boolean> {
-    const array = await this.databaseService.executeQuery(`
-      DELETE FROM
-        ${schema}.channel_ban cb
-      WHERE
-        cb.channel_id = ${channel_id}
-          AND
-        cb.banned_user = ${user_id}
-      RETURNING
-        *
-    `);
-    if (!array.length)
-      throw new ConflictException('The user is not banned from the channel.');
-    return true;
+    if (ban) {
+      return this.banUserFromChannel(channel_id, user_id);
+    } else {
+      return this.unbanUserFromChannel(channel_id, user_id);
+    }
   }
 
   async chatMessage(user_id: string, message: string): Promise<boolean> {
@@ -647,5 +531,72 @@ export class ChannelsService {
         `,
       [this.muted_users.getUsers(channel_id)],
     );
+  }
+
+  // ANCHOR: private functions
+
+  private async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10; // Recommended (~10 hashes/sec), see https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+    const hashedPassword: string = await bcrypt.hash(password, saltRounds);
+
+    return hashedPassword;
+  }
+
+  private async banUserFromChannel(
+    channel_id: string,
+    user_id: string,
+  ): Promise<boolean> {
+    if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
+      throw new ForbiddenException('Inappropriate role');
+
+    const array = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${schema}.channel_ban(
+          channel_id,
+          banned_user
+        )
+      VALUES (
+        ${channel_id},
+        ${user_id}
+      )
+      ON CONFLICT
+        ON CONSTRAINT
+          ban_constraint
+      DO NOTHING
+      RETURNING
+        *;
+    `);
+    if (!array.length)
+      throw new ConflictException(
+        'The user is already banned from the channel',
+      );
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.BAN,
+        participant: this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    });
+    return true;
+  }
+
+  private async unbanUserFromChannel(
+    channel_id: string,
+    user_id: string,
+  ): Promise<boolean> {
+    const array = await this.databaseService.executeQuery(`
+      DELETE FROM
+        ${schema}.channel_ban cb
+      WHERE
+        cb.channel_id = ${channel_id}
+          AND
+        cb.banned_user = ${user_id}
+      RETURNING
+        *
+    `);
+    if (!array.length)
+      throw new ConflictException('The user is not banned from the channel.');
+    return true;
   }
 }
