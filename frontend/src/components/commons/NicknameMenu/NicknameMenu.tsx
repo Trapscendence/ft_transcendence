@@ -50,6 +50,7 @@ export default function NicknameMenu({
 
   const errorVar = blacklistError || AddError || deleteError;
 
+  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
   if (id === userIdVar()) return <></>;
   if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
 
