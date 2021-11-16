@@ -2,12 +2,13 @@ import { useLazyQuery } from '@apollo/client';
 import { Autocomplete, TextField } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
 
-import { NickName, UserData, UsersData } from '../utils/Apollo/User';
+import { NickName, User, UserData, UsersData } from '../utils/Apollo/User';
 import { GET_USER_BY_NICKNAME } from '../utils/Apollo/UserQuery';
 
 interface UseSearchUserProps {
   users: UsersData | undefined;
   setButtonActive: React.Dispatch<React.SetStateAction<boolean>>;
+  setInputSpace: React.Dispatch<React.SetStateAction<User>>;
 }
 
 /*
@@ -17,6 +18,7 @@ interface UseSearchUserProps {
 export default function UseSearchUser({
   users,
   setButtonActive,
+  setInputSpace,
 }: UseSearchUserProps): JSX.Element {
   // ANCHOR 이 유저가 존재하는지 확인하는 쿼리
   const [getUser, { data }] = useLazyQuery<UserData, NickName>(
@@ -28,6 +30,7 @@ export default function UseSearchUser({
   });
   if (data?.user) {
     setButtonActive(false);
+    setInputSpace(data?.user[0]);
   } else setButtonActive(true);
 
   return (

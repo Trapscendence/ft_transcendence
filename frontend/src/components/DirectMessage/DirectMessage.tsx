@@ -134,6 +134,14 @@ export default function DirectMessage(): JSX.Element {
                 height: '100%',
               }}
             >
+              <Button
+                variant="contained"
+                size="medium"
+                onClick={newDmHandler}
+                sx={{ margin: '20px' }}
+              >
+                새 쪽지
+              </Button>
               {data?.dmUsers.map((user) => (
                 <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
@@ -169,7 +177,7 @@ export default function DirectMessage(): JSX.Element {
                   // setOffset={setOffset}
                 />
               ) : newDm ? (
-                <NewDirectMessage />
+                <NewDirectMessage scroll_ref={myRef} />
               ) : (
                 <Box
                   id="DM-nonselected"
