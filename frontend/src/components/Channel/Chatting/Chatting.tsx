@@ -21,14 +21,14 @@ import ChattingMessage from './ChattingMessage';
 interface ChattingProps {
   id: string;
   alertMsg: string | null;
-  mutedUsers: IUser[];
+  muted_users: IUser[];
   blacklistData: GetMyBlacklistResponse;
 }
 
 export default function Chatting({
   id,
   alertMsg,
-  mutedUsers,
+  muted_users,
   blacklistData,
 }: ChattingProps): JSX.Element {
   const {
@@ -42,12 +42,12 @@ export default function Chatting({
   const [chatMessage, { error }] = useMutation(CHAT_MESSAGE);
 
   useEffect(() => {
-    if (mutedUsers.find((val) => val.id === userIdVar())) {
+    if (muted_users.find((val) => val.id === userIdVar())) {
       setMuted(true);
     } else {
       setMuted(false);
     }
-  }, [mutedUsers]);
+  }, [muted_users]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -105,7 +105,7 @@ export default function Chatting({
               );
             }
 
-            if (mutedUsers.find((muted) => muted.id === val.participant.id)) {
+            if (muted_users.find((muted) => muted.id === val.participant.id)) {
               return (
                 <Alert severity="error" sx={{ m: 1 }} key={val.id}>
                   Message from a muted user.

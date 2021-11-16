@@ -21,10 +21,10 @@ export class ChannelsService {
     private usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {
-    this.mutedUsers = new MutedUsers();
+    this.muted_users = new MutedUsers();
   }
 
-  private mutedUsers: MutedUsers;
+  private muted_users: MutedUsers;
 
   /*
    ** ANCHOR: Query
@@ -258,8 +258,8 @@ export class ChannelsService {
       owner: null,
       administrators: [],
       participants: [], // NOTE: owner, admin 포함한 참가자로 하자...
-      bannedUsers: [],
-      mutedUsers: [],
+      banned_users: [],
+      muted_users: [],
     };
   }
 
@@ -342,7 +342,7 @@ export class ChannelsService {
     `);
     if (!array.length)
       throw new ConflictException('The channel does not exist.');
-    this.mutedUsers.popChannel(channel_id);
+    this.muted_users.popChannel(channel_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.DELETE,
@@ -366,7 +366,7 @@ export class ChannelsService {
       throw new ForbiddenException('Inappropriate role');
     }
 
-    this.mutedUsers.pushUser(channel_id, user_id);
+    this.muted_users.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.MUTE,
@@ -376,7 +376,7 @@ export class ChannelsService {
       },
     });
     setTimeout((): void => {
-      if (!this.mutedUsers.popUser(channel_id, user_id)) return;
+      if (!this.muted_users.popUser(channel_id, user_id)) return;
       this.pubSub.publish(`to_channel_${channel_id}`, {
         subscribeChannel: {
           type: Notify.MUTE,
@@ -390,7 +390,7 @@ export class ChannelsService {
   }
 
   unmuteUserFromChannel(channel_id: string, user_id: string): boolean {
-    if (!this.mutedUsers.popUser(channel_id, user_id)) return false;
+    if (!this.muted_users.popUser(channel_id, user_id)) return false;
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.MUTE,
@@ -494,12 +494,8 @@ export class ChannelsService {
     return true;
   }
 
-  async chatMessage(
-    channel_id: string,
-    user_id: string,
-    message: string,
-  ): Promise<boolean> {
-    if (this.mutedUsers.hasUser(channel_id, user_id))
+  async chatMessage(user_id: string, message: string): Promise<boolean> {
+    if (this.muted_users.hasUser(channel_id, user_id))
       throw new ForbiddenException('The user is muted');
     if (message.length > 10000) throw new Error('message too long');
     this.pubSub.publish(`to_channel_${channel_id}`, {
@@ -646,7 +642,7 @@ export class ChannelsService {
       WHERE
         id = ANY ($1);
         `,
-      [this.mutedUsers.getUserIds(channel_id)],
+      [this.muted_users.getUserIds(channel_id)],
     );
   }
 }

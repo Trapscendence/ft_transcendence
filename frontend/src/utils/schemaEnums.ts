@@ -57,8 +57,8 @@ export enum UserRole {
 //   owner: User;
 //   administrators: User[];
 //   participants: User[];
-//   bannedUsers: User[];
-//   mutedUsers: User[];
+//   banned_users: User[];
+//   muted_users: User[];
 // }
 
 // export interface ChannelNotify {

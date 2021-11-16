@@ -45,11 +45,11 @@ export const GET_MY_CHANNEL = gql`
           # avatar
           # status
         }
-        bannedUsers {
+        banned_users {
           id
           nickname
         }
-        mutedUsers {
+        muted_users {
           id
           nickname
         }
@@ -80,7 +80,7 @@ export const GET_MY_CHANNEL_MUTED_USERS = gql`
   query GetMyChannelMutedUsers($id: ID!) {
     user(id: $id) {
       channel {
-        mutedUsers {
+        muted_users {
           id
           nickname
         }
@@ -93,7 +93,7 @@ export const GET_MY_CHANNEL_BANNED_USERS = gql`
   query GetMyChannelBannedUsers($id: ID!) {
     user(id: $id) {
       channel {
-        bannedUsers {
+        banned_users {
           id
           nickname
         }
@@ -167,7 +167,7 @@ export const EDIT_CHANNEL = gql`
         # avatar
         # status
       }
-      bannedUsers {
+      banned_users {
         id
       }
     }

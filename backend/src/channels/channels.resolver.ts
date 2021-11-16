@@ -76,11 +76,10 @@ export class ChannelsResolver {
 
   @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
   async chatMessage(
-    @Args('channel_id', { type: () => ID! }) channel_id: string, // TODO: remove
     @Args('user_id', { type: () => ID! }) user_id: string,
     @Args('message') message: string,
   ) {
-    return await this.channelsService.chatMessage(channel_id, user_id, message);
+    return await this.channelsService.chatMessage(user_id, message);
   }
 
   @ChannelRoles(UserRole.ADMIN)
@@ -229,13 +228,13 @@ export class ChannelsResolver {
     return await this.channelsService.getParticipants(channel.id);
   }
 
-  @ResolveField('bannedUsers', (returns) => [User])
-  async bannedUsers(@Parent() channel: Channel): Promise<User[]> {
+  @ResolveField('banned_users', (returns) => [User])
+  async banned_users(@Parent() channel: Channel): Promise<User[]> {
     return await this.channelsService.getBannedUsers(channel.id);
   }
 
-  @ResolveField('mutedUsers', (returns) => [User])
-  async mutedUsers(@Parent() channel: Channel): Promise<User[]> {
+  @ResolveField('muted_users', (returns) => [User])
+  async muted_users(@Parent() channel: Channel): Promise<User[]> {
     return await this.channelsService.getMutedUsers(channel.id);
   }
 

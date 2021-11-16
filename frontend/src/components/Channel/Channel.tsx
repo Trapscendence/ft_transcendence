@@ -38,8 +38,8 @@ export default function Channel({
     owner,
     administrators,
     participants,
-    // bannedUsers, // NOTE: 나중에 Channel 세팅 구현되면, bannedUsers 필요할 것
-    mutedUsers,
+    // banned_users, // NOTE: 나중에 Channel 세팅 구현되면, banned_users 필요할 것
+    muted_users,
   } = channel;
 
   const { data: subscribeData, error: subscribeError } =
@@ -130,7 +130,7 @@ export default function Channel({
         {...{
           id,
           alertMsg,
-          mutedUsers,
+          muted_users,
           blacklistData,
         }}
       />
