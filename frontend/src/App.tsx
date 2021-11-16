@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { userIdVar } from '.';
 import LoadingBackdrop from './components/commons/LoadingBackdrop';
+import Game from './components/Game';
 import AdminPage from './routes/AdminPage';
 import ChannelListPage from './routes/ChannelListPage';
 import HomePage from './routes/HomePage';
@@ -41,6 +42,7 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
         <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
         <RestrictRoute exact path="/admin" component={AdminPage} />
+        <RestrictRoute exact path="/game" component={Game} />
       </Switch>
     </BrowserRouter>
   );

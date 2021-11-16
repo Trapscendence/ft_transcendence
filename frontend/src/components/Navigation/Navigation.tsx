@@ -83,6 +83,7 @@ function Navigation(): JSX.Element {
             icon={<VideogameAsset />}
             // disabled={loading}
             sx={{ color: loading ? 'text.disabled' : '' }}
+            onClick={() => history.push('/game')}
           />
           {loading && (
             <CircularProgress
