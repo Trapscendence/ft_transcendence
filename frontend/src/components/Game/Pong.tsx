@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { Box } from '@mui/system';
 import { useEffect, useRef, useState } from 'react';
@@ -10,6 +11,14 @@ const BALL_RADIUS = 10;
 const PADDLE_HEIGHT = 75;
 const PADDLE_WIDTH = 10;
 
+const START_X = CANVAS_WIDTH / 2;
+// const START_Y = CANVAS_HEIGHT / 2;
+const START_Y = CANVAS_HEIGHT - 30;
+const START_DX = 2;
+const START_DY = -2;
+const START_MY_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
+const START_ENEMY_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
+
 interface PongProps {
   isLeft: boolean;
 }
@@ -19,13 +28,15 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
   const [upPressed, setUpPressed] = useState<boolean>(false);
   const [downPressed, setDownPressed] = useState<boolean>(false);
-  const [x, setX] = useState(CANVAS_WIDTH / 2);
-  const [y, setY] = useState(CANVAS_HEIGHT - 30);
-  const [dx, setDx] = useState(2);
-  const [dy, setDy] = useState(-2);
-  const [myPaddleY, setMyPaddleY] = useState((CANVAS_HEIGHT - 75) / 2);
-  const [enemyPaddleY, setEnemyPaddleY] = useState((CANVAS_HEIGHT - 75) / 2);
+  const [x, setX] = useState(START_X);
+  const [y, setY] = useState(START_Y);
+  const [dx, setDx] = useState(START_DX);
+  const [dy, setDy] = useState(START_DY);
+  const [myPaddleY, setMyPaddleY] = useState(START_MY_PADDLE_Y);
+  const [enemyPaddleY, setEnemyPaddleY] = useState(START_ENEMY_PADDLE_Y);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [myScore, setMyScore] = useState(0);
+  const [enemyScore, setEnemyScore] = useState(0);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -33,6 +44,10 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     canvasRef.current.focus();
     const renderCtx = canvasRef.current.getContext('2d');
     if (renderCtx) setCtx(renderCtx);
+
+    drawBall();
+    drawMyPaddle();
+    drawEnemyPaddle();
   }, [ctx]);
 
   const drawBall = () => {
@@ -83,6 +98,20 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     ctx.closePath();
   };
 
+  const resetGame = () => {
+    if (!ctx) return;
+
+    // console.log('reset');
+    // setIsPlaying(false);
+
+    setX(START_X);
+    setY(START_Y);
+    setDx(START_DX);
+    setDy(START_DY);
+    setMyPaddleY(START_MY_PADDLE_Y);
+    setEnemyPaddleY(START_ENEMY_PADDLE_Y);
+  };
+
   const draw = () => {
     if (!ctx) return;
 
@@ -100,18 +129,16 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
         if (y > myPaddleY && y < myPaddleY + PADDLE_HEIGHT) {
           setDx((prev) => -prev);
         } else {
-          alert('lose');
-          document.location.reload();
-          setIsPlaying(false);
+          setEnemyScore((prev) => prev + 1);
+          resetGame();
         }
       } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
         // NOTE: 공이 오른쪽으로 갔을 때
         if (y > enemyPaddleY && y < enemyPaddleY + PADDLE_HEIGHT) {
           setDx((prev) => -prev);
         } else {
-          alert('win');
-          document.location.reload();
-          setIsPlaying(false);
+          setMyScore((prev) => prev + 1);
+          resetGame();
         }
       }
     } else {
@@ -120,18 +147,16 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
         if (y > enemyPaddleY && y < enemyPaddleY + PADDLE_HEIGHT) {
           setDx((prev) => -prev);
         } else {
-          alert('win');
-          document.location.reload();
-          setIsPlaying(false);
+          setMyScore((prev) => prev + 1);
+          resetGame();
         }
       } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
         // NOTE: 공이 오른쪽으로 갔을 때
         if (y > myPaddleY && y < myPaddleY + PADDLE_HEIGHT) {
           setDx((prev) => -prev);
         } else {
-          alert('lose');
-          document.location.reload();
-          setIsPlaying(false);
+          setEnemyScore((prev) => prev + 1);
+          resetGame();
         }
       }
     }
@@ -177,6 +202,8 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
       }}
     >
       <Button onClick={() => setIsPlaying((prev) => !prev)}>toggle game</Button>
+      <Typography>my: {myScore}</Typography>
+      <Typography>enemy: {enemyScore}</Typography>
       <canvas
         id="canvas"
         ref={canvasRef}
