@@ -2,13 +2,13 @@ import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.model';
 
 export enum Notify {
-  ENTER, // check가 true면 입장, false면 퇴장.
-  CHAT,
-  MUTE,
-  KICK,
-  BAN,
-  EDIT,
-  DELETE,
+  ENTER = 'ENTER', // check가 true면 입장, false면 퇴장.
+  CHAT = 'CHAT',
+  MUTE = 'MUTE',
+  KICK = 'KICK',
+  BAN = 'BAN',
+  EDIT = 'EDIT',
+  DELETE = 'DELETE',
 }
 
 registerEnumType(Notify, {
