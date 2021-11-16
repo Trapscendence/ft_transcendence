@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 
-import UseSearchUser from '../../hooks/useSearchUser';
 import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
 

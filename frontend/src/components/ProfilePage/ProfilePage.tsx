@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { useHistory } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import { User, UsersData, UsersDataVars } from '../../utils/Apollo/User';
@@ -34,10 +35,20 @@ export default function ProfilePage(): JSX.Element {
   });
   const [buttonActive, setButtonActive] = useState(true);
   //NOTE 이 유저가 그 유저면 그 유저 프로필을 조회하게 하는 훅
+  //TODO INPUTSPACE를 나자신의 정보로 변경할것
   const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const history = useHistory();
+
+  const [currentUser, setCurrentUser] = useState<User>({
+    nickname: '',
+    id: '',
+  });
 
   const handleOnclick = (value: User) => {
-    //TODO redirect to url/profile/value.nickname
+    console.log(value.nickname);
+    console.log(history);
+    history.push('/profile/' + value.nickname);
+    setCurrentUser(value);
   };
 
   return (
@@ -67,7 +78,9 @@ export default function ProfilePage(): JSX.Element {
             justifyContent="center"
           >
             <Typography variant="body2">랭킹</Typography>
-            <Typography variant="h5">닉네임</Typography>
+            <Typography variant="h5">
+              {currentUser && currentUser.nickname}
+            </Typography>
             <Typography variant="body2">월렛 레벨</Typography>
           </Stack>
           <Stack

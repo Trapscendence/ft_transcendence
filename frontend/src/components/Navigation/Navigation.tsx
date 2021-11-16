@@ -6,7 +6,15 @@ import {
   MoreHoriz,
   VideogameAsset,
 } from '@mui/icons-material';
-import { Box, CircularProgress, Divider, Tab, Tabs } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  Stack,
+  Tab,
+  Tabs,
+} from '@mui/material';
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
 
@@ -24,6 +32,19 @@ function Navigation(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const onClickPlay = () => {
     setLoading((value) => !value); // loading을 사용하는 toggle... 상태를 어떻게 잘 작성하지?
+  };
+
+  const logOut = () => {
+    return new Promise(() => {
+      const endpoint = `http://localhost:5000/auth/logout`;
+      fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+      }).catch((e) => console.log('error::', e));
+    });
   };
 
   // TODO
@@ -88,8 +109,21 @@ function Navigation(): JSX.Element {
           )}
         </Box>
       </Box>
-
-      <Tab icon={<MoreHoriz />} />
+      <Stack>
+        <Tabs
+          // onChange={handleChange}
+          orientation="vertical"
+          textColor="secondary"
+          indicatorColor="secondary"
+        >
+          <Tab
+            aria-label="auth/logout"
+            icon={<LogoutIcon />}
+            onClick={() => logOut}
+          />
+          <Tab icon={<MoreHoriz />} />
+        </Tabs>
+      </Stack>
     </Box>
   );
 }
