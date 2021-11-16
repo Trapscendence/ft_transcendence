@@ -9,7 +9,7 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 import { Channel } from 'src/channels/models/channel.model';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
@@ -57,14 +57,12 @@ export class UsersResolver {
   /*
    ** ANCHOR: Social
    */
-  // NOTE: 나중에 분리할 수도...?
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return this.usersService.addFriend(user_id, friend_id);
   }
 
