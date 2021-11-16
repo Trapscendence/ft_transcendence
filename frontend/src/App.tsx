@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { GlobalStyles } from '@mui/material';
+import { Redirect } from 'react-router';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { userIdVar } from '.';
@@ -42,7 +43,8 @@ function App(): JSX.Element {
       > */}
       <Switch>
         <Route exact path="/login" component={LoginPage} />
-        <RestrictRoute exact path="/" component={HomePage} />
+        <Route exact path="/" render={() => <Redirect to="/home" />} />
+        <RestrictRoute exact path="/home" component={HomePage} />
         <RestrictRoute exact path="/channel" component={ChannelListPage} />
         <RestrictRoute exact path="/rank" component={RankPage} />
         <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
