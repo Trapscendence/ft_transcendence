@@ -10,16 +10,34 @@ import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
+import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 
 @Module({
   imports: [
     GraphQLModule.forRoot({
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
-      // subscriptions: {
-      //   'graphql-ws': true,
-      // }, // production에선 켜야함
-      // sortSchema: true, // NOTE type의 인자 등이 사전순으로 배치됨... 불편!
+      subscriptions: {
+        // NOTE: production에선 grapqh-ws를 켜야함
+        // 'graphql-ws': {
+        //   onConnect: (ctx: Context<unknown>) => {
+        //     console.log(ctx.connectionParams.authrization);
+        //   },
+        // },
+        'subscriptions-transport-ws': {
+          onConnect: (connectionParams, webSocket, context) => {
+            if (connectionParams.authorization) {
+              return connectionParams;
+            }
+          },
+        },
+      },
+      cors: {
+        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+        credentials: true,
+      },
     }),
     DatabaseModule,
     UsersModule,
@@ -28,8 +46,9 @@ import { PubSubModule } from './pubsub.module';
     MatchsModule,
     AchivementsModule,
     PubSubModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }, AppService],
 })
 export class AppModule {}

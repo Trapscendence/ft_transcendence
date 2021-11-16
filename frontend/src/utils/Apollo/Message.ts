@@ -13,7 +13,7 @@ export interface Message {
 }
 
 export interface DM {
-  user_id: string;
+  user_id: string | null;
   other_id: string;
   other_user: string;
   messages: Message[];
@@ -35,12 +35,10 @@ export interface DmsData {
 export interface DmUsersVars {
   limit: number;
   offset: number;
-  user_id: string;
 }
 
 export interface DmVars {
   limit: number;
   offset: number;
-  user_id: string;
   other_id: string;
 }

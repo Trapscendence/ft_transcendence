@@ -1,5 +1,5 @@
 import { Directive, Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 
 @Directive('@key(fields: "user_id other_user { id }")')
 @ObjectType()

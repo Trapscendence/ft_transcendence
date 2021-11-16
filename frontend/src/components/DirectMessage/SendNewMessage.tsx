@@ -17,14 +17,12 @@ import {
 //ANCHOR 새로운 DM 보내기
 
 interface SendNewMessageContentProps {
-  user_id: string;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
   handleClick: () => void;
 }
 
 export default function SendNewMessage({
-  user_id,
   other_id,
   scroll_ref,
   handleClick,
@@ -88,10 +86,7 @@ export default function SendNewMessage({
     if (!loading) {
       try {
         await sendMessageMutation({
-          // const { user_id } = getValues();
-          //TODO 매번 유저정보 가져오게 수정하기
           variables: {
-            user_id: user_id,
             other_id: other_id,
             text: form,
           },

@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -11,12 +11,15 @@ import {
   Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
 import { PUB_SUB } from '../pubsub.module';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { UserID } from 'src/auth/decorator/user-id.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => DM)
 export class MessageResolver {
   constructor(
@@ -31,7 +34,7 @@ export class MessageResolver {
 
   @Query((returns) => DM, { nullable: true })
   async DM(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): Promise<DM> {
     return await this.messageService.getDM(user_id, other_id);
@@ -68,7 +71,7 @@ export class MessageResolver {
 
   @Query((returns) => [User])
   async dmUsers(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @UserID() user_id: any,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
@@ -81,7 +84,7 @@ export class MessageResolver {
 
   @Mutation((returns) => Message, { nullable: true })
   async sendMessage(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
     @Args('text') text: string,
   ): Promise<Message> {
@@ -90,7 +93,7 @@ export class MessageResolver {
 
   @Mutation((returns) => Boolean, { nullable: true })
   updateCheckdate(
-    @Args('user_id', { type: () => ID }) user_id: string,
+    @UserID() user_id: any,
     @Args('other_id', { type: () => ID }) other_id: string,
   ): null {
     this.messageService.setCheckDate(user_id, other_id);
@@ -100,13 +103,14 @@ export class MessageResolver {
   /*
    ** ANCHOR: DM subscription
    */
+
   @Subscription((returns) => Message)
-  async receiveMessage(@Args('user_id', { type: () => ID }) user_id: string) {
+  async receiveMessage(@UserID() user_id: any) {
     return this.pubSub.asyncIterator(`message_to_${user_id}`);
   }
 
   @Subscription((returns) => User)
-  newDmUser(@Args('user_id') user_id: string) {
+  newDmUser(@UserID() user_id: any) {
     return this.pubSub.asyncIterator(`new_message_to_${user_id}`);
   }
 }

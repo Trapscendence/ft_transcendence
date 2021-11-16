@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GET_DM_USERS = gql`
-  query getDmUsers($offset: Int!, $limit: Int!, $user_id: ID!) {
-    dmUsers(offset: $offset, limit: $limit, user_id: $user_id) {
+  query getDmUsers($offset: Int!, $limit: Int!) {
+    dmUsers(offset: $offset, limit: $limit) {
       id
       nickname
     }
@@ -11,8 +11,8 @@ export const GET_DM_USERS = gql`
 
 //TODO sendMessage가 이제 성공한 메시지를 반환한다고 함, 처리해줄것
 export const SEND_MESSAGE = gql`
-  mutation sendMessage($user_id: ID!, $other_id: ID!, $text: String!) {
-    sendMessage(user_id: $user_id, other_id: $other_id, text: $text) {
+  mutation sendMessage($other_id: ID!, $text: String!) {
+    sendMessage(other_id: $other_id, text: $text) {
       id
       received
       content
@@ -23,8 +23,8 @@ export const SEND_MESSAGE = gql`
 `;
 
 export const GET_DM = gql`
-  query DM($user_id: ID!, $other_id: ID!, $offset: Int!, $limit: Int!) {
-    DM(user_id: $user_id, other_id: $other_id) {
+  query DM($other_id: ID!, $offset: Int!, $limit: Int!) {
+    DM(other_id: $other_id) {
       user_id
       other_id
       other_user {
@@ -44,8 +44,8 @@ export const GET_DM = gql`
 `;
 
 export const RECEIVE_MESSAGE = gql`
-  subscription getReceiveMessage($user_id: ID!) {
-    receiveMessage(user_id: $user_id) {
+  subscription getReceiveMessage {
+    receiveMessage {
       id
       received
       content

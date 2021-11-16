@@ -8,11 +8,11 @@ import {
   TextField,
 } from '@mui/material';
 
-import { channelIdVar } from '../../..';
-// import { currentChannelVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL } from '../gqls';
-import { AddChannelResponse } from '../responseModels';
+import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { AddChannelResponse } from '../../../utils/responseModels';
+import ErrorAlert from '../../commons/ErrorAlert';
+import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
 interface ChannelCreateModalProps {
   open: boolean;
@@ -25,28 +25,22 @@ export default function ChannelCreateModal({
 }: ChannelCreateModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
-
-  // TODO: loading, error 등은 나중에 고려
-  const [addChannelFunc] = useMutation<AddChannelResponse>(ADD_CHANNEL, {
-    onCompleted({ addChannel }) {
-      channelIdVar(addChannel.id);
-    },
-  });
+  const [addChannelFunc, { loading, error }] =
+    useMutation<AddChannelResponse>(ADD_CHANNEL);
 
   const onClickBtn = async (): Promise<void> => {
-    console.log(title, password);
-    try {
-      await addChannelFunc({
-        variables: { owner_user_id: '1', title, password },
-      });
-    } catch (e) {
-      console.error(e); // TODO: 임시! 에러 처리를 어떻게 해야할지 아직 잘 모르겠음.
-    }
-    // TODO: owner_user_id 임시! 나중에 user_id를 저장해서 보내건, 쿠키를 사용해서 이 인자가 사라지건, 추후 수정 필요.
-    // TODO: 같은 user_id가 방을 만드는 등 불가능한 동작을 했을 때 어떻게 되는가? 에러가 오나? 백엔드에 물어볼 것...
+    await addChannelFunc({
+      variables: { title, password },
+      refetchQueries: [GET_MY_CHANNEL],
+    });
+
+    handleClose();
     setTitle('');
     setPassword('');
   };
+
+  if (loading) return <LoadingBackdrop loading={loading} />;
+  if (error) return <ErrorAlert name="ChannelCreateModal" error={error} />;
 
   return (
     <Modal
@@ -99,5 +93,4 @@ export default function ChannelCreateModal({
   );
 }
 
-// TODO: title 입력 안되면 에러 뜨게 구현
-// TODO: addChannel 등에 owner_user_id 전달하지 않게 변경될 예정... 추후 프론트도 수정 필요
+// TODO: title 입력 안되면 에러 뜨게 프론트에서 구현

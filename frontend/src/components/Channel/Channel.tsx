@@ -1,95 +1,139 @@
-import { useQuery, useReactiveVar, useSubscription } from '@apollo/client';
-import { useEffect } from 'react';
-import { Redirect, useHistory } from 'react-router';
+import {
+  ApolloQueryResult,
+  OperationVariables,
+  useQuery,
+  useSubscription,
+} from '@apollo/client';
+import { useEffect, useState } from 'react';
 
-import { channelIdVar, chattingMessagesVar } from '../..';
-import { ChannelNotifySummary, ChattingSummary } from '../../utils/models';
+import { chattingMessagesVar, userIdVar } from '../..';
+import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
+import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
+import {
+  GetMyBlacklistResponse,
+  GetMyChannelResponse,
+  SubscribeChannelResponse,
+} from '../../utils/responseModels';
 import { Notify } from '../../utils/schemaEnums';
+import ErrorAlert from '../commons/ErrorAlert';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
-import { SUBSCRIBE_CHANNEL } from './gqls';
 import ParticipantsList from './ParticipantsList';
-import { SubscribeChannelResponse } from './responseModels';
 
-export default function Channel(): JSX.Element {
-  const history = useHistory();
+interface ChannelProps {
+  channel: IChannel;
+  channelRefetch: (
+    variables?: Partial<OperationVariables> | undefined
+  ) => Promise<ApolloQueryResult<GetMyChannelResponse>>;
+}
 
-  const channelId = useReactiveVar(channelIdVar);
+export default function Channel({
+  channel,
+  channelRefetch,
+}: ChannelProps): JSX.Element {
+  const {
+    id,
+    title,
+    is_private,
+    owner,
+    administrators,
+    participants,
+    // bannedUsers, // NOTE: 나중에 Channel 세팅 구현되면, bannedUsers 필요할 것
+    mutedUsers,
+  } = channel;
 
-  if (!channelId) {
-    // history.push(`/channel`);
-    return <Redirect to="/channel" />;
-  }
+  const { data: subscribeData, error: subscribeError } =
+    useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
+      variables: { channel_id: id },
+    });
 
-  const chattingMessages = useReactiveVar(chattingMessagesVar);
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+      variables: { id: userIdVar() },
+    });
 
-  const { data } = useSubscription<SubscribeChannelResponse>(
-    SUBSCRIBE_CHANNEL,
-    {
-      variables: { channel_id: channelId },
-      // onSubscriptionData: ({ subscriptionData: { data } }): void => {
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
-      // if (!data || !data.subscribeChannel) return;
-
-      // const { type, participant, text, check }: ChannelNotifySummary =
-      //   data.subscribeChannel;
-
-      // switch (type) {
-      //   case Notify.CHAT:
-      //     if (participant && text) {
-      //       let prev: ChattingSummary[] | undefined =
-      //         chattingMessages.get(channelId);
-
-      //       if (!prev) {
-      //         prev = [];
-      //       }
-
-      //       const duplicatedMap = new Map(chattingMessages);
-      //       duplicatedMap.set(channelId, [...prev, { participant, text }]);
-
-      //       chattingMessagesVar(duplicatedMap);
-      //     }
-      // }
-      // },
-    }
-  );
+  const displayAlertMsg = (msg: string) => {
+    setAlertMsg(msg);
+    setTimeout(() => {
+      setAlertMsg(null);
+    }, 3000);
+  };
 
   useEffect(() => {
-    if (!data || !data.subscribeChannel) return;
+    if (!subscribeData) return; // NOTE: undefined 방지를 위해
 
-    const { type, participant, text, check }: ChannelNotifySummary =
-      data.subscribeChannel;
+    const { type, participant, text, check }: IChannelNotify =
+      subscribeData.subscribeChannel;
 
-    console.log(type);
+    console.log(type, participant, text, check);
 
-    const id = new Date().getTime().toString();
-
+    // TODO: switch 개선 가능
     switch (type) {
       case Notify.CHAT:
         if (participant && text) {
-          let prev: ChattingSummary[] | undefined =
-            chattingMessages.get(channelId);
+          let prev: IChatting[] | undefined = chattingMessagesVar().get(id);
 
           if (!prev) {
             prev = [];
           }
 
-          const duplicatedMap = new Map(chattingMessages);
-          duplicatedMap.set(channelId, [...prev, { id, participant, text }]);
+          const duplicatedMap = new Map(chattingMessagesVar());
+          duplicatedMap.set(id, [
+            ...prev,
+            { id: new Date().getTime().toString(), participant, text },
+          ]);
 
-          console.log(duplicatedMap);
           chattingMessagesVar(duplicatedMap);
         }
+        break;
+      case Notify.MUTE:
+        if (check) {
+          void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가하는 식으로 추후 개선 가능
+          displayAlertMsg(
+            `MUTE: User '${(participant as IUser).nickname}' is muted.`
+          );
+        } else {
+          void channelRefetch();
+          displayAlertMsg(
+            `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
+          );
+        }
+        break;
+      case Notify.KICK: // NOTE: kick은 ban할 때만 사용, kick 성공한 사람만 문구 뜨도록
+        void channelRefetch();
+        displayAlertMsg(
+          `BAN: User '${(participant as IUser).nickname}' is banned.`
+        );
+        break;
+      case Notify.ENTER:
+        void channelRefetch();
+        break;
+      case Notify.EDIT:
+        void channelRefetch();
+        break;
     }
+  }, [subscribeData]);
 
-    // return () => {};
-  }, [data]);
+  if (subscribeError)
+    return <ErrorAlert name="Channel: subscribeError" error={subscribeError} />;
+  if (blacklistError)
+    return <ErrorAlert name="Channel: blacklistError" error={blacklistError} />;
+  if (!blacklistData) return <ErrorAlert name="Channel: !blacklistData" />;
 
   return (
     <>
-      <ChannelHeader />
-      <ParticipantsList notify={data?.subscribeChannel} />
-      <Chatting notify={data?.subscribeChannel} />
+      <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
+      <ParticipantsList {...{ id, participants }} />
+      <Chatting
+        {...{
+          id,
+          alertMsg,
+          mutedUsers,
+          blacklistData,
+        }}
+      />
     </>
   );
 }

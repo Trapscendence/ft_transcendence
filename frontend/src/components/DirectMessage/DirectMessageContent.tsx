@@ -16,7 +16,6 @@ import DMContentBox from './DmContentBox';
 import SendNewMessage from './SendNewMessage';
 
 interface DirectMessageContentProps {
-  user_id: string;
   other_id: string;
   scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
   // offset: number;
@@ -24,20 +23,17 @@ interface DirectMessageContentProps {
 }
 
 export default function DirectMessageContent({
-  user_id,
   other_id,
   scroll_ref,
 }: // offset,
 // setOffset,
 DirectMessageContentProps): JSX.Element {
-  // const [cachedDms, setCachedDms] = useState<Message[]>();
   const [offset, setOffset] = useState<number>(0);
   const [limit, setLimit] = useState<number>(5);
 
   //NOTE offset이 바뀌어서 usequery가 실행되는거고... useQuery는 원래 한번만 실행된다...(헐...)
   const { data, subscribeToMore } = useQuery<DmsData, DmVars>(GET_DM, {
     variables: {
-      user_id: user_id,
       other_id: other_id,
       offset: offset,
       limit: limit,
@@ -61,7 +57,6 @@ DirectMessageContentProps): JSX.Element {
       subscribeToMore({
         document: RECEIVE_MESSAGE,
         variables: {
-          user_id: user_id,
           other_id: other_id,
           offset: offset,
           limit: limit,
@@ -83,7 +78,7 @@ DirectMessageContentProps): JSX.Element {
             // ...prev,
             //TODO 새 쪽지 왔을 때 양식 수정
             DM: {
-              messages: [...prev.DM.messages, newDmItem],
+              messages: [...prev?.DM?.messages, newDmItem],
             },
           });
         },
@@ -148,7 +143,7 @@ DirectMessageContentProps): JSX.Element {
         <Box id="scroll-container" ref={scroll_ref} />
       </Box>
       <Divider light />
-      <SendNewMessage {...{ user_id, other_id, scroll_ref, handleClick }} />
+      <SendNewMessage {...{ other_id, scroll_ref, handleClick }} />
     </Box>
   );
 }

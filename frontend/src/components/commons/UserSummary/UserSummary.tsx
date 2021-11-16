@@ -7,24 +7,15 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
+import { IUser } from '../../../utils/models';
 import NicknameMenu from '../NicknameMenu';
 
 interface UserSummaryProps {
-  avatar?: string;
-  nickname: string;
-  statusMessage?: string;
+  IUser: IUser;
+  channelId?: string;
 }
 
-function UserSummary({
-  avatar,
-  nickname,
-  statusMessage,
-}: UserSummaryProps): JSX.Element {
-  // NOTE
-  // 상태를 SocialDrawer에서 관리할 수는 없을까? (옮길 수 없을까?)
-  // common component에 상태가 있는게 조금 불편하다!
-  // anchorEl에 대한 공부가 필요
-
+function UserSummary({ IUser, channelId }: UserSummaryProps): JSX.Element {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -34,13 +25,11 @@ function UserSummary({
     setAnchorEl(null);
   };
 
-  // TODO
-  // 상태에 따라 다르게 나타나야... 뱃지랑 메뉴가 달라야함
-  // 당연히 나누기도 나눠야
+  const { id, avatar, nickname, status_message, status } = IUser;
 
   return (
     <ListItem>
-      <ListItemAvatar>
+      <ListItemAvatar onClick={handleClick} sx={{ cursor: 'pointer' }}>
         <Badge variant="dot" overlap="circular" color="secondary">
           {avatar ? (
             <Avatar src={avatar} />
@@ -49,10 +38,10 @@ function UserSummary({
           )}
         </Badge>
       </ListItemAvatar>
-      {statusMessage ? (
+      {status_message ? (
         <ListItemText
           primary={nickname}
-          secondary={statusMessage}
+          secondary={status_message}
           onClick={handleClick}
           sx={{ cursor: 'pointer' }}
         />
@@ -63,7 +52,7 @@ function UserSummary({
           sx={{ cursor: 'pointer' }}
         />
       )}
-      <NicknameMenu {...{ anchorEl, open, handleClose }} />
+      <NicknameMenu {...{ anchorEl, open, handleClose, channelId, id }} />
     </ListItem>
   );
 }

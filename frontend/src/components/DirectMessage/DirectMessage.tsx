@@ -60,13 +60,11 @@ export default function DirectMessage(): JSX.Element {
     p: 4,
   };
 
-  //ANCHOR userId를  '자신의 닉네임'으로 수정할 것
-  const userId = '1';
   //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
   const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
     {
-      variables: { limit: 10, offset: 0, user_id: userId },
+      variables: { limit: 10, offset: 0 },
     }
   );
   //TODO getDmUsers는 처음로딩할 때 쓰이고 그 이후부터 newDmUser 섭스크립션을 해서 새로 온 애들을 맨 위로 올리게 하기
@@ -88,8 +86,9 @@ export default function DirectMessage(): JSX.Element {
   };
 
   const [newDm, setNewDm] = useState(false);
-  const newDmHandler = () => {
-    setNewDm(!newDm);
+  const newDmHandler = (value: boolean) => {
+    setNewDm(value);
+    if (value == true) setSelectedIndex('0');
   };
   const [selectedIndex, setSelectedIndex] = useState('0');
 
@@ -136,6 +135,14 @@ export default function DirectMessage(): JSX.Element {
                 height: '100%',
               }}
             >
+              <Button
+                variant="contained"
+                size="medium"
+                onClick={() => newDmHandler(true)}
+                sx={{ margin: '20px' }}
+              >
+                새 쪽지
+              </Button>
               {data?.dmUsers.map((user) => (
                 <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
@@ -163,16 +170,18 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
-              {selectedIndex != '0' ? (
+              {selectedIndex != '0' && !newDm ? (
                 <DirectMessageContent
-                  user_id={userId}
                   other_id={selectedIndex}
                   scroll_ref={myRef}
                   // offset={offset}
                   // setOffset={setOffset}
                 />
               ) : newDm ? (
-                <NewDirectMessage />
+                <NewDirectMessage
+                  setSelectedIndex={setSelectedIndex}
+                  newDmHandler={newDmHandler}
+                />
               ) : (
                 <Box
                   id="DM-nonselected"
@@ -198,7 +207,7 @@ export default function DirectMessage(): JSX.Element {
                     <Button
                       variant="contained"
                       size="medium"
-                      onClick={newDmHandler}
+                      onClick={() => newDmHandler(true)}
                       sx={{ margin: '20px 0px 0px 0px' }}
                     >
                       새 쪽지

@@ -1,6 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from 'src/users/models/user.medel';
+import { User } from 'src/users/models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { DM, Message } from './model/message.model';
@@ -61,7 +66,8 @@ export class MessageService {
           AND
         receiver_id = ${other_id};
     `);
-    return array.length === 0 ? null : array[0];
+    if (!array.length) throw new NotFoundException('Relation is not found.');
+    return array[0];
   }
 
   async getMessages(
@@ -271,9 +277,9 @@ export class MessageService {
     `);
 
     if (array.length !== 0) {
-      this.pubSub.publish(`new_message_to${user_id}`, {
+      this.pubSub.publish(`message_to${user_id}`, {
         receiveMessage: array[0],
-      })
+      });
       array[0].received = true;
       array[0].checked = false;
       this.pubSub.publish(`message_to_${other_id}`, {
@@ -286,6 +292,6 @@ export class MessageService {
       array[0].checked = true;
       return array[0];
     }
-    return null;
+    throw new ConflictException('DM relation is not built.');
   }
 }

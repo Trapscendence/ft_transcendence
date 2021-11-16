@@ -37,17 +37,18 @@ export enum MatchType {
 // }
 
 export enum UserStatus {
-  ONLINE,
-  IN_RANK_GAME,
-  IN_NORMAL_GAME,
-  OFFLINE,
+  ONLINE = 'ONLINE',
+  IN_RANK_GAME = 'IN_RANK_GAME',
+  IN_NORMAL_GAME = 'IN_NORMAL_GAME',
+  OFFLINE = 'OFFLINE',
 }
 
 export enum UserRole {
-  USER,
-  MODERATOR,
-  OWNER,
+  USER = 'USER',
+  MODERATOR = 'MODERATOR',
+  OWNER = 'OWNER',
 }
+// TODO: site_role하고 channel_role을 함께 쓰나?
 
 // export interface Channel {
 //   id: string;
@@ -68,7 +69,7 @@ export enum UserRole {
 // }
 
 export enum Notify {
-  INOUT = 'INOUT',
+  ENTER = 'ENTER',
   CHAT = 'CHAT',
   MUTE = 'MUTE',
   KICK = 'KICK',

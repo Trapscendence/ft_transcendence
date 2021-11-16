@@ -1,9 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { User } from './models/user.medel';
+import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
-import { Channel } from 'src/channels/models/channel.medel';
+import { Channel } from 'src/channels/models/channel.model';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +32,8 @@ export class UsersService {
       WHERE
         id = ${id};
       `);
-    return array.length ? array[0] : null;
+    if (array.length) return array[0];
+    throw new NotFoundException('No such user.');
   }
 
   async getUserByNickname(nickname: string): Promise<User | null> {
@@ -49,7 +55,55 @@ export class UsersService {
       WHERE
         nickname = '${nickname}';
     `);
-    return array.length ? array[0] : null;
+    if (array.length) return array[0];
+    throw new NotFoundException('No such user.');
+  }
+
+  async getOrCreateUserByOAuth(
+    oauth_id: string,
+    oauth_type: string,
+  ): Promise<User | null> {
+    const selectQueryResult = await this.databaseService.executeQuery(`
+      SELECT
+        id,
+        tfa_secret
+      FROM
+        ${schema}.user
+      WHERE
+        oauth_id = '${oauth_id}'
+      AND
+        oauth_type = '${oauth_type}';
+          `);
+
+    if (selectQueryResult.length === 1) {
+      return selectQueryResult[0];
+    } else if (selectQueryResult.length === 0) {
+      const insertQueryResult = await this.databaseService.executeQuery(`
+      INSERT INTO ${schema}.user(
+        nickname,
+        oauth_id,
+        oauth_type
+      ) VALUES (
+        '${oauth_type}-${oauth_id}',
+        '${oauth_id}',
+        '${oauth_type}'
+      ) RETURNING id, tfa_secret;
+      `);
+
+      if (insertQueryResult.length === 1) {
+        return insertQueryResult[0];
+      } else {
+        console.error(
+          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
+        );
+        throw new BadRequestException('Failed to create oauth user');
+      }
+    } else {
+      console.error(
+        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
+      );
+      throw new BadRequestException('wrong data from oauth');
+    }
   }
 
   async getUsers(
@@ -77,6 +131,7 @@ export class UsersService {
   }
 
   async createUser(nickname: string): Promise<User | null> {
+    // Deprecated
     nickname = sqlEscaper(nickname);
     const existingUser = await this.databaseService.executeQuery(`
       SELECT
@@ -106,7 +161,7 @@ export class UsersService {
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error("One cannot be their's own friend");
+      throw new BadRequestException('One cannot be their own friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       INSERT INTO ${schema}.friend( my_id, friend_id )
       VALUES
@@ -128,7 +183,7 @@ export class UsersService {
 
   async deleteFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
-      throw new Error('One cannot have themself as a friend');
+      throw new BadRequestException('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.friend f
@@ -161,36 +216,40 @@ export class UsersService {
   }
 
   async addToBlackList(user_id: string, black_id: string): Promise<boolean> {
-    if (user_id === black_id) throw new Error('One cannot block themself');
+    if (user_id === black_id)
+      throw new BadRequestException('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
       INSERT INTO ${schema}.block( blocker_id, blocked_id )
       VALUES
-        (
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${black_id} )
-        )
+      (
+        ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
+        ( SELECT id from ${schema}.user WHERE id = ${black_id} )
+      )
       ON CONFLICT
         ON CONSTRAINT block_pk
       DO NOTHING
       RETURNING *;
     `);
-    return array.length === 0 ? false : true;
+    if (!array.length) throw new BadRequestException('No such user.');
+    return true;
   }
 
   async deleteFromBlackList(
     user_id: string,
     black_id: string,
   ): Promise<boolean> {
-    if (user_id === black_id) throw new Error('One cannot block themself');
+    if (user_id === black_id)
+      throw new BadRequestException('One cannot block themself');
+
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.friend f
+        ${schema}.block b
       WHERE
-        ( f.user_id = ${user_id} AND f.friend_id = ${black_id} )
+        ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
-    `);
+    `); // NOTE: 수정했습니다.
 
-    return array.length === 0 ? false : true;
+    return !!array.length;
   }
 
   /*
@@ -264,5 +323,44 @@ export class UsersService {
             cu.channel_id = c.id
     `);
     return array.length ? array[0] : null;
+  }
+
+  async getChannelRole(id: string): Promise<UserRole | null> {
+    const select_channel_role: User[] = await this.databaseService
+      .executeQuery(`
+      SELECT
+        channel_role
+      FROM
+        ${schema}.channel_user
+      WHERE
+        user_id = ${id};
+    `);
+
+    if (select_channel_role.length === 0) {
+      throw new ConflictException(`This user(id: ${id}) is not in a channel`);
+    } else if (select_channel_role.length !== 1) {
+      throw `FATAL ERROR: User(id: ${id}) belongs to more than one channel`;
+    } else {
+      return select_channel_role[0].channel_role;
+    }
+  }
+
+  async getSiteRole(id: string): Promise<UserRole> {
+    const select_site_role: User[] = await this.databaseService.executeQuery(`
+      SELECT
+        site_role
+      FROM
+        ${schema}.user
+      WHERE
+        id = ${id};
+    `);
+
+    if (select_site_role.length === 0) {
+      throw new ConflictException(`The user(id: ${id}) does not exist`);
+    } else if (select_site_role.length !== 1) {
+      throw `FATAL ERROR: User with (id: ${id}) is not only one`;
+    } else {
+      return select_site_role[0].site_role;
+    }
   }
 }

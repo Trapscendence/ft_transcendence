@@ -1,9 +1,11 @@
 dist
 node_modules
-backend/**/schema.gql
 db-migrate
 db-migrate-pg
+log
+certs
+schema.gql*
 
 .env
-
+.DS_store
 _*

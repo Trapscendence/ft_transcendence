@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Button } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 
@@ -14,7 +14,8 @@ export default function ChannelListHeader(): JSX.Element {
   };
 
   return (
-    <Box display="flex" alignItems="center" mt={-2}>
+    // <Box display="flex" alignItems="center" mt={-2}>
+    <Box display="flex" alignItems="center">
       <Button
         variant="contained"
         color="secondary"
@@ -23,11 +24,10 @@ export default function ChannelListHeader(): JSX.Element {
       >
         Create a new channel
       </Button>
-      <ChannelCreateModal {...{ open, handleClose }} />
-      <Button variant="contained" color="secondary" sx={{ m: 1, p: 2 }}>
+      {/* <Button variant="contained" color="secondary" sx={{ m: 1, p: 2 }}>
         Random channel
-      </Button>
-      <Box sx={{ m: 1 }}>
+      </Button> */}
+      {/* <Box sx={{ m: 1 }}>
         <FormGroup>
           <FormControlLabel
             control={<Checkbox defaultChecked />}
@@ -38,7 +38,10 @@ export default function ChannelListHeader(): JSX.Element {
             label="Private"
           />
         </FormGroup>
-      </Box>
+      </Box> */}
+      <ChannelCreateModal {...{ open, handleClose }} />
     </Box>
   );
 }
+
+// TODO: Random, 필터링 기능은 트센 필수 사항 모두 완료되면 추가 구현할 것

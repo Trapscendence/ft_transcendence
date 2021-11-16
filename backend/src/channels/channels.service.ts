@@ -1,12 +1,20 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
-import { Notify, ChannelNotify, Channel } from './models/channel.medel';
+import { Notify, ChannelNotify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
-import { User } from 'src/users/models/user.medel';
+import { User, UserRole } from 'src/users/models/user.model';
+import { channel } from 'diagnostics_channel';
 
 @Injectable()
 export class ChannelsService {
@@ -23,8 +31,6 @@ export class ChannelsService {
    ** ANCHOR: Query
    */
 
-  // TODO: 메모리상의 cache도 구현해서 성능 더 빠르게 개선할 수도?
-  // TODO: await를 병렬처리해서 성능 개선해야
   async getChannel(channel_id: string): Promise<Channel> {
     const array = await this.databaseService.executeQuery(`
       SELECT
@@ -47,7 +53,8 @@ export class ChannelsService {
         c.id = ${channel_id};
     `);
 
-    return !array.length ? null : array[0];
+    if (!array.length) throw new BadRequestException('No such channel id.');
+    return array[0];
   }
 
   async getChannels(offset: number, limit: number): Promise<Channel[]> {
@@ -66,7 +73,7 @@ export class ChannelsService {
           AS is_private
         FROM ${schema}.channel
       OFFSET ${offset} ROWS
-      LIMIT ${!limit ? 'ALL' : `${limit}`};
+      LIMIT ${limit ? limit : 'ALL'};
     `);
   }
 
@@ -75,14 +82,28 @@ export class ChannelsService {
    */
 
   async enterChannel(
-    channel_id: string,
     user_id: string,
+    channel_id: string,
   ): Promise<Channel | null> {
+    const users = await this.databaseService.executeQuery(`
+      SELECT
+        banned_user
+      FROM
+        ${schema}.channel_ban
+      WHERE
+        banned_user = ${user_id}
+          AND
+        channel_id = ${channel_id};
+    `); // ban 되어있는지 확인
+    if (users.length)
+      throw new ForbiddenException('The user is banned from channel.');
+
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_user(
           user_id,
-          channel_id
+          channel_id,
+          channel_role
         )
       VALUES (
         (
@@ -100,36 +121,60 @@ export class ChannelsService {
             ${schema}.channel
           WHERE
             id = ${channel_id}
-        )
+        ),
+        'USER'
       )
       ON CONFLICT ( user_id )
-      DO NOTHING;
+        DO NOTHING
+      RETURNING *;
     `);
-    if (channels.length) {
-      this.pubSub.publish(`to_channel_${channel_id}`, {
-        subscribeChannel: {
-          type: Notify.ENTER,
-          participant: await this.usersService.getUserById(user_id),
-          text: null,
-          check: true,
-        },
-      });
-      return channels[0];
-    }
-    return channels.length ? channels[0] : null;
+    if (!channels.length)
+      throw new ConflictException('user may already in a channel.');
+
+    this.pubSub.publish(`to_channel_${channel_id}`, {
+      subscribeChannel: {
+        type: Notify.ENTER,
+        participant: await this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    });
+    return await this.getChannel(channel_id);
   }
 
-  async leaveChannel(user_id: string, channel_id: string): Promise<boolean> {
+  async leaveChannel(user_id: string): Promise<boolean> {
+    // TODO owner 자동양도기능, 마지막 사람 나갈 시 자동 폭파기능 추가
     const channels = await this.databaseService.executeQuery(`
         DELETE FROM
           ${schema}.channel_user
         WHERE
           user_id = ${user_id}
             AND
-          channel_id = ${channel_id}
+          channel_id = (
+            SELECT
+              channel_id
+            FROM
+              ${schema}.channel_user
+            WHERE
+              user_id = ${user_id}
+          )
         RETURNING *;
-    `);
-    return channels.length ? true : false;
+    `); // 해당 채널에 유저가 있는지 확인
+    if (!channels.length)
+      throw new ConflictException(
+        'Failed to leave channel. It seems the user is already left.',
+      );
+
+    this.pubSub.publish(`to_channel_${channels[0].channel_id}`, {
+      subscribeChannel: {
+        type: Notify.ENTER,
+        participant: await this.usersService.getUserById(user_id),
+        text: null,
+        check: true,
+      },
+    }); // NOTE: 임시라 check 등도 다 동일합니다. 그냥 프론트에서 subscription 오는지 여부만 체크하고 새로고침하게 임시 구현하려는 목적입니다.
+
+    return true;
   }
 
   async addChannel(
@@ -145,39 +190,23 @@ export class ChannelsService {
       WHERE
         cu.user_id = ${owner_user_id};
     `);
-    if (
-      inChannel.length > 0 ||
-      !(await this.usersService.getUserById(owner_user_id))
-    )
-      return null;
+    if (inChannel.length > 0)
+      throw new ConflictException('The user is already in channel');
 
-    const [{ id }] = password
-      ? await this.databaseService.executeQuery(`
-        INSERT INTO
-          ${schema}.channel(
-            title,
-            password
-          )
-          VALUES (
-            '${title}',
-            '${password}'
-          )
-          RETURNING id;
-      `)
-      : await this.databaseService.executeQuery(`
-        INSERT INTO
-          ${schema}.channel(
-            title,
-            password
-          )
-        VALUES (
-          '${title}',
-          NULL
+    const [{ id }] = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${schema}.channel(
+          title,
+          password
         )
-        RETURNING id;
-      `);
+      VALUES (
+        '${title}',
+        ${password ? `'${password}'` : 'NULL'}
+      )
+      RETURNING id;
+    `);
 
-    await this.databaseService.executeQuery(`
+    const channel_users = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel_user(
           user_id,
@@ -192,8 +221,20 @@ export class ChannelsService {
       ON CONFLICT
         ON CONSTRAINT
           uniq_user_id
-      DO NOTHING;
+        DO NOTHING
+      RETURNING *;
     `);
+
+    if (!channel_users.length) {
+      // 유저가 다른 방에 있을 경우 방을 삭제하고 conflict
+      await this.databaseService.executeQuery(`
+        DELETE FROM
+          ${schema}.channel
+        WHERE
+          id = ${id};
+      `);
+      throw new ConflictException('The user is in another channel.');
+    }
 
     return {
       id,
@@ -216,11 +257,11 @@ export class ChannelsService {
       UPDATE
         ${schema}.channel c
       SET (
-        c.title,
-        c.password
+        title,
+        password
       ) = (
-        ${title}
-        ${password === '' ? 'NULL' : password}
+        '${title}',
+        '${password == null ? 'NULL' : password}'
       )
       WHERE
         c.id = ${channel_id}
@@ -229,6 +270,8 @@ export class ChannelsService {
         c.title title,
         ${password === '' ? 'false' : 'true'} is_private;
     `);
+    // NOTE: 위와 같이 수정했습니다. 컴파일만 되게 한거라 password 등은 맞는지 모르겠네요. -gmoon
+
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.EDIT,
@@ -241,8 +284,6 @@ export class ChannelsService {
   }
 
   async deleteChannel(channel_id: string): Promise<boolean> {
-    // TODO: 여러 쿼리를 아마 하나의 쿼리로 합칠 수 있을 듯
-
     const array = await this.databaseService.executeQuery(`
     WITH
       del1
@@ -284,7 +325,8 @@ export class ChannelsService {
     RETURNING
       *
     `);
-    if (array.length === 0) return false;
+    if (!array.length)
+      throw new ConflictException('The channel does not exist.');
     this.mutedUsers.popChannel(channel_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -297,11 +339,20 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
-  muteUserOnChannel(
+  async muteUserOnChannel(
     channel_id: string,
     user_id: string,
     mute_time: number,
-  ): boolean {
+  ): Promise<boolean> {
+    // if (
+    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    // )
+    //   throw new ForbiddenException('Inappropriate role');
+
+    // NOTE -gmoon
+    // usersService.getSiteRole(user_id)) 에서 site_role 등록이 안돼 'No such user id' 에러가 발생합니다. 따라서 임시로 주석처리 합니다.
+
     this.mutedUsers.pushUser(channel_id, user_id);
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -337,11 +388,19 @@ export class ChannelsService {
     });
     return true;
   }
+  // TODO: db의 banned_user 변수명을 user_id로 바꾸고싶다.
 
   async kickUserFromChannel(
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
+    // if (
+    //   (await this.usersService.getChannelRole(user_id)) !== UserRole.USER ||
+    //   (await this.usersService.getSiteRole(user_id)) !== UserRole.USER
+    // )
+    //   throw new ForbiddenException('Inappropriate role');
+    // NOTE: 여기도 'No such user id' 에러로 임시 주석처리합니다. -gmoon
+
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
         ${schema}.channel_user
@@ -352,57 +411,51 @@ export class ChannelsService {
       RETURNING
         *;
     `);
-    if (!array.length) return false;
+    if (!array.length)
+      throw new ConflictException('The user is not in a the channel.');
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.KICK,
-        participant: user_id,
+        participant: this.usersService.getUserById(user_id),
         text: null,
         check: true,
       },
     });
+    return true;
   }
 
   async banUserFromChannel(
     channel_id: string,
     user_id: string,
   ): Promise<boolean> {
+    if ((await this.usersService.getChannelRole(user_id)) !== UserRole.USER)
+      throw new ForbiddenException('Inappropriate role');
+
     const array = await this.databaseService.executeQuery(`
-      WITH
-        banned
-          AS (
-            DELETE FROM
-              ${schema}.channel_user
-            WHERE
-              channel_id = ${channel_id}
-                AND
-              user_id = ${user_id}
-            RETURNING
-              channel_id,
-              user_id
-          )
       INSERT INTO
         ${schema}.channel_ban(
           channel_id,
           banned_user
         )
       VALUES (
-        banned.channel_id,
-        banned.user_id
+        ${channel_id},
+        ${user_id}
       )
-      ON CONSTRAINT
-        UNIQUE (
-          ${schema}.channel_ban.channel_id,
-          ${schema}.channel_ban.banned_user
-        )
+      ON CONFLICT
+        ON CONSTRAINT
+          ban_constraint
+      DO NOTHING
       RETURNING
         *;
     `);
-    if (!array.length) return false;
+    if (!array.length)
+      throw new ConflictException(
+        'The user is already banned from the channel',
+      );
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
         type: Notify.BAN,
-        participant: user_id,
+        participant: this.usersService.getUserById(user_id),
         text: null,
         check: true,
       },
@@ -420,11 +473,13 @@ export class ChannelsService {
       WHERE
         cb.channel_id = ${channel_id}
           AND
-        cb.user_id = ${user_id}
+        cb.banned_user = ${user_id}
       RETURNING
         *
     `);
-    return !!array.length;
+    if (!array.length)
+      throw new ConflictException('The user is not banned from the channel.');
+    return true;
   }
 
   async chatMessage(
@@ -432,7 +487,8 @@ export class ChannelsService {
     user_id: string,
     message: string,
   ): Promise<boolean> {
-    if (this.mutedUsers.hasUser(channel_id, user_id)) return false;
+    if (this.mutedUsers.hasUser(channel_id, user_id))
+      throw new ForbiddenException('The user is muted');
     if (message.length > 10000) throw new Error('message too long');
     this.pubSub.publish(`to_channel_${channel_id}`, {
       subscribeChannel: {
@@ -443,6 +499,37 @@ export class ChannelsService {
       },
     });
     return true;
+  }
+
+  async updateChannelRole(
+    channel_id: string,
+    user_id: string,
+    role: UserRole,
+  ): Promise<boolean> {
+    const updateChannel = await this.databaseService.executeQuery(`
+      UPDATE
+        ${schema}.channel_user
+      SET
+        channel_role = '${role}'
+      WHERE
+        user_id = '${user_id}'
+        AND
+        channel_id = '${channel_id}'
+      RETURNING
+        user_id
+    ;`);
+
+    if (updateChannel.length === 0) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not in the channel(id: ${channel_id})`,
+      );
+    } else if (updateChannel.length !== 1) {
+      throw new InternalServerErrorException(
+        `The user(id: ${user_id}) is on more than one channel`,
+      );
+    } else {
+      return true;
+    }
   }
 
   /*
@@ -469,7 +556,9 @@ export class ChannelsService {
           AND
         cu.channel_role = 'OWNER';
     `);
-    return !array.length ? null : array[0];
+    if (!array) throw new ConflictException('No such channel id.');
+
+    return array[0];
   }
 
   async getAdministrators(channel_id: string): Promise<User[]> {
@@ -495,7 +584,7 @@ export class ChannelsService {
   }
 
   async getParticipants(channel_id: string): Promise<User[]> {
-    return await this.databaseService.executeQuery(`
+    const array = await this.databaseService.executeQuery(`
       SELECT
         u.id,
         u.nickname,
@@ -512,6 +601,8 @@ export class ChannelsService {
       WHERE
         cu.channel_id = ${channel_id}
     `);
+    if (!array.length) throw new ConflictException('No such channel id.');
+    return array;
   }
 
   async getBannedUsers(channel_id: string): Promise<User[]> {
@@ -555,5 +646,13 @@ export class ChannelsService {
         `,
       [this.mutedUsers.getUserIds(channel_id)],
     );
+  }
+
+  async delegateOwner(owner_id: string, user_id: string): Promise<boolean> {
+    return true;
+  }
+
+  async setAdmin(user_id: string, channel_id: string): Promise<boolean> {
+    return true;
   }
 }
