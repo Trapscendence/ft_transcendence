@@ -31,16 +31,6 @@ function App(): JSX.Element {
           body: { overflowY: 'hidden' }, // NOTE: html이 아니라 body에 주로 적용하는 듯
         }}
       />
-      {/* <Navigation />
-      <Box
-        sx={{
-          ml: '90px',
-          width: 'calc(100% - 90px - 200px)', // NOTE: 컴포넌트 폭 등에 대한 상수? theme? 등을 만들면 편리할 듯... 지금은 그냥 값을 직접 사용한다.
-          height: '100vh',
-          overflowY: 'auto',
-          p: 3,
-        }}
-      > */}
       <Switch>
         <Route exact path="/login" component={LoginPage} />
         <Route exact path="/" render={() => <Redirect to="/home" />} />
@@ -52,9 +42,6 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
         <RestrictRoute exact path="/admin" component={AdminPage} />
       </Switch>
-      {/* </Box>
-      <DirectMessage />
-      <SocialDrawer /> */}
     </BrowserRouter>
   );
 }

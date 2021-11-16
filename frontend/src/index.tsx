@@ -14,6 +14,7 @@ import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { CssBaseline } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -119,11 +120,24 @@ export const chattingMessagesVar = makeVar<Map<string, IChatting[]>>(
   new Map<string, IChatting[]>()
 );
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#7e57c2',
+    },
+    secondary: {
+      main: '#9ad2cc',
+    },
+  },
+});
+
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
-      <CssBaseline />
-      <App />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
