@@ -16,7 +16,6 @@ import {
 import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 
-import { userIdVar } from '../..';
 import {
   DmsData,
   DmUsersData,

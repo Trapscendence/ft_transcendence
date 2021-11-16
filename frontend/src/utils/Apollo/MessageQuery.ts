@@ -44,8 +44,8 @@ export const GET_DM = gql`
 `;
 
 export const RECEIVE_MESSAGE = gql`
-  subscription getReceiveMessage() {
-    receiveMessage() {
+  subscription getReceiveMessage {
+    receiveMessage {
       id
       received
       content
