@@ -38,10 +38,7 @@ export class ChannelRoleGuard implements CanActivate {
     );
     const userSiteRole: UserRole = await this.usersService.getSiteRole(user.id);
 
-    if (
-      userSiteRole === UserRole.OWNER ||
-      userSiteRole === UserRole.MODERATOR
-    ) {
+    if (userSiteRole === UserRole.OWNER || userSiteRole === UserRole.ADMIN) {
       return true;
     }
 
@@ -52,7 +49,7 @@ export class ChannelRoleGuard implements CanActivate {
       ) {
         return false;
       } else if (
-        requiredRole === UserRole.MODERATOR &&
+        requiredRole === UserRole.ADMIN &&
         userChannelRole === UserRole.USER
       ) {
         return false;

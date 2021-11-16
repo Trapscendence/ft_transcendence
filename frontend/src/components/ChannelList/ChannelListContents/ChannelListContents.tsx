@@ -18,7 +18,7 @@ export default function ChannelListContents(): JSX.Element {
 
   return (
     <Grid container>
-      {data?.channels.map((val) => (
+      {data?.channels?.map((val) => (
         <ChannelCard key={val.id} channelSummary={val} />
       ))}
     </Grid>

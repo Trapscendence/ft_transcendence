@@ -39,6 +39,7 @@ export default function Chatting({
   const [muted, setMuted] = useState<boolean>(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
+
   const [chatMessage, { error }] = useMutation(CHAT_MESSAGE);
 
   useEffect(() => {
@@ -53,20 +54,9 @@ export default function Chatting({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chattingMessages]);
 
-  const onClickBtn = () => {
-    void chatMessage({
-      variables: {
-        message: input,
-        user_id: userIdVar(),
-        channel_id: id,
-      },
-    });
-    setInput('');
-  };
-
-  const onKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      void chatMessage({
+  const sendInput = async () => {
+    try {
+      await chatMessage({
         variables: {
           message: input,
           user_id: userIdVar(),
@@ -74,6 +64,14 @@ export default function Chatting({
         },
       });
       setInput('');
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const onKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter') {
+      await sendInput();
     }
   };
 
@@ -95,7 +93,12 @@ export default function Chatting({
             {alertMsg}
           </Alert>
         )}
-        <Box sx={{ height: '100%', overflowY: 'auto' }}>
+        <Box
+          sx={{
+            height: '100%',
+            overflowY: 'auto',
+          }}
+        >
           {chattingMessages.get(id)?.map((val) => {
             if (blacklist.find((black) => black.id === val.participant.id)) {
               return (
@@ -131,7 +134,7 @@ export default function Chatting({
           onKeyPress={onKeyPress}
           disabled={muted}
         />
-        <Button variant="contained" onClick={onClickBtn} disabled={muted}>
+        <Button variant="contained" onClick={sendInput} disabled={muted}>
           Send
         </Button>
       </CardActions>

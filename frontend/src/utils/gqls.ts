@@ -241,6 +241,18 @@ export const DELETE_FROM_BLACKLIST = gql`
   }
 `;
 
+export const DELEGATE_USER_ON_CHANNEL = gql`
+  mutation DelegateUserOnChannel($user_id: ID!, $channel_id: ID!) {
+    delegateUserOnChannel(user_id: $user_id, channel_id: $channel_id)
+  }
+`;
+
+export const RELEGATE_USER_ON_CHANNEL = gql`
+  mutation RelegateUserOnChannel($user_id: ID!, $channel_id: ID!) {
+    relegateUserOnChannel(user_id: $user_id, channel_id: $channel_id)
+  }
+`;
+
 /*
  ** ANCHOR: Subscription
  */

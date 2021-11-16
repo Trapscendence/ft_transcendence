@@ -15,23 +15,38 @@ import {
   Tab,
   Tabs,
 } from '@mui/material';
-import React, { useState } from 'react';
-import { useHistory } from 'react-router';
-
-// TODO
-// 아이콘에 Tooltip mui 추가하면 좋을 듯
+import React, { useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router';
 
 function Navigation(): JSX.Element {
+  interface Itabs {
+    [index: string]: number;
+    '/home': number;
+    '/profile/my': number;
+    '/rank': number;
+    '/channel': number;
+  }
+
+  const tabs: Itabs = {
+    '/home': 0,
+    '/profile/my': 1,
+    '/rank': 2,
+    '/channel': 3,
+  };
+
   const [tabValue, setTabValue] = useState(0);
+  const [loading, setLoading] = useState(false);
   const history = useHistory();
+  const location = useLocation();
+
+  useEffect(() => {
+    setTabValue(tabs[location.pathname] ?? 0);
+  }, []);
+
   const handleChange = (e: React.SyntheticEvent, newValue: number) => {
     const path: string | null = e.currentTarget.getAttribute('aria-label');
-    history.push('/' + (path as string));
+    history.push(path as string);
     setTabValue(newValue);
-  }; // @mui/lab 에서 제공하는 페이지 이동 api가 있음. 어느게 성능이 더 좋을지 모르겠다. https://mui.com/components/tabs/#experimental-api 참고
-  const [loading, setLoading] = useState(false);
-  const onClickPlay = () => {
-    setLoading((value) => !value); // loading을 사용하는 toggle... 상태를 어떻게 잘 작성하지?
   };
 
   const logOut = () => {
@@ -47,8 +62,9 @@ function Navigation(): JSX.Element {
     });
   };
 
-  // TODO
-  // 역시나 폴더 내 하위 컴포넌트들로 분리 필요
+  const onClickPlay = () => {
+    setLoading((value) => !value); // NOTE: loading을 사용하는 toggle... 더 나은 상태 작성법이 있나?
+  };
 
   return (
     <Box
@@ -71,16 +87,15 @@ function Navigation(): JSX.Element {
           value={tabValue}
           onChange={handleChange}
           orientation="vertical"
-          textColor="secondary"
-          indicatorColor="secondary"
+          // textColor="secondary"
+          // indicatorColor="secondary"
         >
-          <Tab aria-label="" icon={<Home />} />
-          <Tab aria-label="profile/my" icon={<AccountCircle />} />
-          <Tab aria-label="rank" icon={<Analytics />} />
-          <Tab aria-label="channel" icon={<Forum />} />
+          <Tab aria-label="/home" icon={<Home />} />
+          <Tab aria-label="/profile/my" icon={<AccountCircle />} />
+          <Tab aria-label="/rank" icon={<Analytics />} />
+          <Tab aria-label="/channel" icon={<Forum />} />
         </Tabs>
         <Divider />
-
         <Box
           onClick={onClickPlay}
           sx={{ position: 'relative', cursor: 'pointer' }}
@@ -88,14 +103,11 @@ function Navigation(): JSX.Element {
           <Tab
             icon={<VideogameAsset />}
             // disabled={loading}
-            // color={loading ? 'red' : 'yellow'}
             sx={{ color: loading ? 'text.disabled' : '' }}
           />
-          {/* loading에 따라 나타나게... */}
-          {/* 참고: https://mui.com/components/progress/#interactive-integration */}
           {loading && (
             <CircularProgress
-              color="secondary"
+              // color="secondary"
               size={35}
               sx={{
                 position: 'absolute',

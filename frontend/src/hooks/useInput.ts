@@ -9,9 +9,9 @@ export const useInput = (
 ] => {
   const [value, setValue] = useState<string>(initialState);
   const onChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setValue(e.target.value);
+    if (e.target.value.length < 500) setValue(e.target.value);
   };
   return [value, setValue, onChange];
 };
 
-// TODO: enter로 입력되게 개선 필요? 지금은 따로 onKeyPress 함수 쓰는 중... 이게 맞을 수도
+// NOTE: 500글자로 글자수 제한
