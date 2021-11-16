@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 
 import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import { IChannelListItem } from '../../../utils/models';
 import { EnterChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
@@ -27,15 +28,11 @@ export default function ChannelCard({
     ENTER_CHANNEL,
     {
       refetchQueries: [GET_MY_CHANNEL],
+      variables: { channel_id: id },
     }
   );
 
-  const onClickBtn = async () => {
-    await enterChannel({ variables: { channel_id: id } });
-  };
-
   if (error) return <ErrorAlert name="ChannelCard" error={error} />;
-
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
@@ -56,7 +53,7 @@ export default function ChannelCard({
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small" onClick={onClickBtn}>
+          <Button size="small" onClick={() => handleError(enterChannel)}>
             Enter channel
           </Button>
         </CardActions>
