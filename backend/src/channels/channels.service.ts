@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
@@ -13,6 +14,7 @@ import { Notify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
 import { User, UserRole } from 'src/users/models/user.model';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChannelsService {
@@ -188,27 +190,15 @@ export class ChannelsService {
     if (successor === undefined) {
       return this.deleteChannel(channel_id);
     } else {
-      return this.updateChannelRole(channel_id, successor, UserRole.OWNER);
+      return this.updateChannelRole(successor, UserRole.OWNER);
     }
   }
 
-  async addChannel(
-    title: string,
-    password: string,
-    owner_user_id: string,
-  ): Promise<Channel> {
-    const inChannel = await this.databaseService.executeQuery(`
-      SELECT
-        cu.user_id
-      FROM
-        ${schema}.channel_user cu
-      WHERE
-        cu.user_id = ${owner_user_id};
-    `);
-    if (inChannel.length > 0)
-      throw new ConflictException('The user is already in channel');
+  async addChannel(title: string, password: string): Promise<string> {
+    const saltRounds = 10; // Recommended (~10 hashes/sec), see https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+    const hashedPassword: string = await bcrypt.hash(password, saltRounds);
 
-    const [{ id }] = await this.databaseService.executeQuery(`
+    const insertChannel: { id }[] = await this.databaseService.executeQuery(`
       INSERT INTO
         ${schema}.channel(
           title,
@@ -216,51 +206,20 @@ export class ChannelsService {
         )
       VALUES (
         '${title}',
-        ${password ? `'${password}'` : 'NULL'}
+        ${password ? `'${hashedPassword}'` : 'NULL'}
       )
       RETURNING id;
     `);
+    const { id: channel_id } = insertChannel[0] ?? {};
 
-    const channel_users = await this.databaseService.executeQuery(`
-      INSERT INTO
-        ${schema}.channel_user(
-          user_id,
-          channel_id,
-          channel_role
-        )
-      VALUES(
-        ${owner_user_id},
-        ${id},
-        'OWNER'
-      )
-      ON CONFLICT
-        ON CONSTRAINT
-          uniq_user_id
-        DO NOTHING
-      RETURNING *;
-    `);
-
-    if (!channel_users.length) {
-      // 유저가 다른 방에 있을 경우 방을 삭제하고 conflict
-      await this.databaseService.executeQuery(`
-        DELETE FROM
-          ${schema}.channel
-        WHERE
-          id = ${id};
-      `);
-      throw new ConflictException('The user is in another channel.');
+    if (channel_id === undefined) {
+      throw new InternalServerErrorException(
+        `Failed to insert channel(title: ${title}, password: ${password})`,
+      );
+    } else {
+      this.muted_users.pushChannel(channel_id);
+      return channel_id;
     }
-
-    return {
-      id,
-      title,
-      is_private: password ? true : false,
-      owner: null,
-      administrators: [],
-      participants: [], // NOTE: owner, admin 포함한 참가자로 하자...
-      banned_users: [],
-      muted_users: [],
-    };
   }
 
   async editChannel(
@@ -402,6 +361,47 @@ export class ChannelsService {
     return true;
   }
 
+  async updateChannelMute(
+    channel_id: string,
+    user_id: string,
+    mute_time: number,
+  ): Promise<void> {
+    const mute: boolean = mute_time === 0;
+
+    if (this.muted_users.hasUser(channel_id, user_id) === mute) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is already ${
+          mute_time ? 'muted' : 'unmuted'
+        } in this channel(id: ${channel_id})`,
+      );
+    }
+
+    if (mute) {
+      this.muted_users.pushUser(channel_id, user_id);
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.MUTE,
+          participant: this.usersService.getUserById(user_id),
+          text: null,
+          check: true,
+        },
+      });
+      setTimeout((): void => {
+        this.updateChannelMute(channel_id, user_id, 0);
+      }, mute_time * 1000);
+    } else {
+      this.muted_users.popUser(channel_id, user_id);
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.MUTE,
+          participant: this.usersService.getUserById(user_id),
+          text: null,
+          check: false,
+        },
+      });
+    }
+  }
+
   async kickUserFromChannel(
     channel_id: string,
     user_id: string,
@@ -495,6 +495,9 @@ export class ChannelsService {
   }
 
   async chatMessage(user_id: string, message: string): Promise<boolean> {
+    const { id: channel_id } = await this.usersService.getChannelByUserId(
+      user_id,
+    );
     if (this.muted_users.hasUser(channel_id, user_id))
       throw new ForbiddenException('The user is muted');
     if (message.length > 10000) throw new Error('message too long');
@@ -518,7 +521,7 @@ export class ChannelsService {
       WHERE
         user_id = '${user_id}'
       RETURNING
-        user_id
+        channel_id
     ;`);
 
     if (updateChannel.length === 0) {
@@ -642,7 +645,7 @@ export class ChannelsService {
       WHERE
         id = ANY ($1);
         `,
-      [this.muted_users.getUserIds(channel_id)],
+      [this.muted_users.getUsers(channel_id)],
     );
   }
 }
