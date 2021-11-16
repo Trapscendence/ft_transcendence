@@ -39,6 +39,7 @@ export default function Chatting({
   const [muted, setMuted] = useState<boolean>(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const chattingMessages = useReactiveVar(chattingMessagesVar);
+
   const [chatMessage, { error }] = useMutation(CHAT_MESSAGE);
 
   useEffect(() => {
@@ -54,14 +55,18 @@ export default function Chatting({
   }, [chattingMessages]);
 
   const sendInput = async () => {
-    await chatMessage({
-      variables: {
-        message: input,
-        user_id: userIdVar(),
-        channel_id: id,
-      },
-    });
-    setInput('');
+    try {
+      await chatMessage({
+        variables: {
+          message: input,
+          user_id: userIdVar(),
+          channel_id: id,
+        },
+      });
+      setInput('');
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const onKeyPress = async (e: React.KeyboardEvent<HTMLDivElement>) => {

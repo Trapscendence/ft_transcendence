@@ -10,6 +10,7 @@ import {
   GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
 } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import { IUser } from '../../../utils/models';
 import {
   GetMyChannelRoleResponse,
@@ -36,24 +37,18 @@ export default function ChannelHeader({
 }: ChannelHeaderProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
-  const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
-    LEAVE_CHANNEL,
-    {
-      refetchQueries: [
-        GET_MY_CHANNEL,
-        { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
-      ],
-    }
-  );
-
   const { data: channelRoleData, error: channelRoleError } =
     useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
       variables: { id: userIdVar() },
     });
 
-  const onClickLeave = () => {
-    void leaveChannel();
-  };
+  const [leaveChannel, { loading, error: leaveChannelError }] =
+    useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
+      refetchQueries: [
+        GET_MY_CHANNEL,
+        { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
+      ],
+    });
 
   const handleOpen = (): void => {
     setOpen(true);
@@ -62,14 +57,9 @@ export default function ChannelHeader({
     setOpen(false);
   };
 
-  if (error) return <ErrorAlert name="ChannelHeader" error={error} />;
-  if (channelRoleError)
-    return (
-      <ErrorAlert
-        name="ChannelHeader: channelRoleError"
-        error={channelRoleError}
-      />
-    );
+  const errorVar = leaveChannelError || channelRoleError;
+
+  if (errorVar) return <ErrorAlert name="ChannelHeader" error={errorVar} />;
   if (loading) return <LoadingBackdrop loading={loading} />;
 
   return (
@@ -96,7 +86,11 @@ export default function ChannelHeader({
             Edit Channel
           </Button>
         )}
-        <Button variant="contained" sx={{ m: 1 }} onClick={onClickLeave}>
+        <Button
+          variant="contained"
+          sx={{ m: 1 }}
+          onClick={() => handleError(leaveChannel)}
+        >
           Leave Channel
         </Button>
       </Box>

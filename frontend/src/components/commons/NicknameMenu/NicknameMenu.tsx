@@ -7,6 +7,7 @@ import {
   DELETE_FROM_BLACKLIST,
   GET_MY_BLACKLIST,
 } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import {
   AddToBlackListResponse,
   DeleteFromBlackListResponse,
@@ -35,28 +36,22 @@ export default function NicknameMenu({
       variables: { id: userIdVar() },
     });
 
-  const [addToBlackList] = useMutation<AddToBlackListResponse>(
-    ADD_TO_BLACKLIST,
-    {
+  const [addToBlackList, { error: AddError }] =
+    useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {
       variables: { black_id: id },
       refetchQueries: [GET_MY_BLACKLIST],
-    }
-  );
+    });
 
-  const [deleteFromBlackList] = useMutation<DeleteFromBlackListResponse>(
-    DELETE_FROM_BLACKLIST,
-    {
+  const [deleteFromBlackList, { error: deleteError }] =
+    useMutation<DeleteFromBlackListResponse>(DELETE_FROM_BLACKLIST, {
       variables: { black_id: id },
       refetchQueries: [GET_MY_BLACKLIST],
-    }
-  );
+    });
 
-  if (blacklistError)
-    return (
-      <ErrorAlert name="NicknameMenu: blacklistError" error={blacklistError} />
-    );
+  const errorVar = blacklistError || AddError || deleteError;
 
   if (id === userIdVar()) return <></>;
+  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
 
   return (
     <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -68,11 +63,13 @@ export default function NicknameMenu({
         {blacklistData &&
         blacklistData.user &&
         blacklistData.user.blacklist.find((black) => black.id === id) ? (
-          <MenuItem onClick={() => deleteFromBlackList()}>
+          <MenuItem onClick={() => handleError(deleteFromBlackList)}>
             Delete from blacklist
           </MenuItem>
         ) : (
-          <MenuItem onClick={() => addToBlackList()}>Add to blacklist</MenuItem>
+          <MenuItem onClick={() => handleError(addToBlackList)}>
+            Add to blacklist
+          </MenuItem>
         )}
         {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
       </MenuList>

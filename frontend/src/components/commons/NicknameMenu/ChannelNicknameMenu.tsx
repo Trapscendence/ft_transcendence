@@ -72,9 +72,6 @@ export default function ChannelNicknameMenu({
     delegateError ||
     relegateError;
 
-  if (errorVar)
-    return <ErrorAlert name="ChannelNicknameMenu" error={errorVar} />;
-
   const isTargetAdmin = targetChannelRoleData?.user.channel_role !== 'USER';
 
   const canDelegate =
@@ -88,6 +85,9 @@ export default function ChannelNicknameMenu({
   if (channelRoleData?.user.channel_role === 'USER') {
     return <></>;
   } // NOTE: 내가 channel_role이 User면 얼리 리턴
+
+  if (errorVar)
+    return <ErrorAlert name="ChannelNicknameMenu" error={errorVar} />;
 
   return (
     <>

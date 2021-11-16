@@ -42,17 +42,19 @@ export default function Channel({
     mutedUsers,
   } = channel;
 
-  const { data: subscribeData, error: subscribeError } =
-    useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
-      variables: { channel_id: id },
-    });
+  const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const { data: blacklistData, error: blacklistError } =
     useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
       variables: { id: userIdVar() },
     });
 
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const { data: subscribeData, error: subscribeError } =
+    useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
+      variables: { channel_id: id },
+    });
+
+  const errorVar = blacklistError || subscribeError;
 
   const displayAlertMsg = (msg: string) => {
     setAlertMsg(msg);
@@ -116,11 +118,8 @@ export default function Channel({
     }
   }, [subscribeData]);
 
-  if (subscribeError)
-    return <ErrorAlert name="Channel: subscribeError" error={subscribeError} />;
-  if (blacklistError)
-    return <ErrorAlert name="Channel: blacklistError" error={blacklistError} />;
-  if (!blacklistData) return <ErrorAlert name="Channel: !blacklistData" />;
+  if (!blacklistData) return <></>;
+  if (errorVar) return <ErrorAlert name="Channel" error={errorVar} />;
 
   return (
     <>
