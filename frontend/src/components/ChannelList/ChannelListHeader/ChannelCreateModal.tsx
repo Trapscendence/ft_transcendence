@@ -10,6 +10,7 @@ import {
 
 import { useInput } from '../../../hooks/useInput';
 import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import { AddChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
@@ -25,15 +26,17 @@ export default function ChannelCreateModal({
 }: ChannelCreateModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
-  const [addChannelFunc, { loading, error }] =
-    useMutation<AddChannelResponse>(ADD_CHANNEL);
 
-  const onClickBtn = async (): Promise<void> => {
-    await addChannelFunc({
+  const [addChannelFunc, { loading, error }] = useMutation<AddChannelResponse>(
+    ADD_CHANNEL,
+    {
       variables: { title, password },
       refetchQueries: [GET_MY_CHANNEL],
-    });
+    }
+  );
 
+  const onClickBtn = async (): Promise<void> => {
+    await handleError(addChannelFunc);
     handleClose();
     setTitle('');
     setPassword('');

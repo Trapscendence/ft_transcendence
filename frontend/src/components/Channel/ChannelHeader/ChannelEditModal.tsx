@@ -9,7 +9,8 @@ import {
 } from '@mui/material';
 
 import { useInput } from '../../../hooks/useInput';
-import { EDIT_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { EDIT_CHANNEL } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import { EditChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
@@ -27,14 +28,16 @@ export default function ChannelEditModal({
 }: ChannelEditModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
-  const [editChannelFunc, { loading, error }] =
-    useMutation<EditChannelResponse>(EDIT_CHANNEL);
+
+  const [editChannel, { loading, error }] = useMutation<EditChannelResponse>(
+    EDIT_CHANNEL,
+    {
+      variables: { title, password, channel_id: id },
+    }
+  );
 
   const onClickBtn = async (): Promise<void> => {
-    await editChannelFunc({
-      variables: { title, password, channel_id: id },
-    });
-
+    await handleError(editChannel);
     handleClose();
     setTitle('');
     setPassword('');
