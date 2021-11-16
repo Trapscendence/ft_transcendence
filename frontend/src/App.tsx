@@ -1,13 +1,9 @@
 import { useQuery } from '@apollo/client';
 import { GlobalStyles } from '@mui/material';
-import { Box } from '@mui/system';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { userIdVar } from '.';
 import LoadingBackdrop from './components/commons/LoadingBackdrop';
-import DirectMessage from './components/DirectMessage';
-import Navigation from './components/Navigation';
-import SocialDrawer from './components/SocialDrawer';
 import AdminPage from './routes/AdminPage';
 import ChannelListPage from './routes/ChannelListPage';
 import HomePage from './routes/HomePage';
@@ -34,7 +30,7 @@ function App(): JSX.Element {
           body: { overflowY: 'hidden' }, // NOTE: html이 아니라 body에 주로 적용하는 듯
         }}
       />
-      <Navigation />
+      {/* <Navigation />
       <Box
         sx={{
           ml: '90px',
@@ -43,24 +39,20 @@ function App(): JSX.Element {
           overflowY: 'auto',
           p: 3,
         }}
-      >
-        <Switch>
-          <RestrictRoute exact path="/" component={HomePage} />
-          <RestrictRoute exact path="/channel" component={ChannelListPage} />
-          <RestrictRoute exact path="/rank" component={RankPage} />
-          <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
-          <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
-          <RestrictRoute
-            exact
-            path="/profile/:userid"
-            component={ProfilePage}
-          />
-          <RestrictRoute exact path="/admin" component={AdminPage} />
-          <Route exact path="/login" component={LoginPage} />
-        </Switch>
-      </Box>
+      > */}
+      <Switch>
+        <Route exact path="/login" component={LoginPage} />
+        <RestrictRoute exact path="/" component={HomePage} />
+        <RestrictRoute exact path="/channel" component={ChannelListPage} />
+        <RestrictRoute exact path="/rank" component={RankPage} />
+        <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
+        <RestrictRoute exact path="/profile/my" component={MyProfilePage} />
+        <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
+        <RestrictRoute exact path="/admin" component={AdminPage} />
+      </Switch>
+      {/* </Box>
       <DirectMessage />
-      <SocialDrawer />
+      <SocialDrawer /> */}
     </BrowserRouter>
   );
 }
