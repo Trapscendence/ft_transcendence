@@ -16,8 +16,8 @@ const START_X = CANVAS_WIDTH / 2;
 const START_Y = CANVAS_HEIGHT - 30;
 const START_DX = 2;
 const START_DY = -2;
-const START_MY_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
-const START_ENEMY_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
+const START_LEFT_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
+const START_RIGHT_PADDLE_Y = (CANVAS_HEIGHT - PADDLE_HEIGHT) / 2;
 
 interface PongProps {
   isLeft: boolean;
@@ -32,11 +32,15 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
   const [y, setY] = useState(START_Y);
   const [dx, setDx] = useState(START_DX);
   const [dy, setDy] = useState(START_DY);
-  const [myPaddleY, setMyPaddleY] = useState(START_MY_PADDLE_Y);
-  const [enemyPaddleY, setEnemyPaddleY] = useState(START_ENEMY_PADDLE_Y);
+  const [leftPaddleY, setLeftPaddleY] = useState(START_LEFT_PADDLE_Y);
+  const [rightPaddleY, setRightPaddleY] = useState(START_RIGHT_PADDLE_Y);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [myScore, setMyScore] = useState(0);
-  const [enemyScore, setEnemyScore] = useState(0);
+  const [leftScore, setLeftScore] = useState(0);
+  const [rightScore, setRightScore] = useState(0);
+
+  const myPaddle = isLeft ? leftPaddleY : rightPaddleY;
+  const setMyPaddle = isLeft ? setLeftPaddleY : setRightPaddleY;
+  // const setEnemyPaddle = isLeft ? setRightPaddleY : setLeftPaddleY; // NOTE: 나중에 서버와 통신할떄 쓰일 것...
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -46,8 +50,8 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     if (renderCtx) setCtx(renderCtx);
 
     drawBall();
-    drawMyPaddle();
-    drawEnemyPaddle();
+    drawLeftPaddle();
+    drawRightPaddle();
   }, [ctx]);
 
   const drawBall = () => {
@@ -60,39 +64,26 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     ctx.closePath();
   };
 
-  const drawMyPaddle = () => {
+  const drawLeftPaddle = () => {
     if (!ctx) return;
 
     ctx.beginPath();
-    if (!isLeft) {
-      ctx.rect(
-        ctx.canvas.width - PADDLE_WIDTH,
-        myPaddleY,
-        PADDLE_WIDTH,
-        PADDLE_HEIGHT
-      );
-    } else {
-      ctx.rect(0, myPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
-    }
+    ctx.rect(0, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
     ctx.fillStyle = '#7e57c2';
     ctx.fill();
     ctx.closePath();
   };
 
-  const drawEnemyPaddle = () => {
+  const drawRightPaddle = () => {
     if (!ctx) return;
 
     ctx.beginPath();
-    if (isLeft) {
-      ctx.rect(
-        ctx.canvas.width - PADDLE_WIDTH,
-        enemyPaddleY,
-        PADDLE_WIDTH,
-        PADDLE_HEIGHT
-      );
-    } else {
-      ctx.rect(0, enemyPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
-    }
+    ctx.rect(
+      ctx.canvas.width - PADDLE_WIDTH,
+      rightPaddleY,
+      PADDLE_WIDTH,
+      PADDLE_HEIGHT
+    );
     ctx.fillStyle = '#7e57c2';
     ctx.fill();
     ctx.closePath();
@@ -108,8 +99,8 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     setY(START_Y);
     setDx(START_DX);
     setDy(START_DY);
-    setMyPaddleY(START_MY_PADDLE_Y);
-    setEnemyPaddleY(START_ENEMY_PADDLE_Y);
+    setLeftPaddleY(START_LEFT_PADDLE_Y);
+    setRightPaddleY(START_RIGHT_PADDLE_Y);
   };
 
   const draw = () => {
@@ -117,59 +108,39 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
 
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     drawBall();
-    drawMyPaddle();
-    drawEnemyPaddle();
+    drawLeftPaddle();
+    drawRightPaddle();
 
     if (y + dy > ctx.canvas.height - BALL_RADIUS || y + dy < BALL_RADIUS) {
       setDy((prev) => -prev);
     }
-    if (isLeft) {
-      if (x + dx < BALL_RADIUS) {
-        // NOTE: 공이 왼쪽으로 갔을 때
-        if (y > myPaddleY && y < myPaddleY + PADDLE_HEIGHT) {
-          setDx((prev) => -prev);
-        } else {
-          setEnemyScore((prev) => prev + 1);
-          resetGame();
-        }
-      } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
-        // NOTE: 공이 오른쪽으로 갔을 때
-        if (y > enemyPaddleY && y < enemyPaddleY + PADDLE_HEIGHT) {
-          setDx((prev) => -prev);
-        } else {
-          setMyScore((prev) => prev + 1);
-          resetGame();
-        }
+    if (x + dx < BALL_RADIUS) {
+      // NOTE: 공이 왼쪽으로 갔을 때
+      if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        setRightScore((prev) => prev + 1);
+        resetGame();
       }
-    } else {
-      if (x + dx < BALL_RADIUS) {
-        // NOTE: 공이 왼쪽으로 갔을 때
-        if (y > enemyPaddleY && y < enemyPaddleY + PADDLE_HEIGHT) {
-          setDx((prev) => -prev);
-        } else {
-          setMyScore((prev) => prev + 1);
-          resetGame();
-        }
-      } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
-        // NOTE: 공이 오른쪽으로 갔을 때
-        if (y > myPaddleY && y < myPaddleY + PADDLE_HEIGHT) {
-          setDx((prev) => -prev);
-        } else {
-          setEnemyScore((prev) => prev + 1);
-          resetGame();
-        }
+    } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
+      // NOTE: 공이 오른쪽으로 갔을 때
+      if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        setLeftScore((prev) => prev + 1);
+        resetGame();
       }
     }
 
     if (upPressed) {
-      setMyPaddleY((prev) => prev - 7); // NOTE: canvas는 아래로 갈수록 y가 크다.
-      if (myPaddleY < 0) {
-        setMyPaddleY(0);
+      setMyPaddle((prev) => prev - 7); // NOTE: canvas는 아래로 갈수록 y가 크다.
+      if (myPaddle < 0) {
+        setMyPaddle(0);
       }
     } else if (downPressed) {
-      setMyPaddleY((prev) => prev + 7);
-      if (myPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
-        setMyPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+      setMyPaddle((prev) => prev + 7);
+      if (myPaddle + PADDLE_HEIGHT > ctx.canvas.height) {
+        setMyPaddle(ctx.canvas.height - PADDLE_HEIGHT);
       }
     }
 
@@ -202,8 +173,10 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
       }}
     >
       <Button onClick={() => setIsPlaying((prev) => !prev)}>toggle game</Button>
-      <Typography>my: {myScore}</Typography>
-      <Typography>enemy: {enemyScore}</Typography>
+      <Typography>score</Typography>
+      <Typography>
+        {leftScore} | {rightScore}
+      </Typography>
       <canvas
         id="canvas"
         ref={canvasRef}
