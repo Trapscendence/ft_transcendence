@@ -8,7 +8,7 @@ export interface NickName {
 }
 
 export interface UserData {
-  user: User[];
+  user: User;
 }
 
 export interface UsersData {

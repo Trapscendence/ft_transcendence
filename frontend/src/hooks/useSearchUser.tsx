@@ -30,7 +30,7 @@ export default function UseSearchUser({
   });
   if (data?.user) {
     setButtonActive(false);
-    setInputSpace(data?.user[0]);
+    setInputSpace(data?.user);
   } else setButtonActive(true);
 
   return (

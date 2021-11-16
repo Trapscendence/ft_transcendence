@@ -78,7 +78,7 @@ DirectMessageContentProps): JSX.Element {
             // ...prev,
             //TODO 새 쪽지 왔을 때 양식 수정
             DM: {
-              messages: [...prev.DM.messages, newDmItem],
+              messages: [...prev?.DM?.messages, newDmItem],
             },
           });
         },

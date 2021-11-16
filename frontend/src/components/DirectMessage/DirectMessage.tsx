@@ -86,8 +86,9 @@ export default function DirectMessage(): JSX.Element {
   };
 
   const [newDm, setNewDm] = useState(false);
-  const newDmHandler = () => {
-    setNewDm(!newDm);
+  const newDmHandler = (value: boolean) => {
+    setNewDm(value);
+    if (value == true) setSelectedIndex('0');
   };
   const [selectedIndex, setSelectedIndex] = useState('0');
 
@@ -137,7 +138,7 @@ export default function DirectMessage(): JSX.Element {
               <Button
                 variant="contained"
                 size="medium"
-                onClick={newDmHandler}
+                onClick={() => newDmHandler(true)}
                 sx={{ margin: '20px' }}
               >
                 새 쪽지
@@ -169,7 +170,7 @@ export default function DirectMessage(): JSX.Element {
               }}
             >
               {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
-              {selectedIndex != '0' ? (
+              {selectedIndex != '0' && !newDm ? (
                 <DirectMessageContent
                   other_id={selectedIndex}
                   scroll_ref={myRef}
@@ -177,7 +178,10 @@ export default function DirectMessage(): JSX.Element {
                   // setOffset={setOffset}
                 />
               ) : newDm ? (
-                <NewDirectMessage scroll_ref={myRef} />
+                <NewDirectMessage
+                  setSelectedIndex={setSelectedIndex}
+                  newDmHandler={newDmHandler}
+                />
               ) : (
                 <Box
                   id="DM-nonselected"
@@ -203,7 +207,7 @@ export default function DirectMessage(): JSX.Element {
                     <Button
                       variant="contained"
                       size="medium"
-                      onClick={newDmHandler}
+                      onClick={() => newDmHandler(true)}
                       sx={{ margin: '20px 0px 0px 0px' }}
                     >
                       새 쪽지
