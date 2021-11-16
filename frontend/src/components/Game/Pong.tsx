@@ -10,6 +10,7 @@ const CANVAS_HEIGHT = 500;
 const BALL_RADIUS = 10;
 const PADDLE_HEIGHT = 75;
 const PADDLE_WIDTH = 10;
+const D_PADDLEY = 7;
 
 const START_X = CANVAS_WIDTH / 2;
 // const START_Y = CANVAS_HEIGHT / 2;
@@ -39,7 +40,7 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
   const [rightScore, setRightScore] = useState(0);
 
   const myPaddle = isLeft ? leftPaddleY : rightPaddleY;
-  const setMyPaddle = isLeft ? setLeftPaddleY : setRightPaddleY;
+  const setMyPaddleY = isLeft ? setLeftPaddleY : setRightPaddleY;
   // const setEnemyPaddle = isLeft ? setRightPaddleY : setLeftPaddleY; // NOTE: 나중에 서버와 통신할떄 쓰일 것...
 
   useEffect(() => {
@@ -133,14 +134,14 @@ export default function Pong({ isLeft }: PongProps): JSX.Element {
     }
 
     if (upPressed) {
-      setMyPaddle((prev) => prev - 7); // NOTE: canvas는 아래로 갈수록 y가 크다.
+      setMyPaddleY((prev) => prev - D_PADDLEY); // NOTE: canvas는 아래로 갈수록 y가 크다.
       if (myPaddle < 0) {
-        setMyPaddle(0);
+        setMyPaddleY(0);
       }
     } else if (downPressed) {
-      setMyPaddle((prev) => prev + 7);
+      setMyPaddleY((prev) => prev + D_PADDLEY);
       if (myPaddle + PADDLE_HEIGHT > ctx.canvas.height) {
-        setMyPaddle(ctx.canvas.height - PADDLE_HEIGHT);
+        setMyPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
       }
     }
 
