@@ -4,7 +4,6 @@ WORKDIR /usr/app
 RUN npm install -g db-migrate db-migrate-pg
 WORKDIR /
 RUN mkdir /migrations
-COPY ./migrations /migrations
 COPY database.json /
 COPY entrypoint.sh /
 
