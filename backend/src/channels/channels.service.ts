@@ -372,7 +372,9 @@ export class ChannelsService {
     ban: boolean,
   ): Promise<boolean> {
     if (ban) {
-      return this.banUserFromChannel(channel_id, user_id);
+      this.banUserFromChannel(channel_id, user_id);
+      this.kickUser(channel_id, user_id);
+      return true;
     } else {
       return this.unbanUserFromChannel(channel_id, user_id);
     }
