@@ -1,42 +1,104 @@
-import { Send } from '@mui/icons-material';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { Box, Divider, TextField } from '@mui/material';
-import { useState } from 'react';
+/* eslint-disable */
 
-import { Message } from './DirectMessage';
+import { useLazyQuery, useQuery, useSubscription } from '@apollo/client';
+// import LoadingButton from '@mui/lab/LoadingButton';
+import { Box, Button, Divider, Stack, Typography } from '@mui/material';
+import { useEffect, useMemo, useState } from 'react';
 
-interface DirectMessageListProps {
-  messages?: Message[];
+import {
+  DmsData,
+  DmVars,
+  Message,
+  ReceiveMessageData,
+} from '../../utils/Apollo/Message';
+import { GET_DM, RECEIVE_MESSAGE } from '../../utils/Apollo/MessageQuery';
+import DMContentBox from './DmContentBox';
+import SendNewMessage from './SendNewMessage';
+
+interface DirectMessageContentProps {
+  other_id: string;
+  scroll_ref: React.MutableRefObject<HTMLDivElement | null>;
+  // offset: number;
+  // setOffset: React.Dispatch<React.SetStateAction<number>>;
 }
 
-function DirectMessageContent({
-  messages,
-}: DirectMessageListProps): JSX.Element {
-  const friendDmStyle = {
-    background: '#262626',
-    borderRadius: '0.1rem 0.9rem 0.9rem 0.9rem',
-    color: '#fff',
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '0.5rem 1rem',
-    margin: '0.12rem 0.5rem',
-  };
+export default function DirectMessageContent({
+  other_id,
+  scroll_ref,
+}: // offset,
+// setOffset,
+DirectMessageContentProps): JSX.Element {
+  const [offset, setOffset] = useState<number>(0);
+  const [limit, setLimit] = useState<number>(5);
 
-  const myDmStyle = {
-    backgroundAttachment: 'fixed',
-    background: ' rgba(103, 88, 205, 1)',
-    borderRadius: '0.9rem 0.9rem 0.1rem 0.9rem',
-    color: '#fff',
-    height: 'fit-content',
-    width: 'fit-content',
-    padding: '0.5rem 1rem',
-    margin: '0.12rem 0.5rem',
-  };
+  //NOTE offset이 바뀌어서 usequery가 실행되는거고... useQuery는 원래 한번만 실행된다...(헐...)
+  const { data, subscribeToMore } = useQuery<DmsData, DmVars>(GET_DM, {
+    variables: {
+      other_id: other_id,
+      offset: offset,
+      limit: limit,
+    },
+  });
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setOffset(0);
+    setLimit(10);
+  }, [other_id]);
+
   const handleClick = () => {
-    setLoading(true);
+    setOffset(0);
+    setLimit(limit + 1);
+    console.log(offset, limit);
   };
+  //ANCHOR latestDM 가져오기 -------------------------------------
+
+  useEffect(() => {
+    if (data?.DM?.messages) {
+      subscribeToMore({
+        document: RECEIVE_MESSAGE,
+        variables: {
+          other_id: other_id,
+          offset: offset,
+          limit: limit,
+        },
+
+        updateQuery: (
+          prev,
+          {
+            subscriptionData: { data },
+          }: { subscriptionData: { data: ReceiveMessageData } }
+        ) => {
+          const newDmItem = data?.receiveMessage;
+          if (!data) {
+            return prev;
+          }
+          // console.log(`PREV:`, prev);
+          // console.log(`DATA:`, data);
+          return Object.assign({}, prev, {
+            // ...prev,
+            //TODO 새 쪽지 왔을 때 양식 수정
+            DM: {
+              messages: [...prev?.DM?.messages, newDmItem],
+            },
+          });
+        },
+      });
+    }
+  }, [data]);
+
+  // const { data: subScriptionData } = useSubscription(RECEIVE_MESSAGE, {
+  //   variables: {
+  //     user_id: user_id,
+  //     other_id: other_id,
+  //     offset: 0,
+  //     limit: 10,
+  //   },
+  // });
+
+  // useEffect(() => {
+  //   [...subScriptionData, ...data];
+  //   console.log(data);
+  // }, [subScriptionData]);
 
   return (
     <Box
@@ -48,50 +110,40 @@ function DirectMessageContent({
         // alignItems: 'flex-end'
       }}
     >
-      {messages?.map((message) =>
-        message.received ? (
-          <Box id="friend-DM" style={friendDmStyle}>
-            {message.content}
-          </Box>
-        ) : (
-          <Box
-            id="mine-DM"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-            }}
-          >
-            <Box style={myDmStyle}>{message.content}</Box>
-          </Box>
-        )
-      )}
-      <Box
-        id="send-container"
+      <Button
+        onClick={() => handleClick()}
+        variant="contained"
         sx={{
-          display: 'flex',
-          alignItems: 'space-between',
-          justifyContent: 'space-between',
+          boxShadow: 0,
+          margin: '5px 0px 5px 8px',
+        }}
+      />
+
+      <Box
+        id="content-container"
+        sx={{
+          overflowY: 'scroll',
         }}
       >
-        <Divider light />
-        <TextField size="small" fullWidth margin="dense"></TextField>
-        <LoadingButton
-          onClick={handleClick}
-          endIcon={<Send />}
-          loading={loading}
-          loadingPosition="end"
-          variant="contained"
-          sx={{
-            boxShadow: 0,
-            margin: '5px 0px 5px 8px',
-          }}
-        >
-          Send
-        </LoadingButton>
+        {data && data.DM != undefined ? (
+          data?.DM.messages.map((message) => {
+            //TODO DMCONTENTBOX가 시간순으로 정렬해서 출력하게 하기
+            return (
+              <DMContentBox
+                content={message?.content}
+                received={message?.received}
+                time_stamp={message?.time_stamp}
+                key={message?.time_stamp}
+              />
+            );
+          })
+        ) : (
+          <div />
+        )}
+        <Box id="scroll-container" ref={scroll_ref} />
       </Box>
+      <Divider light />
+      <SendNewMessage {...{ other_id, scroll_ref, handleClick }} />
     </Box>
   );
 }
-
-export default DirectMessageContent;

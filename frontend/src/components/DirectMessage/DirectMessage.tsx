@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client';
 import { Send } from '@mui/icons-material';
 // import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -13,84 +14,60 @@ import {
   PopperPlacementType,
 } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import {
+  DmsData,
+  DmUsersData,
+  DmUsersVars,
+  DmVars,
+  Message,
+  ReceiveMessageData,
+} from '../../utils/Apollo/Message';
+import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
 import DirectMessageContent from './DirectMessageContent';
 import DirectMessageList from './DirectMessageList';
 import NewDirectMessage from './NewDirectMessage';
 
-const style = {
-  // position: 'absolute' as const,
-  // bottom: '-10%',
-  // right: '-10%',
-  // transform: 'translate(-50px, -50px)',
-  width: '500px',
-  maxWidth: '60vw',
-  height: '500px',
-  maxHeight: '50vh',
-  // border: '1px solid #000',
-  bgcolor: 'grey.200',
-  // boxShadow: 24,
-  p: 4,
-};
+// export interface Message {
+//   id?: number;
+//   received: boolean;
+//   content: string;
+//   date: number;
+// }
 
-export interface Message {
-  id?: number;
-  received: boolean;
-  content: string;
-  date: number;
-}
-
-interface Dm {
-  id: number;
-  name: string;
-  messages: Message[];
-  lastCheckDate?: number;
-  lastMessageDate?: number;
-}
+// interface Dm {
+//   id: number;
+//   name: string;
+//   messages: Message[];
+//   lastCheckDate?: number;
+//   lastMessageDate?: number;
+// }
 
 export default function DirectMessage(): JSX.Element {
-  //message에서 received가 참이면 받은 DM이고 아니면 보낸 DM임
-  const dm: Dm[] = [
+  const style = {
+    // position: 'absolute' as const,
+    // bottom: '-10%',
+    // right: '-10%',
+    // transform: 'translate(-50px, -50px)',
+    width: '500px',
+    maxWidth: '60vw',
+    height: '500px',
+    maxHeight: '50vh',
+    // border: '1px solid #000',
+    bgcolor: 'grey.200',
+    // boxShadow: 24,
+    p: 4,
+  };
+
+  //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
+  const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
+    GET_DM_USERS,
     {
-      name: 'seohchoi',
-      id: 1,
-      lastMessageDate: 14,
-      messages: [
-        { received: true, content: '받은메시지14', date: 20211018 },
-        { received: true, content: '받은메시지14-2', date: 20211018 },
-        { received: false, content: '보낸메세지14', date: 20211018 },
-        { received: false, content: '보낸메세지14-2', date: 20211018 },
-      ],
-    },
-    {
-      name: 'qwer',
-      id: 2,
-      lastMessageDate: 13,
-      messages: [
-        { received: true, content: '받은메시지13', date: 20211018 },
-        { received: false, content: '보낸메세지13', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola3',
-      id: 3,
-      lastMessageDate: 12,
-      messages: [
-        { received: true, content: '받은메시지12', date: 20211018 },
-        { received: false, content: '보낸메세지12', date: 20211018 },
-      ],
-    },
-    {
-      name: 'hola4',
-      id: 4,
-      lastMessageDate: 11,
-      messages: [
-        { received: true, content: '받은메시지11', date: 20211018 },
-        { received: false, content: '보낸메세지11', date: 20211018 },
-      ],
-    },
-  ];
+      variables: { limit: 10, offset: 0 },
+    }
+  );
+  //TODO getDmUsers는 처음로딩할 때 쓰이고 그 이후부터 newDmUser 섭스크립션을 해서 새로 온 애들을 맨 위로 올리게 하기
 
   const [open, setOpen] = useState(false);
   const [placement, setPlacement] = useState<PopperPlacementType>();
@@ -109,10 +86,14 @@ export default function DirectMessage(): JSX.Element {
   };
 
   const [newDm, setNewDm] = useState(false);
-  const newDmHandler = () => {
-    setNewDm(!newDm);
+  const newDmHandler = (value: boolean) => {
+    setNewDm(value);
+    if (value == true) setSelectedIndex('0');
   };
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState('0');
+
+  const myRef = useRef<null | HTMLDivElement>(null);
+  const executeScroll = () => myRef?.current?.scrollIntoView();
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
@@ -154,12 +135,20 @@ export default function DirectMessage(): JSX.Element {
                 height: '100%',
               }}
             >
-              {dm.map((dm) => (
-                <Box>
+              <Button
+                variant="contained"
+                size="medium"
+                onClick={() => newDmHandler(true)}
+                sx={{ margin: '20px' }}
+              >
+                새 쪽지
+              </Button>
+              {data?.dmUsers.map((user) => (
+                <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
-                    nickname={dm.name}
-                    ID={dm.id}
+                    nickname={user.nickname}
+                    ID={user.id}
                   />
                   <Divider light />
                 </Box>
@@ -180,11 +169,18 @@ export default function DirectMessage(): JSX.Element {
                 overflowX: 'hidden',
               }}
             >
-              {newDm && <NewDirectMessage />}
-
-              {selectedIndex ? (
+              {/* //ANCHOR 삼항연산자 중첩 수정 필요  */}
+              {selectedIndex != '0' && !newDm ? (
                 <DirectMessageContent
-                  messages={dm[selectedIndex - 1].messages}
+                  other_id={selectedIndex}
+                  scroll_ref={myRef}
+                  // offset={offset}
+                  // setOffset={setOffset}
+                />
+              ) : newDm ? (
+                <NewDirectMessage
+                  setSelectedIndex={setSelectedIndex}
+                  newDmHandler={newDmHandler}
                 />
               ) : (
                 <Box
@@ -211,7 +207,7 @@ export default function DirectMessage(): JSX.Element {
                     <Button
                       variant="contained"
                       size="medium"
-                      onClick={newDmHandler}
+                      onClick={() => newDmHandler(true)}
                       sx={{ margin: '20px 0px 0px 0px' }}
                     >
                       새 쪽지

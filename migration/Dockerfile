@@ -3,8 +3,9 @@ RUN apk add npm
 WORKDIR /usr/app
 RUN npm install -g db-migrate db-migrate-pg
 WORKDIR /
-COPY ./migrations /migrations
+RUN mkdir /migrations
 COPY database.json /
+COPY entrypoint.sh /
 
-ENTRYPOINT [ "db-migrate" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "up" ]
