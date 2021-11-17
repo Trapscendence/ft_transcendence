@@ -29,7 +29,7 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
-              console.log(connectionParams.authroization);
+              console.log(connectionParams.authrization);
               return connectionParams;
             }
           },
