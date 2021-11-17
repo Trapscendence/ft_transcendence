@@ -32,7 +32,7 @@ export default function ChannelEditModal({
   const [editChannel, { loading, error }] = useMutation<EditChannelResponse>(
     EDIT_CHANNEL,
     {
-      variables: { title, password, channel_id: id },
+      variables: { title, password: password === '' ? null : password },
     }
   );
 

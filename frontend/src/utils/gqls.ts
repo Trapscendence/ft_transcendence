@@ -144,8 +144,8 @@ export const ADD_CHANNEL = gql`
 // NOTE: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
 
 export const EDIT_CHANNEL = gql`
-  mutation EditChannel($title: String!, $password: String, $channel_id: ID!) {
-    editChannel(title: $title, password: $password, channel_id: $channel_id) {
+  mutation EditChannel($title: String!, $password: String) {
+    editChannel(title: $title, password: $password) {
       id
       title
       is_private
