@@ -71,7 +71,7 @@ export class MessageResolver {
 
   @Query((returns) => [User])
   async dmUsers(
-    @UserID() user_id: any,
+    @UserID() user_id: string,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
