@@ -239,7 +239,7 @@ export class ChannelsService {
       RETURNING
         id,
         title,
-        ${password === '' ? 'false' : 'true'} is_private;
+        ${password ? 'false' : 'true'} is_private;
     `);
 
     this.pubSub.publish(`to_channel_${channel_id}`, {
