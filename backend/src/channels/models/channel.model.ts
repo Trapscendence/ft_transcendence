@@ -2,13 +2,13 @@ import { Field, ID, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { User } from 'src/users/models/user.model';
 
 export enum Notify {
-  ENTER, // check가 true면 입장, false면 퇴장.
-  CHAT,
-  MUTE,
-  KICK,
-  BAN,
-  EDIT,
-  DELETE,
+  ENTER = 'ENTER', // check가 true면 입장, false면 퇴장.
+  CHAT = 'CHAT',
+  MUTE = 'MUTE',
+  KICK = 'KICK',
+  BAN = 'BAN',
+  EDIT = 'EDIT',
+  DELETE = 'DELETE',
 }
 
 registerEnumType(Notify, {
@@ -23,26 +23,23 @@ export class Channel {
   @Field()
   title: string;
 
-  // @Field({ nullable: true }) // NOTE: password가 없으면 public
-  // password: string;
-
   @Field()
   is_private: boolean;
 
   @Field()
-  owner: User;
+  owner?: User;
 
   @Field((type) => [User])
-  administrators: User[];
+  administrators?: User[];
 
   @Field((type) => [User])
-  participants: User[];
+  participants?: User[];
 
   @Field((type) => [User]!)
-  bannedUsers: User[];
+  banned_users?: User[];
 
   @Field((type) => [User])
-  mutedUsers: User[];
+  muted_users?: User[];
 }
 
 @ObjectType()
