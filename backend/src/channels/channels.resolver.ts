@@ -82,9 +82,9 @@ export class ChannelsResolver {
     this.channelsService.updateChannelRole(user_id, UserRole.OWNER);
   }
 
-  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
+  @Mutation((returns) => Boolean)
   async chatMessage(
-    @Args('user_id', { type: () => ID! }) user_id: string,
+    @UserID() user_id: string,
     @Args('message') message: string,
   ) {
     return await this.channelsService.chatMessage(user_id, message);
