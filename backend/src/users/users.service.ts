@@ -321,7 +321,8 @@ INSERT INTO ${schema}.user(
   }
 
   async getChannelIdByUserId(id: string): Promise<string | null> {
-    const selectChannelId: string[] = await this.databaseService.executeQuery(`
+    const selectChannelId: { channel_id: string }[] = await this.databaseService
+      .executeQuery(`
       SELECT
         channel_id
       FROM
@@ -329,7 +330,7 @@ INSERT INTO ${schema}.user(
       WHERE
         user_id = '${id}'
     `);
-    return selectChannelId.length ? selectChannelId[0] : null;
+    return selectChannelId.length ? selectChannelId[0].channel_id : null;
   }
 
   async getChannelRole(id: string): Promise<UserRole | null> {
