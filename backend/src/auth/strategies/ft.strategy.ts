@@ -10,7 +10,11 @@ export class FTStrategy extends PassportStrategy(Strategy, '42') {
       clientID: process.env.FORTYTWO_APP_ID,
       clientSecret: process.env.FORTYTWO_APP_SECRET,
       callbackURL: process.env.FORTYTWO_REDIRECT_URI,
-      scope: ['public'],
+      profileFields: {
+        id: function (obj) {
+          return String(obj.obj);
+        },
+      },
     });
   }
 
