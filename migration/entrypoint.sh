@@ -7,4 +7,4 @@ sleep 3
 #     do echo 'Error on migration'
 #     sleep 5
 #   done
-db-migrate
+db-migrate $1
