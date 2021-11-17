@@ -1,3 +1,4 @@
+import { useQuery } from '@apollo/client';
 import {
   AccountCircle,
   Analytics,
@@ -18,24 +19,31 @@ import {
 import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
+import { User, UserData } from '../../utils/Apollo/User';
+import { GET_USER } from '../../utils/Apollo/UserQuery';
+
 function Navigation(): JSX.Element {
   interface Itabs {
     [index: string]: number;
     '/home': number;
-    '/profile/my': number;
+    '/profile/': number;
     '/rank': number;
     '/channel': number;
   }
 
   const tabs: Itabs = {
     '/home': 0,
-    '/profile/my': 1,
+    '/profile/': 1,
     '/rank': 2,
     '/channel': 3,
   };
 
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User>({
+    nickname: '',
+    id: '',
+  });
   const history = useHistory();
   const location = useLocation();
 
@@ -48,6 +56,13 @@ function Navigation(): JSX.Element {
     history.push(path as string);
     setTabValue(newValue);
   };
+
+  //TODO useQuery로 내 id 가져오기
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+
+  useEffect(() => {
+    if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
+  }, [currentUserData]);
 
   const logOut = () => {
     return new Promise(() => {
@@ -93,7 +108,10 @@ function Navigation(): JSX.Element {
           // indicatorColor="secondary"
         >
           <Tab aria-label="/home" icon={<Home />} />
-          <Tab aria-label="/profile/my" icon={<AccountCircle />} />
+          <Tab
+            aria-label={'/profile/' + currentUser.id}
+            icon={<AccountCircle />}
+          />
           <Tab aria-label="/rank" icon={<Analytics />} />
           <Tab aria-label="/channel" icon={<Forum />} />
         </Tabs>

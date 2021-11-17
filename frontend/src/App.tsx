@@ -45,7 +45,6 @@ function App(): JSX.Element {
           component={MyProfileSetting}
         />
         <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
-        <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
         <RestrictRoute exact path="/admin" component={AdminPage} />
       </Switch>
     </BrowserRouter>

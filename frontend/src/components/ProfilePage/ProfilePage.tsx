@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import {
@@ -36,33 +36,38 @@ export default function ProfilePage(): JSX.Element {
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
-
-  const { data: currentUserData } = useQuery<UserData>(GET_USER);
-  const [buttonActive, setButtonActive] = useState(true);
-  //NOTE 이 유저가 그 유저면 그 유저 프로필을 조회하게 하는 훅
-  //xxxx TODO INPUTSPACE를 나자신의 정보로 변경할것 xxxx
-
   const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const [buttonActive, setButtonActive] = useState(true);
   const history = useHistory();
+  const handleOnclick = (value: User) => {
+    console.log(value.nickname);
+    console.log(history);
+    history.push('/profile/' + value.id);
+  };
+  //NOTE 이 유저가 그 유저면 그 유저 프로필을 조회하게 하는 훅
 
-  const avatar = '';
-  const [currentUser, setCurrentUser] = useState<User>({
+  const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
     id: '',
   });
 
-  //TODO 주소창의 유저명 검색해서 db에서 주소창단위로 검색하는방식으로 뜯어고칠것
-  //TODO 404 에러 발송할 것
+  const location = useLocation();
+  const urlInputId: number = parseInt(
+    location.pathname.substring(
+      location.pathname.lastIndexOf('/') + 1,
+      location.pathname.length
+    )
+  );
   useEffect(() => {
-    if (currentUserData?.user) setCurrentUser(currentUserData.user);
-  }, []);
+    if (data?.users[urlInputId - 1]) setCurrentUser(data.users[urlInputId - 1]);
+    else setCurrentUser(undefined);
+  }, [urlInputId, data]);
 
-  const handleOnclick = (value: User) => {
-    console.log(value.nickname);
-    console.log(history);
-    history.push('/profile/' + value.nickname);
-    setCurrentUser(value);
-  };
+  // const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  // useEffect(() => {
+  //   if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
+  // }, [currentUserData]);
+  if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
 
   return (
     <Box>
@@ -79,7 +84,7 @@ export default function ProfilePage(): JSX.Element {
           sx={{ width: '100%', height: '150px' }}
           justifyContent="space-between"
         >
-          {avatar ? (
+          {currentUser ? (
             <Avatar sx={avartarStyle}>
               {currentUser?.nickname[0]?.toUpperCase()}
             </Avatar>
