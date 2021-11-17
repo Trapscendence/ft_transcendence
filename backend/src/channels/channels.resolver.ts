@@ -78,8 +78,8 @@ export class ChannelsResolver {
       );
     }
     const newChannelId = await this.channelsService.addChannel(title, password);
-    this.channelsService.enterChannel(user_id, newChannelId);
-    this.channelsService.updateChannelRole(user_id, UserRole.OWNER);
+    await this.channelsService.enterChannel(user_id, newChannelId);
+    await this.channelsService.updateChannelRole(user_id, UserRole.OWNER);
   }
 
   @Mutation((returns) => Boolean)
