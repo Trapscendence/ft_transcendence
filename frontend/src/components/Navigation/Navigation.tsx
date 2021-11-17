@@ -51,9 +51,11 @@ function Navigation(): JSX.Element {
 
   const logOut = () => {
     return new Promise(() => {
-      const endpoint = `http://localhost:5000/auth/logout`;
+      const endpoint = `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
+        process.env.REACT_APP_BACKEND_PORT ?? ''
+      }/auth/logout`;
       fetch(endpoint, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -131,7 +133,7 @@ function Navigation(): JSX.Element {
           <Tab
             aria-label="auth/logout"
             icon={<LogoutIcon />}
-            onClick={() => logOut}
+            onClick={logOut}
           />
           <Tab icon={<MoreHoriz />} />
         </Tabs>

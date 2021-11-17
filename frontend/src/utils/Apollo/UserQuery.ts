@@ -8,6 +8,14 @@ export const GET_USERS = gql`
     }
   }
 `;
+export const GET_USER = gql`
+  query getUser {
+    user {
+      id
+      nickname
+    }
+  }
+`;
 
 export const GET_USER_BY_NICKNAME = gql`
   query getUser($nickname: String) {

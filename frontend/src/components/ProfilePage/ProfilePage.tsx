@@ -8,12 +8,17 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
-import { User, UsersData, UsersDataVars } from '../../utils/Apollo/User';
-import { GET_USERS } from '../../utils/Apollo/UserQuery';
+import {
+  User,
+  UserData,
+  UsersData,
+  UsersDataVars,
+} from '../../utils/Apollo/User';
+import { GET_USER, GET_USERS } from '../../utils/Apollo/UserQuery';
 
 export default function ProfilePage(): JSX.Element {
   const avartarStyle = {
@@ -28,21 +33,29 @@ export default function ProfilePage(): JSX.Element {
     margin: '10px',
   };
 
-  const avatar = '';
-  const nickname = 'seohchoi';
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
+
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
   const [buttonActive, setButtonActive] = useState(true);
   //NOTE 이 유저가 그 유저면 그 유저 프로필을 조회하게 하는 훅
-  //TODO INPUTSPACE를 나자신의 정보로 변경할것
+  //xxxx TODO INPUTSPACE를 나자신의 정보로 변경할것 xxxx
+
   const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
   const history = useHistory();
 
+  const avatar = '';
   const [currentUser, setCurrentUser] = useState<User>({
     nickname: '',
     id: '',
   });
+
+  //TODO 주소창의 유저명 검색해서 db에서 주소창단위로 검색하는방식으로 뜯어고칠것
+  //TODO 404 에러 발송할 것
+  useEffect(() => {
+    if (currentUserData?.user) setCurrentUser(currentUserData.user);
+  }, []);
 
   const handleOnclick = (value: User) => {
     console.log(value.nickname);
@@ -67,7 +80,9 @@ export default function ProfilePage(): JSX.Element {
           justifyContent="space-between"
         >
           {avatar ? (
-            <Avatar sx={avartarStyle}>{nickname[0].toUpperCase()}</Avatar>
+            <Avatar sx={avartarStyle}>
+              {currentUser?.nickname[0]?.toUpperCase()}
+            </Avatar>
           ) : (
             <Skeleton variant="circular" sx={avartarStyle} />
           )}
