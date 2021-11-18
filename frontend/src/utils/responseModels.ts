@@ -33,6 +33,12 @@ export interface GetMyChannelRoleResponse {
   };
 }
 
+export interface GetChannelRoleResponse {
+  user: {
+    channel_role: UserRole;
+  };
+}
+
 export interface GetChannelsResponse {
   channels: IChannelListItem[];
 }

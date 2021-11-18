@@ -32,9 +32,7 @@ export default function NicknameMenu({
   id,
 }: NicknameMenuProps): JSX.Element {
   const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
   const [addToBlackList, { error: AddError }] =
     useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {

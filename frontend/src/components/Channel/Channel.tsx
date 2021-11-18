@@ -6,7 +6,7 @@ import {
 } from '@apollo/client';
 import { useEffect, useState } from 'react';
 
-import { chattingMessagesVar, userIdVar } from '../..';
+import { chattingMessagesVar } from '../..';
 import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
 import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
 import {
@@ -45,9 +45,7 @@ export default function Channel({
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
   const { data: subscribeData, error: subscribeError } =
     useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {

@@ -1,7 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { Divider } from '@mui/material';
 
-import { userIdVar } from '../..';
 import { GET_MY_CHANNEL } from '../../utils/gqls';
 import { GetMyChannelResponse } from '../../utils/responseModels';
 import Channel from '../Channel';
@@ -11,12 +10,8 @@ import ChannelListContents from './ChannelListContents';
 import ChannelListHeader from './ChannelListHeader';
 
 export default function ChannelList(): JSX.Element {
-  const { data, loading, error, refetch } = useQuery<GetMyChannelResponse>(
-    GET_MY_CHANNEL,
-    {
-      variables: { id: userIdVar() },
-    }
-  );
+  const { data, loading, error, refetch } =
+    useQuery<GetMyChannelResponse>(GET_MY_CHANNEL);
 
   if (data?.user?.channel)
     return <Channel channel={data.user.channel} channelRefetch={refetch} />;

@@ -2,10 +2,10 @@ import { useMutation, useQuery } from '@apollo/client';
 import { Forum } from '@mui/icons-material';
 import { ListItemIcon, MenuItem } from '@mui/material';
 
-import { userIdVar } from '../../..';
 import {
-  BAN_AND_KICK_USER,
+  BAN_USER,
   DELEGATE_USER_ON_CHANNEL,
+  GET_CHANNEL_ROLE,
   GET_MY_CHANNEL_ROLE,
   MUTE_USER,
   RELEGATE_USER_ON_CHANNEL,
@@ -14,6 +14,7 @@ import handleError from '../../../utils/handleError';
 import {
   BanAndKickUserResponse,
   DelegateUserOnChannelResponse,
+  GetChannelRoleResponse,
   GetMyChannelRoleResponse,
   MuteUserResponse,
   RelegateUserOnChannelResponse,
@@ -30,38 +31,35 @@ export default function ChannelNicknameMenu({
   id,
 }: ChannelNicknameMenuProps): JSX.Element {
   const { data: channelRoleData, error: channelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
 
   const { data: targetChannelRoleData, error: targetChannelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
+    useQuery<GetChannelRoleResponse>(GET_CHANNEL_ROLE, {
       variables: { id },
     });
 
   const [muteUser, { error: muteError }] = useMutation<MuteUserResponse>(
     MUTE_USER,
     {
-      variables: { mute_time: 10000, user_id: id, channel_id: channelId }, // NOTE: 일단 시간은 고정... 추후 시간 조정하도록 구현
-      // variables: { mute_time: 10000, user_id: id }, // NOTE: 에러는 이런 식으로 발생
+      variables: { user_id: id },
     }
   );
 
   const [banUser, { error: banError }] = useMutation<BanAndKickUserResponse>(
-    BAN_AND_KICK_USER,
+    BAN_USER,
     {
-      variables: { user_id: id, channel_id: channelId },
+      variables: { user_id: id },
     }
   );
 
   const [delegateUser, { error: delegateError }] =
     useMutation<DelegateUserOnChannelResponse>(DELEGATE_USER_ON_CHANNEL, {
-      variables: { user_id: id, channel_id: channelId },
+      variables: { user_id: id },
     });
 
   const [relegateUser, { error: relegateError }] =
     useMutation<RelegateUserOnChannelResponse>(RELEGATE_USER_ON_CHANNEL, {
-      variables: { user_id: id, channel_id: channelId },
+      variables: { user_id: id },
     });
 
   const errorVar =

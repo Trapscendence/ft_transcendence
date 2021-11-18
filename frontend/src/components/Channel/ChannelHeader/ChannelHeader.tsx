@@ -3,7 +3,6 @@ import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 
-import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
@@ -38,9 +37,7 @@ export default function ChannelHeader({
   const [open, setOpen] = useState(false);
 
   const { data: channelRoleData, error: channelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
 
   const [leaveChannel, { loading, error: leaveChannelError }] =
     useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
