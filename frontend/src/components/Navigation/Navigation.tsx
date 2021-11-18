@@ -5,6 +5,7 @@ import {
   Forum,
   Home,
   MoreHoriz,
+  SettingsApplicationsSharp,
   VideogameAsset,
 } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -114,6 +115,7 @@ function Navigation(): JSX.Element {
           />
           <Tab aria-label="/rank" icon={<Analytics />} />
           <Tab aria-label="/channel" icon={<Forum />} />
+          <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
         </Tabs>
         <Divider />
         <Box

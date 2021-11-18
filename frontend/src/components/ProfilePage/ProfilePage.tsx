@@ -63,10 +63,6 @@ export default function ProfilePage(): JSX.Element {
     else setCurrentUser(undefined);
   }, [urlInputId, data]);
 
-  // const { data: currentUserData } = useQuery<UserData>(GET_USER);
-  // useEffect(() => {
-  //   if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
-  // }, [currentUserData]);
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
 
   return (

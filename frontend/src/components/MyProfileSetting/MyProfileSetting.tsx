@@ -1,42 +1,200 @@
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   Avatar,
   Box,
   Button,
+  Grid,
   Paper,
-  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
-import { GET_USERS } from '../../utils/Apollo/UserQuery';
+import UseSearchUser from '../../hooks/useSearchUser';
+import {
+  User,
+  UserData,
+  UsersData,
+  UsersDataVars,
+} from '../../utils/Apollo/User';
+import { GET_USER, GET_USERS } from '../../utils/Apollo/UserQuery';
+import {
+  ADD_TO_BLACKLIST,
+  DELETE_FROM_BLACKLIST,
+  GET_MY_BLACKLIST,
+} from '../../utils/gqls';
+import {
+  AddToBlackListResponse,
+  DeleteFromBlackListResponse,
+  GetMyBlacklistResponse,
+} from '../../utils/responseModels';
 
 export default function MyProfileSetting(): JSX.Element {
   const avartarStyle = {
-    height: '150px',
-    width: '150px',
-  };
-  const paperStyle = {
-    height: '200px',
-    width: '100%',
+    height: '95px',
+    width: '95px',
   };
   const typoStyle = {
     margin: '10px',
   };
+  const elementStyle = {
+    height: '150px',
 
-  const avatar = '';
-  const nickname = 'seohchoi';
+    display: 'flex',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  };
+
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  const [currentUser, setCurrentUser] = useState<User | undefined>({
+    nickname: '',
+    id: '',
+  });
+  useEffect(() => {
+    if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
+  }, [currentUserData]);
+
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+      variables: { id: currentUserData?.user.id },
+    });
+
+  const [buttonActive, setButtonActive] = useState(true);
+  const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+
+  const [addToBlackList, { error: AddError }] =
+    useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {
+      variables: { black_id: inputSpace.id },
+      refetchQueries: [GET_MY_BLACKLIST],
+    });
+
+  const [blackUserId, setBlackUserId] = useState({ id: '' });
+
+  const [deleteFromBlackList, { error: deleteError }] =
+    useMutation<DeleteFromBlackListResponse>(DELETE_FROM_BLACKLIST, {
+      variables: { black_id: blackUserId.id },
+      refetchQueries: [GET_MY_BLACKLIST],
+    });
+
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
-  const [buttonActive, setButtonActive] = useState(true);
 
-  // const handleOnclick = (value: string) => {
-  //   //TODO value를 other_id(selectedIndex)에 넣기
-  //   //TODO 위를 위해서 dm 리스트 동적으로 받아오기
-  //   return value;
-  // };
-  return <Box></Box>;
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Paper
+        elevation={3}
+        sx={{
+          height: '70%',
+          width: '90%',
+          padding: '5% 15%',
+          margin: '5%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'space-between',
+        }}
+      >
+        <Grid
+          container
+          // direction="column"
+          rowSpacing={4}
+          columnSpacing={{ md: 1 }}
+        >
+          <Grid item xs={6}>
+            <Paper sx={elementStyle} variant="outlined">
+              <Stack spacing={1} alignItems="center">
+                <Avatar sx={avartarStyle}>
+                  {currentUser?.nickname[0]?.toUpperCase()}
+                </Avatar>
+                <Box />
+                <button> 프로필 사진 변경</button>
+              </Stack>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Paper sx={elementStyle} variant="outlined">
+              <form>
+                {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}
+                <input value={currentUser?.nickname}></input>
+                <button> 닉네임 변경</button>
+              </form>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Paper sx={elementStyle} variant="outlined">
+              <Typography variant="body2">
+                인증방식 <br /> - 구글 / 42 <br /> - otp
+              </Typography>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Paper sx={elementStyle} variant="outlined">
+              <Stack>
+                블랙리스트 목록
+                {data ? (
+                  <Box
+                    style={{
+                      display: 'flex',
+                      width: '400px',
+                      // backgroundColor: 'blue',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div style={{ width: '320px' }}>
+                      <UseSearchUser
+                        {...{ users: data, setButtonActive, setInputSpace }}
+                      />
+                    </div>
+                    <Button
+                      variant="contained"
+                      disabled={buttonActive}
+                      //NOTE data 목록에 사용자의 input값이 없으면 다음 버튼이 활성화 되지 않아야 함
+                      size="medium"
+                      sx={{ margin: '5px 0px', width: '10px' }}
+                      onClick={() => addToBlackList()}
+                    >
+                      다음
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box />
+                )}
+                <Box>
+                  {blacklistData?.user.blacklist.map(
+                    (blackUser) => (
+                      setBlackUserId(blackUserId),
+                      (
+                        <Box>
+                          <Typography>blackUser.id</Typography>
+                          <button onClick={() => deleteFromBlackList()}>
+                            X
+                          </button>
+                        </Box>
+                      )
+                    )
+                  )}
+                </Box>
+              </Stack>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Paper sx={elementStyle} variant="outlined">
+              <Typography variant="body2">회원탈퇴</Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
+  );
 }
