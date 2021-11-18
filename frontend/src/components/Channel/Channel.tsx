@@ -117,10 +117,10 @@ export default function Channel({
   }, [subscribeData]);
 
   if (!blacklistData) return <></>;
-  if (errorVar) return <ErrorAlert name="Channel" error={errorVar} />;
 
   return (
     <>
+      {errorVar && <ErrorAlert name="Channel" error={errorVar} />}
       <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
       <ParticipantsList {...{ id, participants }} />
       <Chatting

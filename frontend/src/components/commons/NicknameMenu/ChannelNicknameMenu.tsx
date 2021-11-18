@@ -84,11 +84,9 @@ export default function ChannelNicknameMenu({
     return <></>;
   } // NOTE: 내가 channel_role이 User면 얼리 리턴
 
-  if (errorVar)
-    return <ErrorAlert name="ChannelNicknameMenu" error={errorVar} />;
-
   return (
     <>
+      {errorVar && <ErrorAlert name="ChannelNicknameMenu" error={errorVar} />}
       {!isTargetAdmin && (
         <>
           <MenuItem onClick={() => handleError(banUser)}>

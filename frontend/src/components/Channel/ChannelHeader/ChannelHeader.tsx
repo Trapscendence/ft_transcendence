@@ -56,42 +56,44 @@ export default function ChannelHeader({
 
   const errorVar = leaveChannelError || channelRoleError;
 
-  if (errorVar) return <ErrorAlert name="ChannelHeader" error={errorVar} />;
-  if (loading) return <LoadingBackdrop loading={loading} />;
-
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 1,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Box>
-        <Typography>{is_private ? 'Private' : 'Public'}</Typography>
-        <Typography>Title: {title}</Typography>
-        <Typography>Owner: {owner.nickname}</Typography>
-        <Typography>
-          Administrators: {administrators.map((val) => val.nickname).join(', ')}
-        </Typography>
-      </Box>
-      <Box>
-        {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
-          <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
-            Edit Channel
+    <>
+      {errorVar && <ErrorAlert name="ChannelHeader" error={errorVar} />}
+      {loading && <LoadingBackdrop loading={loading} />}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 1,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box>
+          <Typography>{is_private ? 'Private' : 'Public'}</Typography>
+          <Typography>Title: {title}</Typography>
+          <Typography>Owner: {owner.nickname}</Typography>
+          <Typography>
+            Administrators:{' '}
+            {administrators.map((val) => val.nickname).join(', ')}
+          </Typography>
+        </Box>
+        <Box>
+          {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
+            <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+              Edit Channel
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            sx={{ m: 1 }}
+            onClick={() => handleError(leaveChannel)}
+          >
+            Leave Channel
           </Button>
-        )}
-        <Button
-          variant="contained"
-          sx={{ m: 1 }}
-          onClick={() => handleError(leaveChannel)}
-        >
-          Leave Channel
-        </Button>
-      </Box>
-      <ChannelEditModal {...{ open, handleClose, id }} />
-    </Paper>
+        </Box>
+        <ChannelEditModal {...{ open, handleClose, id }} />
+      </Paper>
+    </>
   );
 }

@@ -75,70 +75,73 @@ export default function Chatting({
     }
   };
 
-  if (error) return <ErrorAlert name="Chatting" error={error} />;
-
   return (
-    <Card variant="outlined" sx={{ width: '100%', height: '68vh', p: 2 }}>
-      <CardContent sx={{ height: '90%', position: 'relative' }}>
-        {alertMsg && (
-          <Alert
-            severity="info"
+    <>
+      {error && <ErrorAlert name="Chatting" error={error} />}
+      <Card variant="outlined" sx={{ width: '100%', height: '68vh', p: 2 }}>
+        <CardContent sx={{ height: '90%', position: 'relative' }}>
+          {alertMsg && (
+            <Alert
+              severity="info"
+              sx={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translate(-50%, 0)',
+                zIndex: 1,
+              }}
+            >
+              {alertMsg}
+            </Alert>
+          )}
+          <Box
             sx={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translate(-50%, 0)',
-              zIndex: 1,
+              height: '100%',
+              overflowY: 'auto',
             }}
           >
-            {alertMsg}
-          </Alert>
-        )}
-        <Box
-          sx={{
-            height: '100%',
-            overflowY: 'auto',
-          }}
-        >
-          {chattingMessages.get(id)?.map((val) => {
-            if (blacklist.find((black) => black.id === val.participant.id)) {
-              return (
-                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
-                  Message from a blacklist user.
-                </Alert>
-              );
-            }
+            {chattingMessages.get(id)?.map((val) => {
+              if (blacklist.find((black) => black.id === val.participant.id)) {
+                return (
+                  <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                    Message from a blacklist user.
+                  </Alert>
+                );
+              }
 
-            if (muted_users.find((muted) => muted.id === val.participant.id)) {
-              return (
-                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
-                  Message from a muted user.
-                </Alert>
-              );
-            } // TODO: 배열을 순회하므로 조금 비효율적...
+              if (
+                muted_users.find((muted) => muted.id === val.participant.id)
+              ) {
+                return (
+                  <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                    Message from a muted user.
+                  </Alert>
+                );
+              } // TODO: 배열을 순회하므로 조금 비효율적...
 
-            return (
-              <ChattingMessage key={val.id} IChatting={val} channelId={id} />
-            );
-          })}
-          <div ref={messagesEndRef} />
-        </Box>
-      </CardContent>
-      <CardActions sx={{ width: '100%', height: '10%' }}>
-        <TextField
-          label="message"
-          variant="filled"
-          size="small"
-          sx={{ width: '100%', mr: 2 }}
-          value={input}
-          onChange={onChangeInput}
-          onKeyPress={onKeyPress}
-          disabled={muted}
-        />
-        <Button variant="contained" onClick={sendInput} disabled={muted}>
-          Send
-        </Button>
-      </CardActions>
-    </Card>
+              return (
+                <ChattingMessage key={val.id} IChatting={val} channelId={id} />
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </Box>
+        </CardContent>
+        <CardActions sx={{ width: '100%', height: '10%' }}>
+          <TextField
+            label="message"
+            variant="filled"
+            size="small"
+            sx={{ width: '100%', mr: 2 }}
+            value={input}
+            onChange={onChangeInput}
+            onKeyPress={onKeyPress}
+            disabled={muted}
+          />
+          <Button variant="contained" onClick={sendInput} disabled={muted}>
+            Send
+          </Button>
+        </CardActions>
+      </Card>
+    </>
   );
 }
 

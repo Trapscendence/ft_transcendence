@@ -48,30 +48,31 @@ export default function NicknameMenu({
 
   const errorVar = blacklistError || AddError || deleteError;
 
-  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
   if (id === userIdVar()) return <></>;
-  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
 
   return (
-    <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-      <MenuList autoFocusItem={open}>
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>DM</MenuItem>
-        <MenuItem>Observe the match</MenuItem>
-        <MenuItem>Ask a match</MenuItem>
-        {blacklistData &&
-        blacklistData.user &&
-        blacklistData.user.blacklist.find((black) => black.id === id) ? (
-          <MenuItem onClick={() => handleError(deleteFromBlackList)}>
-            Delete from blacklist
-          </MenuItem>
-        ) : (
-          <MenuItem onClick={() => handleError(addToBlackList)}>
-            Add to blacklist
-          </MenuItem>
-        )}
-        {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
-      </MenuList>
-    </Menu>
+    <>
+      {errorVar && <ErrorAlert name="NicknameMenu" error={errorVar} />}
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuList autoFocusItem={open}>
+          <MenuItem>Profile</MenuItem>
+          <MenuItem>DM</MenuItem>
+          <MenuItem>Observe the match</MenuItem>
+          <MenuItem>Ask a match</MenuItem>
+          {blacklistData &&
+          blacklistData.user &&
+          blacklistData.user.blacklist.find((black) => black.id === id) ? (
+            <MenuItem onClick={() => handleError(deleteFromBlackList)}>
+              Delete from blacklist
+            </MenuItem>
+          ) : (
+            <MenuItem onClick={() => handleError(addToBlackList)}>
+              Add to blacklist
+            </MenuItem>
+          )}
+          {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
+        </MenuList>
+      </Menu>
+    </>
   );
 }
