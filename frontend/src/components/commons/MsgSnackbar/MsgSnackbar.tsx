@@ -1,5 +1,5 @@
 import { Alert, Snackbar } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface MsgSnackbarProps {
   msg: string;
@@ -10,7 +10,7 @@ export default function MsgSnackbar({
   msg,
   severity,
 }: MsgSnackbarProps): JSX.Element {
-  const [open, setOpen] = useState<boolean>(true);
+  const [open] = useState<boolean>(true);
 
   // const handleClose = (event?: React.SyntheticEvent, reason?: string) => {
   //   if (reason === 'clickaway') {
