@@ -17,7 +17,11 @@ import {
   UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import { GET_USER, GET_USERS } from '../../utils/Apollo/UserQuery';
+import {
+  GET_USER,
+  GET_USER_BY_NICKNAME,
+  GET_USERS,
+} from '../../utils/Apollo/UserQuery';
 import {
   ADD_TO_BLACKLIST,
   DELETE_FROM_BLACKLIST,
@@ -59,6 +63,30 @@ export default function MyProfileSetting(): JSX.Element {
       variables: { id: currentUserData?.user.id },
     });
 
+  //----------------------------------------------------------닉네임
+  // const [nicknameButtonActive, setNicknameButtonActive] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [nicknameinputSpace, setNicknameInputSpace] = useState<string>('');
+  const { data: nicknameUserData } = useQuery<UserData>(GET_USER_BY_NICKNAME, {
+    variables: { nickname: nicknameinputSpace },
+  });
+  const onchangeNickname = (e: React.FormEvent<HTMLInputElement>) =>
+    setNicknameInputSpace(e.currentTarget.value);
+  // useEffect(() => {
+  //   if (nicknameUserData?.user != undefined) setNicknameButtonActive(true);
+  //   else setNicknameButtonActive(false);
+  // }, [nicknameinputSpace]);
+
+  const handleChangeNickname = (event: React.FormEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    setErrorMessage('');
+    if (nicknameUserData?.user != undefined)
+      setErrorMessage('이미 존재하는 닉네임입니다.');
+    if (nicknameinputSpace == '')
+      setErrorMessage('빈 닉네임을 할 수 없습니다.');
+  };
+  //----------------------------------------------------------닉네임
+
   const [buttonActive, setButtonActive] = useState(true);
   const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
 
@@ -67,7 +95,6 @@ export default function MyProfileSetting(): JSX.Element {
       variables: { black_id: inputSpace.id },
       refetchQueries: [GET_MY_BLACKLIST],
     });
-
   const [blackUserId, setBlackUserId] = useState({ id: '' });
 
   const [deleteFromBlackList, { error: deleteError }] =
@@ -120,11 +147,22 @@ export default function MyProfileSetting(): JSX.Element {
 
           <Grid item xs={6}>
             <Paper sx={elementStyle} variant="outlined">
-              <form>
-                {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}
-                <input value={currentUser?.nickname}></input>
-                <button> 닉네임 변경</button>
-              </form>
+              <Stack>
+                <form>
+                  {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}
+                  <input
+                    onChange={onchangeNickname}
+                    // defaultValue={currentUser?.nickname}
+                  ></input>
+                  <button
+                    // disabled={nicknameButtonActive}
+                    onClick={handleChangeNickname}
+                  >
+                    닉네임 변경
+                  </button>
+                </form>
+                {errorMessage ? errorMessage : ''}
+              </Stack>
             </Paper>
           </Grid>
 

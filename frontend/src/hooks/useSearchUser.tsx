@@ -55,6 +55,7 @@ export default function UseSearchUser({
           size="small"
           fullWidth
         />
+        //TODO 자기자신일경우 button 비활성-
       )}
       filterOptions={filterOptions}
       onInputChange={(event, value) =>
