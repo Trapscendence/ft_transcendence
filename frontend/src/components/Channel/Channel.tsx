@@ -52,8 +52,6 @@ export default function Channel({
       variables: { channel_id: id },
     });
 
-  const errorVar = blacklistError || subscribeError;
-
   const displayAlertMsg = (msg: string) => {
     setAlertMsg(msg);
     setTimeout(() => {
@@ -101,7 +99,13 @@ export default function Channel({
           );
         }
         break;
-      case Notify.KICK: // NOTE: kick은 ban할 때만 사용, kick 성공한 사람만 문구 뜨도록
+      case Notify.KICK:
+        void channelRefetch();
+        displayAlertMsg(
+          `KICK: User '${(participant as IUser).nickname}' is kicked.`
+        );
+        break;
+      case Notify.BAN:
         void channelRefetch();
         displayAlertMsg(
           `BAN: User '${(participant as IUser).nickname}' is banned.`
@@ -109,12 +113,17 @@ export default function Channel({
         break;
       case Notify.ENTER:
         void channelRefetch();
+        displayAlertMsg(
+          `ENTER: User '${(participant as IUser).nickname}' enter.`
+        );
         break;
       case Notify.EDIT:
         void channelRefetch();
         break;
     }
   }, [subscribeData]);
+
+  const errorVar = blacklistError || subscribeError;
 
   if (!blacklistData) return <></>;
 

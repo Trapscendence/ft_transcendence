@@ -7,15 +7,17 @@ import {
   DELEGATE_USER_ON_CHANNEL,
   GET_CHANNEL_ROLE,
   GET_MY_CHANNEL_ROLE,
+  KICK_USER,
   MUTE_USER,
   RELEGATE_USER_ON_CHANNEL,
 } from '../../../utils/gqls';
 import handleError from '../../../utils/handleError';
 import {
-  BanAndKickUserResponse,
+  BanUserResponse,
   DelegateUserOnChannelResponse,
   GetChannelRoleResponse,
   GetMyChannelRoleResponse,
+  KickUserResponse,
   MuteUserResponse,
   RelegateUserOnChannelResponse,
 } from '../../../utils/responseModels';
@@ -45,7 +47,14 @@ export default function ChannelNicknameMenu({
     }
   );
 
-  const [banUser, { error: banError }] = useMutation<BanAndKickUserResponse>(
+  const [kickUser, { error: kickError }] = useMutation<KickUserResponse>(
+    KICK_USER,
+    {
+      variables: { user_id: id },
+    }
+  );
+
+  const [banUser, { error: banError }] = useMutation<BanUserResponse>(
     BAN_USER,
     {
       variables: { user_id: id },
@@ -66,6 +75,7 @@ export default function ChannelNicknameMenu({
     channelRoleError ||
     targetChannelRoleError ||
     muteError ||
+    kickError ||
     banError ||
     delegateError ||
     relegateError;
@@ -89,17 +99,23 @@ export default function ChannelNicknameMenu({
       {errorVar && <ErrorAlert name="ChannelNicknameMenu" error={errorVar} />}
       {!isTargetAdmin && (
         <>
-          <MenuItem onClick={() => handleError(banUser)}>
-            <ListItemIcon>
-              <Forum fontSize="small" />
-            </ListItemIcon>
-            Ban
-          </MenuItem>
           <MenuItem onClick={() => handleError(muteUser)}>
             <ListItemIcon>
               <Forum fontSize="small" />
             </ListItemIcon>
             Mute
+          </MenuItem>
+          <MenuItem onClick={() => handleError(kickUser)}>
+            <ListItemIcon>
+              <Forum fontSize="small" />
+            </ListItemIcon>
+            Kick
+          </MenuItem>
+          <MenuItem onClick={() => handleError(banUser)}>
+            <ListItemIcon>
+              <Forum fontSize="small" />
+            </ListItemIcon>
+            Ban
           </MenuItem>
         </>
       )}

@@ -222,15 +222,15 @@ export const MUTE_USER = gql`
   }
 `;
 
-export const BAN_USER = gql`
-  mutation BanUserFromChannel($user_id: ID!) {
-    banUserFromChannel(user_id: $user_id)
-  }
-`;
-
 export const KICK_USER = gql`
   mutation KickUserFromChannel($user_id: ID!) {
     kickUserFromChannel(user_id: $user_id)
+  }
+`;
+
+export const BAN_USER = gql`
+  mutation BanUserFromChannel($user_id: ID!) {
+    banUserFromChannel(user_id: $user_id)
   }
 `;
 
