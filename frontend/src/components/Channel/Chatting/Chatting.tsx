@@ -51,7 +51,8 @@ export default function Chatting({
   }, [muted_users]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView();
   }, [chattingMessages]);
 
   const sendInput = async () => {
