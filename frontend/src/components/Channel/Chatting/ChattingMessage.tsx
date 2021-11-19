@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 import { Box } from '@mui/system';
 
-import { IChatting } from '../../../utils/models';
+import { IChatting } from '../../../utils/Apollo/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ChattingMessageProps {

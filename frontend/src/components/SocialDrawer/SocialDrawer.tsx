@@ -1,7 +1,7 @@
 import { ChevronRight } from '@mui/icons-material';
 import { Box, Divider, Drawer, IconButton, List } from '@mui/material';
 
-import { UserStatus } from '../../utils/schemaEnums';
+import { UserStatus } from '../../utils/Apollo/schemaEnums';
 import UserSummary from '../commons/UserSummary';
 
 export default function SocialDrawer(): JSX.Element {

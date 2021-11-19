@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import React, { useState } from 'react';
 
-import { IUser } from '../../../utils/models';
+import { IUser } from '../../../utils/Apollo/models';
 import NicknameMenu from '../NicknameMenu';
 
 interface UserSummaryProps {
