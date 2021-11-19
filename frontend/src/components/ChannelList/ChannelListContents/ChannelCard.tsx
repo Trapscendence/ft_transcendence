@@ -8,10 +8,10 @@ import {
   Typography,
 } from '@mui/material';
 
-import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/Apollo/gqls';
+import { IChannelListItem } from '../../../utils/Apollo/models';
+import { EnterChannelResponse } from '../../../utils/Apollo/responseModels';
 import handleError from '../../../utils/handleError';
-import { IChannelListItem } from '../../../utils/models';
-import { EnterChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 

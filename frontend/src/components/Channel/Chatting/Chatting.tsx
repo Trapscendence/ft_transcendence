@@ -12,9 +12,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { CHAT_MESSAGE } from '../../../utils/gqls';
-import { IUser } from '../../../utils/models';
-import { GetMyBlacklistResponse } from '../../../utils/responseModels';
+import { CHAT_MESSAGE } from '../../../utils/Apollo/gqls';
+import { IUser } from '../../../utils/Apollo/models';
+import { GetMyBlacklistResponse } from '../../../utils/Apollo/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import ChattingMessage from './ChattingMessage';
 

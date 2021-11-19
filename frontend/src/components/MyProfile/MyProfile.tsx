@@ -6,7 +6,7 @@ import UseSearchUser from '../../hooks/useSearchUser';
 import { User, UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
 
-function MyProfilePage(): JSX.Element {
+function MyProfile(): JSX.Element {
   const avartarStyle = {
     height: '150px',
     width: '150px',
@@ -101,4 +101,4 @@ function MyProfilePage(): JSX.Element {
   );
 }
 
-export default MyProfilePage;
+export default MyProfile;

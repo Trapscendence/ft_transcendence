@@ -19,7 +19,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
-import { IChatting } from './utils/models';
+import { IChatting } from './utils/Apollo/models';
 
 const cookieParser = (name: string): string | undefined => {
   const matches = new RegExp(

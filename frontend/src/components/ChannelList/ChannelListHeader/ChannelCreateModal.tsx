@@ -9,9 +9,9 @@ import {
 } from '@mui/material';
 
 import { useInput } from '../../../hooks/useInput';
-import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/gqls';
+import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/Apollo/gqls';
+import { AddChannelResponse } from '../../../utils/Apollo/responseModels';
 import handleError from '../../../utils/handleError';
-import { AddChannelResponse } from '../../../utils/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
