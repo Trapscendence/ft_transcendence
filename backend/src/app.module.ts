@@ -27,17 +27,13 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
         //   },
         // },
         'subscriptions-transport-ws': {
+          path: '/subscriptions',
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
-              // console.log(connectionParams.authrization);
               return connectionParams;
             }
           },
         },
-      },
-      cors: {
-        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
-        credentials: true,
       },
     }),
     DatabaseModule,

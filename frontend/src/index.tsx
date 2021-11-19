@@ -29,9 +29,9 @@ const cookieParser = (name: string): string | undefined => {
 };
 
 const wsLink = new WebSocketLink({
-  uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-    process.env.REACT_APP_BACKEND_PORT ?? ''
-  }/graphql`,
+  uri: `ws://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
+    process.env.REACT_APP_SERVER_PORT ?? '3000'
+  }/subscriptions`,
   options: {
     reconnect: true,
     connectionParams: {
@@ -43,8 +43,8 @@ const wsLink = new WebSocketLink({
 });
 
 const httpLink = createHttpLink({
-  uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-    process.env.REACT_APP_BACKEND_PORT ?? ''
+  uri: `http://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
+    process.env.REACT_APP_SERVER_PORT ?? '3000'
   }/graphql`,
   credentials: 'include',
 });
