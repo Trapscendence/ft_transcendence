@@ -399,7 +399,8 @@ export class ChannelsService {
   }
 
   async updateChannelRole(user_id: string, role: UserRole): Promise<boolean> {
-    const updateChannel = await this.databaseService.executeQuery(`
+    const updateChannel: { channel_id: string }[] = await this.databaseService
+      .executeQuery(`
       UPDATE
         ${schema}.channel_user
       SET
@@ -415,6 +416,14 @@ export class ChannelsService {
         `The user(id: ${user_id}) is not on any channel`,
       );
     } else {
+      this.pubSub.publish(`to_channel_${updateChannel[0].channel_id}`, {
+        subscribeChannel: {
+          type: Notify.TRANSFER,
+          participant: await this.usersService.getUserById(user_id),
+          text: role,
+          check: true,
+        },
+      });
       return true;
     }
   }
