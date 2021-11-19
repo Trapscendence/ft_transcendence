@@ -1,5 +1,6 @@
 #!/bin/sh
-sleep 3
+
+sleep 5
 db-migrate $1 ||
   while [ true ]
     do echo 'Error on migration'

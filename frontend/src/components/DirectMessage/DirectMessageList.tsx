@@ -9,10 +9,10 @@ import {
 interface DirectMessageListProps {
   avatar?: string;
   nickname: string;
-  ID: number;
+  ID: string;
   userStatus?: string;
-  selectedIndex: number;
-  setSelectedIndex: React.Dispatch<React.SetStateAction<number>>;
+  selectedIndex: string;
+  setSelectedIndex: React.Dispatch<React.SetStateAction<string>>;
   setNewDm: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -24,11 +24,11 @@ function DirectMessageList({
   selectedIndex,
   setSelectedIndex,
 }: DirectMessageListProps): JSX.Element {
-  const handleListItemClick = (index: number) => {
+  const handleListItemClick = (index: string) => {
     setSelectedIndex(index);
     setNewDm(false);
   };
-
+  //TODO addOffset으로 ID,0 넣어주기
   return (
     <ListItemButton
       selected={selectedIndex === ID}

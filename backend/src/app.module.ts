@@ -20,11 +20,16 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {
-        // NOTE: production에선 켜야함
-        // 'graphql-ws': {}
+        // NOTE: production에선 grapqh-ws를 켜야함
+        // 'graphql-ws': {
+        //   onConnect: (ctx: Context<unknown>) => {
+        //     console.log(ctx.connectionParams.authrization);
+        //   },
+        // },
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
+              console.log(connectionParams.authrization);
               return connectionParams;
             }
           },

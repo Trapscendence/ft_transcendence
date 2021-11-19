@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import {
   Query,
@@ -9,14 +10,21 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { UserID } from 'src/users/decorators/user-id.decorator';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   /*
    ** ANCHOR: User
