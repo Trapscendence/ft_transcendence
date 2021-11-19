@@ -277,3 +277,20 @@ export const SUBSCRIBE_CHANNEL = gql`
     }
   }
 `;
+
+export const SUBSCRIBE_MATCH = gql`
+  subscription SubscribeMatch {
+    subscribeMatch
+    # subscribeMatch {
+    #   id
+    #   # left_player {
+    #   #   id
+    #   #   nickname
+    #   # }
+    #   # right_player {
+    #   #   id
+    #   #   nickname
+    #   # }
+    # }
+  }
+`;

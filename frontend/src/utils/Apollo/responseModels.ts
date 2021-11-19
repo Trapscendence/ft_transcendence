@@ -80,3 +80,8 @@ export interface DelegateUserOnChannelResponse {
 export interface RelegateUserOnChannelResponse {
   relegateUserOnChannel: boolean;
 }
+
+export interface SubscribeMatchResponse {
+  // subscribeMatch: { id: string };
+  subscribeMatch: string;
+}

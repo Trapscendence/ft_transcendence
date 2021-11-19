@@ -39,3 +39,15 @@ export interface IChatting {
   participant: IUser;
   text: string;
 }
+
+// export interface IMatch {
+//   id: string;
+//   left_player: {
+//     id: string;
+//     nickname: string;
+//   };
+//   right_player: {
+//     id: string;
+//     nickname: string;
+//   };
+// }
