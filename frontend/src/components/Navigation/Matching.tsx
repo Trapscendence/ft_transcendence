@@ -77,25 +77,23 @@ export default function Matching(): JSX.Element {
     }
   };
 
-  const handleCloseMatchedModal = () => {
-    setMatched(false);
-  };
-
   const errorVar = error || registerError || cancelError;
 
   return (
     <>
       {errorVar && <ErrorAlert name="Matching" error={errorVar} />}
+
       {matchData && (
         <MatchedModal
           open={matched}
-          handleClose={handleCloseMatchedModal}
           id={matchData.subscribeMatch.game_id}
           btnLoading={btnLoading}
           setBtnLoading={setBtnLoading}
         />
       )}
+
       {alertMsg && <MsgSnackbar msg={alertMsg} severity="info" />}
+
       <Box
         onClick={onClickPlay}
         sx={{ position: 'relative', cursor: 'pointer' }}
@@ -104,7 +102,6 @@ export default function Matching(): JSX.Element {
           icon={<VideogameAsset />}
           // disabled={loading}
           sx={{ color: registered ? 'text.disabled' : '' }}
-          // onClick={() => history.push('/game')}
         />
         {registered && (
           <CircularProgress

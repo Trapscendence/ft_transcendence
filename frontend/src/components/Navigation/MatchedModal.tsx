@@ -3,13 +3,11 @@ import { Typography } from '@material-ui/core';
 import { LoadingButton } from '@mui/lab';
 import { Button, Card, CardActions, CardContent, Modal } from '@mui/material';
 import gql from 'graphql-tag';
-import { useEffect, useState } from 'react';
 
 import ErrorAlert from '../commons/ErrorAlert';
 
 interface MatchedModalProps {
   open: boolean;
-  handleClose: () => void;
   id: string;
   btnLoading: boolean;
   setBtnLoading: (bool: boolean) => void;
@@ -17,7 +15,6 @@ interface MatchedModalProps {
 
 export default function MatchedModal({
   open,
-  handleClose,
   id,
   btnLoading,
   setBtnLoading,
@@ -59,9 +56,11 @@ export default function MatchedModal({
     await notJoinGame();
   };
 
+  const errorVar = joinError || notJoinError;
+
   return (
     <>
-      {joinError && <ErrorAlert name="MatchedModal" error={joinError} />}
+      {errorVar && <ErrorAlert name="MatchedModal" error={errorVar} />}
       <Modal
         open={open}
         // onClose={handleClose} // NOTE: 외부 클릭해도 모달 꺼지지 않게 하려면 onClose 옵션을 안줘야
