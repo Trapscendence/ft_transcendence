@@ -33,6 +33,12 @@ export interface GetMyChannelRoleResponse {
   };
 }
 
+export interface GetChannelRoleResponse {
+  user: {
+    channel_role: UserRole;
+  };
+}
+
 export interface GetChannelsResponse {
   channels: IChannelListItem[];
 }
@@ -47,8 +53,11 @@ export interface MuteUserResponse {
   muteUserOnChannel: boolean;
 }
 
-export interface BanAndKickUserResponse {
+export interface BanUserResponse {
   banUserFromChannel: boolean;
+}
+
+export interface KickUserResponse {
   kickUserFromChannel: boolean;
 }
 
@@ -62,4 +71,12 @@ export interface AddToBlackListResponse {
 
 export interface DeleteFromBlackListResponse {
   deleteFromBlackList: boolean;
+}
+
+export interface DelegateUserOnChannelResponse {
+  delegateUserOnChannel: boolean;
+}
+
+export interface RelegateUserOnChannelResponse {
+  relegateUserOnChannel: boolean;
 }

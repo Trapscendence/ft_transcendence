@@ -14,14 +14,8 @@ export default function ChannelListHeader(): JSX.Element {
   };
 
   return (
-    // <Box display="flex" alignItems="center" mt={-2}>
     <Box display="flex" alignItems="center">
-      <Button
-        variant="contained"
-        color="secondary"
-        sx={{ m: 1, p: 2 }}
-        onClick={handleOpen}
-      >
+      <Button variant="contained" sx={{ m: 1, p: 2 }} onClick={handleOpen}>
         Create a new channel
       </Button>
       {/* <Button variant="contained" color="secondary" sx={{ m: 1, p: 2 }}>

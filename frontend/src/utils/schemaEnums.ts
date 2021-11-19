@@ -45,7 +45,8 @@ export enum UserStatus {
 
 export enum UserRole {
   USER = 'USER',
-  MODERATOR = 'MODERATOR',
+  // MODERATOR = 'MODERATOR',
+  ADMIN = 'ADMIN',
   OWNER = 'OWNER',
 }
 // TODO: site_role하고 channel_role을 함께 쓰나?
@@ -57,8 +58,8 @@ export enum UserRole {
 //   owner: User;
 //   administrators: User[];
 //   participants: User[];
-//   bannedUsers: User[];
-//   mutedUsers: User[];
+//   banned_users: User[];
+//   muted_users: User[];
 // }
 
 // export interface ChannelNotify {

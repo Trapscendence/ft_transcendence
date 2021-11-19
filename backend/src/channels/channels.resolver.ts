@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, UseGuards } from '@nestjs/common';
+import { ConflictException, Inject, UseGuards } from '@nestjs/common';
 import {
   Args,
   ID,
@@ -17,7 +17,7 @@ import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { ChannelRoleGuard } from './guard/channel-role.guard';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 import { ChannelRoles } from './decorators/channel-roles.decorator';
 
 @Resolver((of) => Channel)
@@ -61,10 +61,7 @@ export class ChannelsResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async leaveChannel(
-    @UserID() user_id: string,
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-  ): Promise<Boolean> {
+  async leaveChannel(@UserID() user_id: string): Promise<Boolean> {
     return await this.channelsService.leaveChannel(user_id);
   }
 
@@ -74,19 +71,201 @@ export class ChannelsResolver {
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
   ) {
-    return await this.channelsService.addChannel(title, password, user_id);
+    const channelId = await this.usersService.getChannelIdByUserId(user_id);
+    if (channelId) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is in another channel(id: ${channelId})`,
+      );
+    }
+    const newChannelId = await this.channelsService.addChannel(title, password);
+    await this.channelsService.enterChannel(user_id, newChannelId);
+    await this.channelsService.updateChannelRole(user_id, UserRole.OWNER);
   }
 
+  @Mutation((returns) => Boolean)
+  async chatMessage(
+    @UserID() user_id: string,
+    @Args('message') message: string,
+  ) {
+    return await this.channelsService.chatMessage(user_id, message);
+  }
+
+  @ChannelRoles(UserRole.ADMIN)
+  @Mutation((returns) => Boolean)
+  async muteUserOnChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    // Mute myself?
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self mute(user: ${my_id}, target: ${user_id})`,
+      );
+    }
+
+    // Mute admin?
+    const user_role: UserRole = await this.usersService.getChannelRole(user_id);
+    if (user_role !== UserRole.USER) {
+      throw new ConflictException(
+        `Cannot mute administrator(id: ${user_id}, role: ${user_role})`,
+      );
+    }
+
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
+    await this.channelsService.updateChannelMute(channel_id, user_id, true);
+    return true;
+  }
+
+  @ChannelRoles(UserRole.ADMIN)
+  @Mutation((returns) => Boolean)
+  async unmuteUserOnChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
+    await this.channelsService.updateChannelMute(channel_id, user_id, false);
+    return true;
+  }
+
+  @ChannelRoles(UserRole.ADMIN)
+  @Mutation((returns) => Boolean)
+  async kickUserFromChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    // Kick self?
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self kick(user: ${my_id}, target: ${user_id})`,
+      );
+    }
+
+    // Kick admin?
+    const user_role: UserRole = await this.usersService.getChannelRole(user_id);
+    if (user_role !== UserRole.USER) {
+      throw new ConflictException(
+        `Cannot kick administrator(id: ${user_id}, role: ${user_role})`,
+      );
+    }
+
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
+    return await this.channelsService.kickUser(channel_id, user_id);
+  }
+
+  @ChannelRoles(UserRole.ADMIN)
+  @Mutation((returns) => Boolean)
+  async banUserFromChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ) {
+    // Ban self?
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self ban(user: ${my_id}, target: ${user_id})`,
+      );
+    }
+
+    // Ban admin?
+    const user_role: UserRole = await this.usersService.getChannelRole(user_id);
+    if (user_role !== UserRole.USER) {
+      throw new ConflictException(
+        `Cannot ban administrator(id: ${user_id}, role: ${user_role})`,
+      );
+    }
+
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
+    return await this.channelsService.updateChannelBan(
+      channel_id,
+      user_id,
+      true,
+    );
+  }
+
+  @ChannelRoles(UserRole.ADMIN)
+  @Mutation((returns) => Boolean)
+  async unbanUserFromChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
+    return await this.channelsService.updateChannelBan(
+      channel_id,
+      user_id,
+      false,
+    );
+  }
+
+  @ChannelRoles(UserRole.OWNER)
   @Mutation((returns) => Channel, { nullable: true })
   async editChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @UserID() my_id: string,
     @Args('title') title: string,
     @Args('password', { nullable: true }) password: string,
   ): Promise<Channel> {
+    const channel_id = await this.usersService.getChannelIdByUserId(my_id);
     return await this.channelsService.editChannel(channel_id, title, password);
   }
 
   @ChannelRoles(UserRole.OWNER)
+  @Mutation((returns) => Boolean)
+  async delegateUserOnChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ): Promise<boolean> {
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self delegate (me: ${my_id}, target: ${user_id})`,
+      );
+    }
+
+    const myChannelId: string = (
+      await this.usersService.getChannelByUserId(my_id)
+    )?.id;
+    const usersChannelId: string = (
+      await this.usersService.getChannelByUserId(user_id)
+    )?.id;
+
+    if (myChannelId !== usersChannelId) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not on your channel(id: ${myChannelId})`,
+      );
+    }
+
+    return await this.channelsService.updateChannelRole(
+      user_id,
+      UserRole.ADMIN,
+    );
+  }
+
+  @ChannelRoles(UserRole.OWNER)
+  @Mutation((returns) => Boolean)
+  async relegateUserOnChannel(
+    @UserID() my_id: string,
+    @Args('user_id', { type: () => ID! }) user_id: string,
+  ) {
+    if (my_id === user_id) {
+      throw new ConflictException(
+        `Cannot self relegate (me: ${my_id}, target: ${user_id})`,
+      );
+    }
+
+    const myChannelId: string = (
+      await this.usersService.getChannelByUserId(my_id)
+    )?.id;
+    const usersChannelId: string = (
+      await this.usersService.getChannelByUserId(user_id)
+    )?.id;
+
+    if (myChannelId !== usersChannelId) {
+      throw new ConflictException(
+        `The user(id: ${user_id}) is not on your channel(id: ${myChannelId})`,
+      );
+    }
+
+    return await this.channelsService.updateChannelRole(user_id, UserRole.USER);
+  }
+
+  @ChannelRoles(UserRole.OWNER) // TODO: to be site role
   @Mutation((returns) => Boolean)
   async deleteChannel(
     @Args('channel_id', { type: () => ID! }) channel_id: string,
@@ -94,96 +273,10 @@ export class ChannelsResolver {
     return await this.channelsService.deleteChannel(channel_id);
   }
 
-  @Mutation((returns) => Boolean) // TODO: 아마... chat 유형이 필요하지 않을까?
-  async chatMessage(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('message') message: string,
-  ) {
-    return await this.channelsService.chatMessage(channel_id, user_id, message);
-  }
-
-  @ChannelRoles(UserRole.MODERATOR)
-  @Mutation((returns) => Boolean)
-  async muteUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-    @Args('mute_time', { type: () => Int! }) mute_time: number,
-  ): Promise<boolean> {
-    return await this.channelsService.muteUserOnChannel(
-      channel_id,
-      user_id,
-      mute_time,
-    );
-  }
-
-  @ChannelRoles(UserRole.MODERATOR)
-  @Mutation((returns) => Boolean)
-  unmuteUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ): boolean {
-    return this.channelsService.unmuteUserFromChannel(channel_id, user_id);
-  }
-
-  @ChannelRoles(UserRole.MODERATOR)
-  @Mutation((returns) => Boolean)
-  async kickUserFromChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ): Promise<boolean> {
-    return await this.channelsService.kickUserFromChannel(channel_id, user_id);
-  }
-
-  @ChannelRoles(UserRole.MODERATOR)
-  @Mutation((returns) => Boolean)
-  async banUserFromChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ) {
-    return await this.channelsService.banUserFromChannel(channel_id, user_id);
-  }
-
-  @ChannelRoles(UserRole.MODERATOR)
-  @Mutation((returns) => Boolean)
-  async unbanUserFromChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ): Promise<boolean> {
-    return await this.channelsService.unbanUserFromChannel(channel_id, user_id);
-  }
-
-  @ChannelRoles(UserRole.OWNER)
-  @Mutation((returns) => Boolean)
-  async authorizeUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ): Promise<boolean> {
-    // TODO: 본인을 authorize할 때 에러 발생
-    return await this.channelsService.updateChannelRole(
-      channel_id,
-      user_id,
-      UserRole.MODERATOR,
-    );
-  }
-
-  @ChannelRoles(UserRole.OWNER)
-  @Mutation((returns) => Boolean)
-  async unauthorizeUserOnChannel(
-    @Args('channel_id', { type: () => ID! }) channel_id: string,
-    @Args('user_id', { type: () => ID! }) user_id: string,
-  ) {
-    // TODO: 본인을 unauthorize할 때 에러 발생
-    return await this.channelsService.updateChannelRole(
-      channel_id,
-      user_id,
-      UserRole.USER,
-    );
-  }
-
   /*
    ** ANCHOR: Channel ResolveField
    */
+
   @ResolveField('owner', (returns) => User)
   async owner(@Parent() channel: Channel): Promise<User> {
     return await this.channelsService.getOwner(channel.id);
@@ -199,13 +292,13 @@ export class ChannelsResolver {
     return await this.channelsService.getParticipants(channel.id);
   }
 
-  @ResolveField('bannedUsers', (returns) => [User])
-  async bannedUsers(@Parent() channel: Channel): Promise<User[]> {
+  @ResolveField('banned_users', (returns) => [User])
+  async banned_users(@Parent() channel: Channel): Promise<User[]> {
     return await this.channelsService.getBannedUsers(channel.id);
   }
 
-  @ResolveField('mutedUsers', (returns) => [User])
-  async mutedUsers(@Parent() channel: Channel): Promise<User[]> {
+  @ResolveField('muted_users', (returns) => [User])
+  async muted_users(@Parent() channel: Channel): Promise<User[]> {
     return await this.channelsService.getMutedUsers(channel.id);
   }
 

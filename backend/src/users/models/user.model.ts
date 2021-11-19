@@ -11,15 +11,15 @@ import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
 export enum UserStatus {
-  ONLINE,
-  IN_RANK_GAME,
-  IN_NORMAL_GAME,
-  OFFLINE,
+  ONLINE = 'ONLINE',
+  IN_RANK_GAME = 'IN_RANK_GAME',
+  IN_NORMAL_GAME = 'IN_NORMAL_GAME',
+  OFFLINE = 'OFFLINE',
 }
 
 export enum UserRole {
   USER = 'USER',
-  MODERATOR = 'MODERATOR',
+  ADMIN = 'ADMIN',
   OWNER = 'OWNER',
 }
 
@@ -38,31 +38,31 @@ export class User {
   id: string;
 
   @Field()
-  intra_id: string;
-
-  @Field()
   nickname: string;
 
-  @Field()
-  avatar: string;
+  @Field((type) => UserStatus)
+  status: UserStatus;
 
   @Field({ nullable: true })
   status_message: string;
 
-  @Field((type) => UserStatus) // TODO enum? 수정 필요한가?
-  status: UserStatus;
+  @Field((type) => Int)
+  rank: number;
+
+  @Field((type) => Int)
+  rank_score: number;
+
+  @Field((type) => UserRole)
+  site_role: UserRole;
+
+  @Field()
+  avatar: string;
 
   @Field((type) => [User], { nullable: true })
   friends: User[];
 
   @Field((type) => [User], { nullable: true })
   blacklist: User[];
-
-  @Field((type) => Int)
-  rank_score: number;
-
-  @Field((type) => Int)
-  rank: number;
 
   @Field((type) => [Match])
   match_history: Match[];
@@ -72,9 +72,6 @@ export class User {
 
   @Field((type) => Channel, { nullable: true })
   channel: Channel;
-
-  @Field((type) => UserRole)
-  site_role: UserRole;
 
   @Field((type) => UserRole, { nullable: true })
   channel_role: UserRole;

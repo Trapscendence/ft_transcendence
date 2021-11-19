@@ -13,14 +13,15 @@ export default function ChannelListContents(): JSX.Element {
     // pollInterval: 5000, // NOTE: 5초마다 polling하려면 이렇게. 일단은 주석처리는 해놓음.
   });
 
-  if (error) return <ErrorAlert name="ChannelListContents" error={error} />;
-  if (loading) return <LoadingBackdrop loading={loading} />;
-
   return (
-    <Grid container>
-      {data?.channels.map((val) => (
-        <ChannelCard key={val.id} channelSummary={val} />
-      ))}
-    </Grid>
+    <>
+      {error && <ErrorAlert name="ChannelListContents" error={error} />}
+      {loading && <LoadingBackdrop loading={loading} />}
+      <Grid container>
+        {data?.channels?.map((val) => (
+          <ChannelCard key={val.id} channelSummary={val} />
+        ))}
+      </Grid>
+    </>
   );
 }
