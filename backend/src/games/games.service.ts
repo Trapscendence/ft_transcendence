@@ -52,17 +52,12 @@ export class GamesService {
 
     this.queue.push(user_id);
 
-    console.log('register', user_id);
     if (this.queue.length < 2) return true;
 
     const leftId = this.queue.pop();
     const rightId = this.queue.pop();
-    console.log('game... queue...', this.queue);
     const newGame = await this.makeGame(leftId, rightId);
-
     this.games.set(newGame.id, newGame);
-
-    console.log('newGame', newGame.id);
 
     this.pubSub.publish(`registered_${leftId}`, { subscribeMatch: newGame.id });
     this.pubSub.publish(`registered_${rightId}`, {
@@ -76,13 +71,10 @@ export class GamesService {
 
   async cancelRegister(user_id: string): Promise<boolean> {
     if (!this.queue.find((val) => val === user_id)) {
-      console.log('false unregi');
       return false;
     } // NOTE: 큐에 없으면 false
 
     this.queue = this.queue.filter((val) => val !== user_id);
-
-    console.log('unregister', user_id);
     return true;
   }
 }
