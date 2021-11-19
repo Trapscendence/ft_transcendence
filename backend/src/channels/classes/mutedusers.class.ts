@@ -32,14 +32,13 @@ export class MutedUsers {
     user_id: string,
     push: boolean,
   ): boolean {
+    if (this.channels.get(channel_id) === undefined) {
+      this.updateChannel(channel_id, true);
+    }
+
     const usersSet = this.channels.get(channel_id);
 
-    if (usersSet === undefined) {
-      console.error(`User pushed before channel(id: ${channel_id}) push`);
-      throw new InternalServerErrorException(
-        `No such channel(id: ${channel_id})`,
-      );
-    } else if (!!usersSet.has(user_id) === push) {
+    if (!!usersSet.has(user_id) === push) {
       // Already muted or unmuted
       return false;
     } else {

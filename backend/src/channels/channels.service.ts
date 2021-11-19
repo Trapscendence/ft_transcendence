@@ -313,7 +313,7 @@ export class ChannelsService {
     // Check the validate of channel_id and user_id
     if (
       this.muted_users.hasChannel(channel_id) === false ||
-      this.muted_users.hasUser(channel_id, user_id)
+      this.muted_users.hasUser(channel_id, user_id) === false
     ) {
       // Do nothing
       return;
