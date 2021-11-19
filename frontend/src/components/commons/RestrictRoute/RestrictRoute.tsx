@@ -2,10 +2,10 @@ import { useReactiveVar } from '@apollo/client';
 import { Box } from '@mui/system';
 import { Redirect, Route, RouteComponentProps } from 'react-router';
 
-import { userIdVar } from '../..';
-import DirectMessage from '../../components/DirectMessage';
-import Navigation from '../../components/Navigation';
-import SocialDrawer from '../../components/SocialDrawer';
+import { userIdVar } from '../../..';
+import DirectMessage from '../../DirectMessage';
+import Navigation from '../../Navigation';
+import SocialDrawer from '../../SocialDrawer';
 
 interface RestrictRouteProps {
   component: React.ComponentType<RouteComponentProps> | React.ComponentType; // 맞나?

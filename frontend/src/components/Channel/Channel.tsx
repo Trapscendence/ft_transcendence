@@ -7,14 +7,19 @@ import {
 import { useEffect, useState } from 'react';
 
 import { chattingMessagesVar } from '../..';
-import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
-import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
+import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/Apollo/gqls';
+import {
+  IChannel,
+  IChannelNotify,
+  IChatting,
+  IUser,
+} from '../../utils/Apollo/models';
 import {
   GetMyBlacklistResponse,
   GetMyChannelResponse,
   SubscribeChannelResponse,
-} from '../../utils/responseModels';
-import { Notify } from '../../utils/schemaEnums';
+} from '../../utils/Apollo/responseModels';
+import { Notify } from '../../utils/Apollo/schemaEnums';
 import ErrorAlert from '../commons/ErrorAlert';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
@@ -118,6 +123,9 @@ export default function Channel({
         );
         break;
       case Notify.EDIT:
+        void channelRefetch();
+        break;
+      case Notify.TRANSFER:
         void channelRefetch();
         break;
     }

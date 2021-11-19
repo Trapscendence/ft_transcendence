@@ -8,13 +8,13 @@ import {
   GET_MY_CHANNEL,
   GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
-} from '../../../utils/gqls';
-import handleError from '../../../utils/handleError';
-import { IUser } from '../../../utils/models';
+} from '../../../utils/Apollo/gqls';
+import { IUser } from '../../../utils/Apollo/models';
 import {
   GetMyChannelRoleResponse,
   LeaveChannelResponse,
-} from '../../../utils/responseModels';
+} from '../../../utils/Apollo/responseModels';
+import handleError from '../../../utils/handleError';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 import ChannelEditModal from './ChannelEditModal';
