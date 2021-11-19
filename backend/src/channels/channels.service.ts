@@ -232,7 +232,7 @@ export class ChannelsService {
         password
       ) = (
         '${title}',
-        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
+        ${password ? `'${await this.hashPassword(password)}'` : 'NULL'}
       )
       WHERE
         id = ${channel_id}
@@ -319,6 +319,14 @@ export class ChannelsService {
       return;
     } else {
       this.muted_users.popUser(channel_id, user_id);
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.MUTE,
+          participant: this.usersService.getUserById(user_id),
+          text: null,
+          check: false,
+        },
+      });
     }
   }
 
