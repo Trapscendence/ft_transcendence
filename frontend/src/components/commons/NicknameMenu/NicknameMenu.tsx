@@ -70,7 +70,7 @@ export default function NicknameMenu({
               Add to blacklist
             </MenuItem>
           )}
-          {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
+          {channelId && <ChannelNicknameMenu {...{ id }} />}
         </MenuList>
       </Menu>
     </>

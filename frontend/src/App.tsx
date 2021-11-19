@@ -19,9 +19,8 @@ import { GetMyIdResponse } from './utils/Apollo/responseModels';
 
 function App(): JSX.Element {
   const { loading, data, error } = useQuery<GetMyIdResponse>(GET_MY_ID);
-  console.log(error);
 
-  // if (error) console.error(error);
+  if (error) console.error(error);
   if (loading) return <LoadingBackdrop loading={loading} />;
   if (data) userIdVar(data.user?.id);
 
