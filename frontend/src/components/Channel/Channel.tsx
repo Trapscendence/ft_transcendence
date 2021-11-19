@@ -7,6 +7,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { chattingMessagesVar } from '../..';
+import useSnackbar from '../../hooks/useSnackbar';
 import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/Apollo/gqls';
 import {
   IChannel,
@@ -47,7 +48,7 @@ export default function Channel({
     muted_users,
   } = channel;
 
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [alertMsg, displayAlertMsg] = useSnackbar(3000);
 
   const { data: blacklistData, error: blacklistError } =
     useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
@@ -56,13 +57,6 @@ export default function Channel({
     useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
       variables: { channel_id: id },
     });
-
-  const displayAlertMsg = (msg: string) => {
-    setAlertMsg(msg);
-    setTimeout(() => {
-      setAlertMsg(null);
-    }, 3000);
-  };
 
   useEffect(() => {
     if (!subscribeData) return; // NOTE: undefined 방지를 위해
