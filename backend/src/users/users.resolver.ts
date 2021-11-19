@@ -145,7 +145,7 @@ export class UsersResolver {
    */
 
   @Subscription((returns) => UserStatus)
-  statusChange(user_id: string) {
+  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`status_of_${user_id}`);
   }
 }

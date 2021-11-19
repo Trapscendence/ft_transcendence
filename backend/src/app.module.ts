@@ -19,6 +19,15 @@ import { StatusModule } from './status/status.module';
 
 @Module({
   imports: [
+    // GraphQLModule.forRoot({
+    //   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    //   installSubscriptionHandlers: true,
+    //   subscriptions: { 'subscriptions-transport-ws': true },
+    //   cors: {
+    //     origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+    //     credentials: true,
+    //   },
+    // }),
     GraphQLModule.forRootAsync({
       imports: [StatusModule],
       inject: [StatusService],
