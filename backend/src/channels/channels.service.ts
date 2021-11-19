@@ -309,17 +309,24 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
+  private async muteTimeoutHandler(channel_id: string, user_id: string) {
+    // Check the validate of channel_id and user_id
+    if (
+      this.muted_users.hasChannel(channel_id) === false ||
+      this.muted_users.hasUser(channel_id, user_id)
+    ) {
+      // Do nothing
+      return;
+    } else {
+      this.muted_users.popUser(channel_id, user_id);
+    }
+  }
+
   async updateChannelMute(
     channel_id: string,
     user_id: string,
     mute_time: number,
   ): Promise<void> {
-    // Check the channel exists
-    if (this.muted_users.hasChannel(channel_id) === false) {
-      // Do nothing
-      return;
-    }
-
     // Check the user in muted list
     if (this.muted_users.hasUser(channel_id, user_id) === !!mute_time) {
       throw new ConflictException(
@@ -332,7 +339,7 @@ export class ChannelsService {
     if (mute_time) {
       this.muted_users.pushUser(channel_id, user_id);
       setTimeout(() => {
-        this.updateChannelMute(channel_id, user_id, 0);
+        this.muteTimeoutHandler(channel_id, user_id);
       }, mute_time);
     } else {
       this.muted_users.popUser(channel_id, user_id);
