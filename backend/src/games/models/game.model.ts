@@ -11,13 +11,7 @@ registerEnumType(GameType, {
 });
 
 @ObjectType()
-export class Game {
-  @Field((type) => ID)
-  id: string;
-
-  @Field((type) => GameType)
-  game_type: GameType;
-
+export class CanvasInfo {
   @Field() // TODO: int? float?
   ball_x: number;
 
@@ -35,6 +29,33 @@ export class Game {
 
   @Field()
   right_paddle_y: number;
+}
+
+@ObjectType()
+export class Obstacle {
+  @Field()
+  x: number;
+
+  @Field()
+  y: number;
+
+  @Field()
+  width: number;
+
+  @Field()
+  height: number;
+}
+
+@ObjectType()
+export class Game {
+  @Field((type) => ID)
+  id: string;
+
+  @Field((type) => CanvasInfo)
+  canvas_info: CanvasInfo;
+
+  @Field((type) => GameType)
+  game_type: GameType;
 
   @Field()
   left_score: number;
@@ -54,21 +75,6 @@ export class Game {
   @Field((type) => [Obstacle])
   obstacles: Obstacle[];
 
-  @Field()
-  game_speed: number;
-}
-
-@ObjectType()
-export class Obstacle {
-  @Field()
-  x: number;
-
-  @Field()
-  y: number;
-
-  @Field()
-  width: number;
-
-  @Field()
-  height: number;
+  // @Field()
+  // game_speed: number; // NOTE: dx, dy와 겹치나?
 }
