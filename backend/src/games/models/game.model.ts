@@ -10,6 +10,25 @@ registerEnumType(GameType, {
   name: 'GameType',
 });
 
+export enum GameNotifyType {
+  MATCHED = 'MATCHED',
+  JOIN = 'JOIN',
+  BOOM = 'BOOM',
+}
+
+registerEnumType(GameNotifyType, {
+  name: 'GameNotifyType',
+});
+
+@ObjectType()
+export class GameNotify {
+  @Field((type) => GameNotifyType)
+  type: GameNotifyType;
+
+  @Field((type) => ID)
+  game_id: string;
+}
+
 @ObjectType()
 export class CanvasInfo {
   @Field() // TODO: int? float?

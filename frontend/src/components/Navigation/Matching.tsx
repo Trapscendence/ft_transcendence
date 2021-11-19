@@ -6,15 +6,19 @@ import gql from 'graphql-tag';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
+import useSnackbar from '../../hooks/useSnackbar';
 import { SUBSCRIBE_MATCH } from '../../utils/Apollo/gqls';
 import { SubscribeMatchResponse } from '../../utils/Apollo/responseModels';
+import { GameNotifyType } from '../../utils/Apollo/schemaEnums';
 import handleError from '../../utils/handleError';
 import ErrorAlert from '../commons/ErrorAlert';
+import MsgSnackbar from '../commons/MsgSnackbar';
 import MatchedModal from './MatchedModal';
 
 export default function Matching(): JSX.Element {
   const [registered, setRegistered] = useState(false);
   const [matched, setMatched] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
   const history = useHistory();
 
   const { data: matchData, error } =
@@ -36,15 +40,31 @@ export default function Matching(): JSX.Element {
     }
   `);
 
+  const [alertMsg, displayAlertMsg] = useSnackbar(3000);
+
   useEffect(() => {
-    console.log(matchData, registered);
+    if (!matchData) return;
 
-    if (!matchData) {
-      return;
+    setBtnLoading(false);
+
+    console.log(matchData.subscribeMatch);
+
+    const { type, game_id } = matchData.subscribeMatch;
+
+    switch (type) {
+      case GameNotifyType.MATCHED:
+        setRegistered(false);
+        setMatched(true);
+        break;
+      case GameNotifyType.JOIN:
+        setMatched(false);
+        history.push('/game', { game_id });
+        break;
+      case GameNotifyType.BOOM:
+        setMatched(false);
+        displayAlertMsg(`Match is canceled.`);
+        break;
     }
-
-    setRegistered(false);
-    setMatched(true);
   }, [matchData]);
 
   const onClickPlay = async () => {
@@ -70,9 +90,12 @@ export default function Matching(): JSX.Element {
         <MatchedModal
           open={matched}
           handleClose={handleCloseMatchedModal}
-          id={matchData.subscribeMatch}
+          id={matchData.subscribeMatch.game_id}
+          btnLoading={btnLoading}
+          setBtnLoading={setBtnLoading}
         />
       )}
+      {alertMsg && <MsgSnackbar msg={alertMsg} severity="info" />}
       <Box
         onClick={onClickPlay}
         sx={{ position: 'relative', cursor: 'pointer' }}
@@ -81,11 +104,10 @@ export default function Matching(): JSX.Element {
           icon={<VideogameAsset />}
           // disabled={loading}
           sx={{ color: registered ? 'text.disabled' : '' }}
-          onClick={() => history.push('/game')}
+          // onClick={() => history.push('/game')}
         />
         {registered && (
           <CircularProgress
-            // color="secondary"
             size={35}
             sx={{
               position: 'absolute',

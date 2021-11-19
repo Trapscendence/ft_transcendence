@@ -7,13 +7,12 @@ import {
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
-import { isNullableType } from 'graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserID } from 'src/users/decorators/user-id.decorator';
 import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
-import { Game } from './models/game.model';
+import { Game, GameNotify } from './models/game.model';
 
 @Resolver((of) => Game)
 export class GamesResolver {
@@ -27,10 +26,9 @@ export class GamesResolver {
    ** ANCHOR: Query
    */
 
-  @Query((returns) => Game)
-  async game(@Args('game_id', { type: () => ID! }) game_id: string) {
-    // return await
-  }
+  // @Query((returns) => Game)
+  // async game(@Args('game_id', { type: () => ID! }) game_id: string) {
+  // }
 
   /*
    ** ANCHOR: Mutation
@@ -46,13 +44,28 @@ export class GamesResolver {
     return await this.gamesService.cancelRegister(user_id);
   }
 
+  @Mutation((returns) => Boolean)
+  async joinGame(
+    @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+  ): Promise<boolean> {
+    return await this.gamesService.joinGame(user_id, game_id);
+  }
+
+  @Mutation((returns) => Boolean)
+  async notJoinGame(
+    @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+  ): Promise<boolean> {
+    return await this.gamesService.notJoinGame(user_id, game_id);
+  }
+
   /*
    ** ANCHOR: Subscription
    */
 
-  @Subscription((returns) => ID)
+  @Subscription((returns) => GameNotify)
   subscribeMatch(@UserID() user_id: string) {
-    console.log('subscribed!!!', user_id);
     return this.pubSub.asyncIterator(`registered_${user_id}`);
   }
 }

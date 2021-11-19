@@ -3,7 +3,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
-import { Game, GameType } from './models/game.model';
+import { Game, GameNotifyType, GameType } from './models/game.model';
 
 @Injectable()
 export class GamesService {
@@ -14,10 +14,12 @@ export class GamesService {
   ) {
     this.queue = [];
     this.games = new Map<string, Game>();
+    this.waiting = new Map<string, string[]>();
   }
 
-  private games: Map<string, Game>;
   private queue: string[];
+  private games: Map<string, Game>;
+  private waiting: Map<string, string[]>;
 
   // NOTE: 임시
   makeCanvasInfo() {
@@ -34,7 +36,8 @@ export class GamesService {
   // NOTE: 임시
   async makeGame(leftId: string, rightId: string) {
     return {
-      id: new Date().getTime().toString(),
+      // id: new Date().getTime().toString(),
+      id: '1',
       canvas_info: this.makeCanvasInfo(),
       game_type: GameType.RANK,
       left_score: 0,
@@ -45,6 +48,14 @@ export class GamesService {
       obstacles: [],
     };
   }
+
+  /*
+   ** ANCHOR: Query
+   */
+
+  /*
+   ** ANCHOR: Mutation
+   */
 
   async registerMatch(user_id: string): Promise<boolean> {
     if (this.queue.find((val) => val === user_id))
@@ -58,14 +69,18 @@ export class GamesService {
     const rightId = this.queue.pop();
     const newGame = await this.makeGame(leftId, rightId);
     this.games.set(newGame.id, newGame);
+    this.waiting.set(newGame.id, [
+      newGame.left_player.id.toString(),
+      newGame.right_player.id.toString(),
+    ]);
 
-    this.pubSub.publish(`registered_${leftId}`, { subscribeMatch: newGame.id });
+    this.pubSub.publish(`registered_${leftId}`, {
+      subscribeMatch: { type: GameNotifyType.MATCHED, game_id: newGame.id },
+    });
     this.pubSub.publish(`registered_${rightId}`, {
-      subscribeMatch: newGame.id,
+      subscribeMatch: { type: GameNotifyType.MATCHED, game_id: newGame.id },
     });
 
-    console.log('published', leftId);
-    console.log('published', rightId);
     return true;
   }
 
@@ -75,6 +90,50 @@ export class GamesService {
     } // NOTE: 큐에 없으면 false
 
     this.queue = this.queue.filter((val) => val !== user_id);
+    return true;
+  }
+
+  async joinGame(user_id: string, game_id: string): Promise<boolean> {
+    if (!this.waiting.get(game_id)) throw Error('game is not vailable.');
+
+    this.waiting.set(
+      game_id,
+      this.waiting.get(game_id).filter((val) => {
+        return +val !== +user_id; // NOTE: val, user_id 둘 다 number로 들어오는 경우가 각각 있다... ㅠㅠ
+      }),
+    );
+
+    if (this.waiting.get(game_id).length !== 0) {
+      return true;
+    }
+
+    const leftId = this.games.get(game_id).left_player.id;
+    const rightId = this.games.get(game_id).right_player.id;
+
+    this.pubSub.publish(`registered_${leftId}`, {
+      subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
+    });
+    this.pubSub.publish(`registered_${rightId}`, {
+      subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
+    });
+
+    return true;
+  }
+
+  async notJoinGame(user_id: string, game_id: string): Promise<boolean> {
+    const leftId = this.games.get(game_id).left_player.id;
+    const rightId = this.games.get(game_id).right_player.id;
+
+    this.pubSub.publish(`registered_${leftId}`, {
+      subscribeMatch: { type: GameNotifyType.BOOM, game_id: game_id },
+    });
+    this.pubSub.publish(`registered_${rightId}`, {
+      subscribeMatch: { type: GameNotifyType.BOOM, game_id: game_id },
+    });
+
+    this.waiting.delete(game_id);
+    this.games.delete(game_id);
+
     return true;
   }
 }
