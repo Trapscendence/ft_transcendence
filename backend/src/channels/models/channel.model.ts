@@ -9,6 +9,7 @@ export enum Notify {
   BAN = 'BAN',
   EDIT = 'EDIT',
   DELETE = 'DELETE',
+  TRANSFER = 'TRANSFER',
 }
 
 registerEnumType(Notify, {
