@@ -1,4 +1,4 @@
-import { useHistory, useLocation } from 'react-router';
+import { Redirect, useLocation } from 'react-router';
 
 import Pong from './Pong';
 
@@ -8,9 +8,10 @@ interface locationState {
 
 export default function Game(): JSX.Element {
   const location = useLocation<locationState>();
-  const { game_id } = location.state;
 
-  if (!game_id) return <></>;
+  if (!location.state) return <Redirect to="/home" />;
+
+  const { game_id } = location.state;
 
   return (
     <>
