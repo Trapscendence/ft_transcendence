@@ -17,7 +17,7 @@ import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
 import { PUB_SUB } from '../pubsub.module';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => DM)
