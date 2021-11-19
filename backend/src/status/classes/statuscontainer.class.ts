@@ -31,11 +31,20 @@ export class StatusContainer {
     wsSet.add(ws);
   }
 
-  deleteConnection(ws: WebSocket): void {
+  deleteConnection(ws: WebSocket): boolean {
     const user_id = this.wsOwner.get(ws);
+    this.wsOwner.delete(ws);
     const wsSet = this.container.get(user_id)?.[1];
     if (!wsSet) return;
     wsSet.delete(ws);
-    this.wsOwner.delete(ws);
+    if (!wsSet.size) {
+      this.container.delete(user_id);
+      return true;
+    }
+    return false;
+  }
+
+  getUserId(ws: WebSocket): string {
+    return this.wsOwner.get(ws);
   }
 }

@@ -14,36 +14,46 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { verify } from 'jsonwebtoken';
-import { statusContainer } from './status/statuscontainer.instance';
+import { StatusService } from './status/status.service';
+import { StatusModule } from './status/status.module';
 
 @Module({
   imports: [
-    GraphQLModule.forRoot({
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      installSubscriptionHandlers: true,
-      subscriptions: {
-        // NOTE: production에선 grapqh-ws를 켜야함
-        // 'graphql-ws': {
-        //   onConnect: (ctx: Context<unknown>) => {
-        //     console.log(ctx.connectionParams.authrization);
-        //   },
-        // },
-        'subscriptions-transport-ws': {
-          onConnect: (connectionParams, webSocket, context) => {
-            if (connectionParams.authorization) {
-              const token = connectionParams.authorization.split(' ')[1];
-              const user_id = verify(token, process.env.JWT_SECRET) as string;
-              statusContainer.newConnection(user_id, webSocket);
-            }
+    GraphQLModule.forRootAsync({
+      imports: [StatusModule],
+      inject: [StatusService],
+      useFactory: (statusService: StatusService) => {
+        return {
+          autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+          installSubscriptionHandlers: true,
+          subscriptions: {
+            // NOTE: production에선 grapqh-ws를 켜야함
+            // 'graphql-ws': {
+            //   onConnect: (ctx: Context<unknown>) => {
+            //     console.log(ctx.connectionParams.authrization);
+            //   },
+            // },
+            'subscriptions-transport-ws': {
+              onConnect: (connectionParams, webSocket, context) => {
+                if (connectionParams.authorization) {
+                  const token = connectionParams.authorization.split(' ')[1];
+                  const user_id = verify(
+                    token,
+                    process.env.JWT_SECRET,
+                  ) as string;
+                  statusService.newConnection(user_id, webSocket);
+                }
+              },
+              onDisconnect(webSocket, context) {
+                statusService.deleteConnection(webSocket);
+              },
+            },
           },
-          onDisconnect(webSocket, context) {
-            statusContainer.deleteConnection(webSocket);
+          cors: {
+            origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+            credentials: true,
           },
-        },
-      },
-      cors: {
-        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
-        credentials: true,
+        };
       },
     }),
     DatabaseModule,
@@ -56,6 +66,10 @@ import { statusContainer } from './status/statuscontainer.instance';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }, AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    AppService,
+    StatusService,
+  ],
 })
 export class AppModule {}
