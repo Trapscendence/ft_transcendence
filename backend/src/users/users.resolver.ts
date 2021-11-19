@@ -9,13 +9,15 @@ import {
   ID,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { User, UserRole } from './models/user.model';
+import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
+import { StatusService } from 'src/status/status.service';
 import { UserID } from './decorators/user-id.decorator';
 
 @UseGuards(JwtAuthGuard)
@@ -23,6 +25,7 @@ import { UserID } from './decorators/user-id.decorator';
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
+    private readonly statusService: StatusService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -125,9 +128,24 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
   }
+
+  @ResolveField('status', (returns) => UserStatus)
+  getStatus(@Parent() user: User): UserStatus {
+    const { id } = user;
+    return this.statusService.getStatus(id);
+  }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;
   //   return await this.matchService
   // }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
+
+  @Subscription((returns) => UserStatus)
+  statusChange(user_id: string) {
+    return this.pubSub.asyncIterator(`status_of_${user_id}`);
+  }
 }
