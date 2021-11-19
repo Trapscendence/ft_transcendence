@@ -7,8 +7,8 @@ then
 		--non-interactive \
 		--agree-tos \
 		-m anonymouse@gmail.com \
-		-d ${BACKEND_HOST} \
-		-d www.${BACKEND_HOST}
+		-d ${SERVER_HOST} \
+		-d www.${SERVER_HOST}
 fi
 
 nginx -g 'daemon off;'

@@ -3,13 +3,13 @@ import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 
-import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
   GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
 } from '../../../utils/gqls';
+import handleError from '../../../utils/handleError';
 import { IUser } from '../../../utils/models';
 import {
   GetMyChannelRoleResponse,
@@ -36,24 +36,16 @@ export default function ChannelHeader({
 }: ChannelHeaderProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
-  const [leaveChannel, { loading, error }] = useMutation<LeaveChannelResponse>(
-    LEAVE_CHANNEL,
-    {
+  const { data: channelRoleData, error: channelRoleError } =
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
+
+  const [leaveChannel, { loading, error: leaveChannelError }] =
+    useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
       refetchQueries: [
         GET_MY_CHANNEL,
         { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
       ],
-    }
-  );
-
-  const { data: channelRoleData, error: channelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
-      variables: { id: userIdVar() },
     });
-
-  const onClickLeave = () => {
-    void leaveChannel();
-  };
 
   const handleOpen = (): void => {
     setOpen(true);
@@ -62,45 +54,46 @@ export default function ChannelHeader({
     setOpen(false);
   };
 
-  if (error) return <ErrorAlert name="ChannelHeader" error={error} />;
-  if (channelRoleError)
-    return (
-      <ErrorAlert
-        name="ChannelHeader: channelRoleError"
-        error={channelRoleError}
-      />
-    );
-  if (loading) return <LoadingBackdrop loading={loading} />;
+  const errorVar = leaveChannelError || channelRoleError;
 
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 1,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Box>
-        <Typography>{is_private ? 'Private' : 'Public'}</Typography>
-        <Typography>Title: {title}</Typography>
-        <Typography>Owner: {owner.nickname}</Typography>
-        <Typography>
-          Administrators: {administrators.map((val) => val.nickname).join(', ')}
-        </Typography>
-      </Box>
-      <Box>
-        {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
-          <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
-            Edit Channel
+    <>
+      {errorVar && <ErrorAlert name="ChannelHeader" error={errorVar} />}
+      {loading && <LoadingBackdrop loading={loading} />}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 1,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box>
+          <Typography>{is_private ? 'Private' : 'Public'}</Typography>
+          <Typography>Title: {title}</Typography>
+          <Typography>Owner: {owner.nickname}</Typography>
+          <Typography>
+            Administrators:{' '}
+            {administrators.map((val) => val.nickname).join(', ')}
+          </Typography>
+        </Box>
+        <Box>
+          {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
+            <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+              Edit Channel
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            sx={{ m: 1 }}
+            onClick={() => handleError(leaveChannel)}
+          >
+            Leave Channel
           </Button>
-        )}
-        <Button variant="contained" sx={{ m: 1 }} onClick={onClickLeave}>
-          Leave Channel
-        </Button>
-      </Box>
-      <ChannelEditModal {...{ open, handleClose, id }} />
-    </Paper>
+        </Box>
+        <ChannelEditModal {...{ open, handleClose, id }} />
+      </Paper>
+    </>
   );
 }

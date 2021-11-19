@@ -16,11 +16,15 @@ export default function ChattingMessage({
   const { participant, text } = IChatting;
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'inline-block' }}>
         <UserSummary IUser={participant} channelId={channelId} />
       </Box>
-      <Typography sx={{ display: 'inline-block' }}>{text}</Typography>
+      <Typography variant="body1" sx={{ wordWrap: 'break-word' }}>
+        {text}
+      </Typography>
     </Box>
   );
 }
+
+// NOTE: wordWrap: 'break-word' 옵션이 없으면, 띄어쓰기가 없는 경우 줄바꿈이 되지 않는다.

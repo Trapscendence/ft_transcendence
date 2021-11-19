@@ -15,7 +15,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
 import { StatusService } from 'src/status/status.service';
@@ -86,7 +86,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
     @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {

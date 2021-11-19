@@ -23,8 +23,8 @@ export interface IChannel {
   owner: IUser;
   administrators: IUser[];
   participants: IUser[];
-  bannedUsers: IUser[];
-  mutedUsers: IUser[];
+  banned_users: IUser[];
+  muted_users: IUser[];
 }
 
 export interface IChannelNotify {

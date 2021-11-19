@@ -21,8 +21,8 @@ export const GET_CHANNELS = gql`
 `;
 
 export const GET_MY_CHANNEL = gql`
-  query GetMyChannel($id: ID!) {
-    user(id: $id) {
+  query GetMyChannel {
+    user {
       channel {
         id
         title
@@ -45,11 +45,11 @@ export const GET_MY_CHANNEL = gql`
           # avatar
           # status
         }
-        bannedUsers {
+        banned_users {
           id
           nickname
         }
-        mutedUsers {
+        muted_users {
           id
           nickname
         }
@@ -59,7 +59,15 @@ export const GET_MY_CHANNEL = gql`
 `;
 
 export const GET_MY_CHANNEL_ROLE = gql`
-  query GetMyChannelRole($id: ID!) {
+  query GetMyChannelRole {
+    user {
+      channel_role
+    }
+  }
+`;
+
+export const GET_CHANNEL_ROLE = gql`
+  query GetChannelRole($id: ID!) {
     user(id: $id) {
       channel_role
     }
@@ -67,8 +75,8 @@ export const GET_MY_CHANNEL_ROLE = gql`
 `;
 
 export const GET_MY_BLACKLIST = gql`
-  query GetMyBlacklist($id: ID!) {
-    user(id: $id) {
+  query GetMyBlacklist {
+    user {
       blacklist {
         id
       }
@@ -76,31 +84,31 @@ export const GET_MY_BLACKLIST = gql`
   }
 `;
 
-export const GET_MY_CHANNEL_MUTED_USERS = gql`
-  query GetMyChannelMutedUsers($id: ID!) {
-    user(id: $id) {
-      channel {
-        mutedUsers {
-          id
-          nickname
-        }
-      }
-    }
-  }
-`;
+// export const GET_MY_CHANNEL_MUTED_USERS = gql`
+//   query GetMyChannelMutedUsers {
+//     user {
+//       channel {
+//         muted_users {
+//           id
+//           nickname
+//         }
+//       }
+//     }
+//   }
+// `;
 
-export const GET_MY_CHANNEL_BANNED_USERS = gql`
-  query GetMyChannelBannedUsers($id: ID!) {
-    user(id: $id) {
-      channel {
-        bannedUsers {
-          id
-          nickname
-        }
-      }
-    }
-  }
-`;
+// export const GET_MY_CHANNEL_BANNED_USERS = gql`
+//   query GetMyChannelBannedUsers {
+//     user {
+//       channel {
+//         banned_users {
+//           id
+//           nickname
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export const GET_MY_ID = gql`
   query GetMyId {
@@ -144,8 +152,8 @@ export const ADD_CHANNEL = gql`
 // NOTE: 현재 아바타, 스테이터스 불러오면 에러 발생하는 백엔드 오류 있어 주석 처리
 
 export const EDIT_CHANNEL = gql`
-  mutation EditChannel($title: String!, $password: String, $channel_id: ID!) {
-    editChannel(title: $title, password: $password, channel_id: $channel_id) {
+  mutation EditChannel($title: String!, $password: String) {
+    editChannel(title: $title, password: $password) {
       id
       title
       is_private
@@ -167,7 +175,7 @@ export const EDIT_CHANNEL = gql`
         # avatar
         # status
       }
-      bannedUsers {
+      banned_users {
         id
       }
     }
@@ -197,8 +205,8 @@ export const ENTER_CHANNEL = gql`
 `;
 
 export const CHAT_MESSAGE = gql`
-  mutation ChatMessage($message: String!, $user_id: ID!, $channel_id: ID!) {
-    chatMessage(message: $message, user_id: $user_id, channel_id: $channel_id)
+  mutation ChatMessage($message: String!) {
+    chatMessage(message: $message)
   }
 `;
 
@@ -209,23 +217,20 @@ export const LEAVE_CHANNEL = gql`
 `;
 
 export const MUTE_USER = gql`
-  mutation MuteUserOnChannel(
-    $mute_time: Int!
-    $user_id: ID!
-    $channel_id: ID!
-  ) {
-    muteUserOnChannel(
-      mute_time: $mute_time
-      user_id: $user_id
-      channel_id: $channel_id
-    )
+  mutation MuteUserOnChannel($user_id: ID!) {
+    muteUserOnChannel(user_id: $user_id)
   }
 `;
 
-export const BAN_AND_KICK_USER = gql`
-  mutation BanAndKickUserFromChannel($user_id: ID!, $channel_id: ID!) {
-    banUserFromChannel(user_id: $user_id, channel_id: $channel_id)
-    kickUserFromChannel(user_id: $user_id, channel_id: $channel_id)
+export const KICK_USER = gql`
+  mutation KickUserFromChannel($user_id: ID!) {
+    kickUserFromChannel(user_id: $user_id)
+  }
+`;
+
+export const BAN_USER = gql`
+  mutation BanUserFromChannel($user_id: ID!) {
+    banUserFromChannel(user_id: $user_id)
   }
 `;
 
@@ -238,6 +243,18 @@ export const ADD_TO_BLACKLIST = gql`
 export const DELETE_FROM_BLACKLIST = gql`
   mutation DeleteFromBlackList($black_id: ID!) {
     deleteFromBlackList(black_id: $black_id)
+  }
+`;
+
+export const DELEGATE_USER_ON_CHANNEL = gql`
+  mutation DelegateUserOnChannel($user_id: ID!) {
+    delegateUserOnChannel(user_id: $user_id)
+  }
+`;
+
+export const RELEGATE_USER_ON_CHANNEL = gql`
+  mutation RelegateUserOnChannel($user_id: ID!) {
+    relegateUserOnChannel(user_id: $user_id)
   }
 `;
 
