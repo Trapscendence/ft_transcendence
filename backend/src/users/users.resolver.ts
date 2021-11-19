@@ -15,8 +15,9 @@ import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { UserID } from 'src/auth/decorator/user-id.decorator';
-import { User, UserRole } from './models/user.model';
+import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
+import { statusContainer } from 'src/status/statuscontainer.instance';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
@@ -124,6 +125,12 @@ export class UsersResolver {
   async getChannelRole(@Parent() user: User): Promise<UserRole | null> {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
+  }
+
+  @ResolveField('status', (returns) => UserStatus)
+  getStatus(@Parent() user: User): UserStatus {
+    const { id } = user;
+    return statusContainer.getStatus(id);
   }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {

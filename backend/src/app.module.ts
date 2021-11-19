@@ -13,6 +13,8 @@ import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { verify } from 'jsonwebtoken';
+import { statusContainer } from './status/statuscontainer.instance';
 
 @Module({
   imports: [
@@ -29,9 +31,13 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
         'subscriptions-transport-ws': {
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
-              console.log(connectionParams.authrization);
-              return connectionParams;
+              const token = connectionParams.authorization.split(' ')[1];
+              const user_id = verify(token, process.env.JWT_SECRET) as string;
+              statusContainer.newConnection(user_id, webSocket);
             }
+          },
+          onDisconnect(webSocket, context) {
+            statusContainer.deleteConnection(webSocket);
           },
         },
       },

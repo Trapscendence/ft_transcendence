@@ -11,7 +11,7 @@ import { Achivement } from '../../achivements/models/achivement.model';
 import { Match } from '../../matchs/models/match.model';
 
 export enum UserStatus {
-  ONLINE,
+  ONLINE = 1,
   IN_RANK_GAME,
   IN_NORMAL_GAME,
   OFFLINE,
