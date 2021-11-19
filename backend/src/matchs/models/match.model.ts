@@ -3,9 +3,9 @@ import { User } from '../../users/models/user.model';
 
 // TODO
 // enum도 파일 분리해야 할 것 같은데...
-enum MatchType {
-  RANK,
-  CUSTOM,
+export enum MatchType {
+  RANK = 'RANK',
+  CUSTOM = 'CUSTOM',
 }
 
 // TODO
@@ -35,7 +35,7 @@ export class Match {
   @Field((type) => MatchType)
   type: MatchType;
 
-  // TODO
-  @Field((type) => Int) // Date가 있지 않나? 여기 다시 살펴봐야...
-  time: number; // Date 객체의 integer?
+  // graphql이 bigint를 지원하지 않아서 string으로 보냄.
+  @Field()
+  time_stamp: string;
 }

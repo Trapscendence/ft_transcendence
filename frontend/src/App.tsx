@@ -19,7 +19,8 @@ import { GetMyIdResponse } from './utils/responseModels';
 import RestrictRoute from './utils/RestrictRoute';
 
 function App(): JSX.Element {
-  const { loading, data } = useQuery<GetMyIdResponse>(GET_MY_ID);
+  const { loading, data, error } = useQuery<GetMyIdResponse>(GET_MY_ID);
+  console.log(error);
 
   // if (error) console.error(error);
   if (loading) return <LoadingBackdrop loading={loading} />;

@@ -33,6 +33,12 @@ export interface GetMyChannelRoleResponse {
   };
 }
 
+export interface GetChannelRoleResponse {
+  user: {
+    channel_role: UserRole;
+  };
+}
+
 export interface GetChannelsResponse {
   channels: IChannelListItem[];
 }
@@ -47,8 +53,11 @@ export interface MuteUserResponse {
   muteUserOnChannel: boolean;
 }
 
-export interface BanAndKickUserResponse {
+export interface BanUserResponse {
   banUserFromChannel: boolean;
+}
+
+export interface KickUserResponse {
   kickUserFromChannel: boolean;
 }
 

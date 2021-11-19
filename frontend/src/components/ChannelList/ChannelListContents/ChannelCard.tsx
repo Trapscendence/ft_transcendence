@@ -32,32 +32,37 @@ export default function ChannelCard({
     }
   );
 
-  if (error) return <ErrorAlert name="ChannelCard" error={error} />;
-  if (loading) return <LoadingBackdrop loading={loading} />;
-
   return (
-    <Grid item xs={6} p={3}>
-      <Card sx={{ minWidth: 275 }}>
-        <CardContent>
-          <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            {is_private ? 'Private' : 'Public'}
-          </Typography>
-          <Typography variant="h5" component="div">
-            {title}
-          </Typography>
-          <Typography sx={{ mb: 1.5 }} color="text.secondary">
-            Owner: {owner.nickname}
-          </Typography>
-          <Typography variant="body2">
-            Participants: {participants.map((val) => val.nickname).join(', ')}
-          </Typography>
-        </CardContent>
-        <CardActions>
-          <Button size="small" onClick={() => handleError(enterChannel)}>
-            Enter channel
-          </Button>
-        </CardActions>
-      </Card>
-    </Grid>
+    <>
+      {error && <ErrorAlert name="ChannelCard" error={error} />}
+      {loading && <LoadingBackdrop loading={loading} />}
+      <Grid item xs={6} p={3}>
+        <Card sx={{ minWidth: 275 }}>
+          <CardContent>
+            <Typography
+              sx={{ fontSize: 14 }}
+              color="text.secondary"
+              gutterBottom
+            >
+              {is_private ? 'Private' : 'Public'}
+            </Typography>
+            <Typography variant="h5" component="div">
+              {title}
+            </Typography>
+            <Typography sx={{ mb: 1.5 }} color="text.secondary">
+              Owner: {owner.nickname}
+            </Typography>
+            <Typography variant="body2">
+              Participants: {participants.map((val) => val.nickname).join(', ')}
+            </Typography>
+          </CardContent>
+          <CardActions>
+            <Button size="small" onClick={() => handleError(enterChannel)}>
+              Enter channel
+            </Button>
+          </CardActions>
+        </Card>
+      </Grid>
+    </>
   );
 }

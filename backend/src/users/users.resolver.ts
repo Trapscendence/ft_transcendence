@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import {
   Query,
@@ -9,14 +10,21 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { PubSub } from 'graphql-subscriptions';
+import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
+import { UserID } from './decorators/user-id.decorator';
 
+@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   /*
    ** ANCHOR: User
@@ -57,14 +65,12 @@ export class UsersResolver {
   /*
    ** ANCHOR: Social
    */
-  // NOTE: 나중에 분리할 수도...?
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    // NOTE 여기서 할것인가?
     return this.usersService.addFriend(user_id, friend_id);
   }
 
@@ -77,7 +83,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
     @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
