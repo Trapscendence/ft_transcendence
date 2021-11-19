@@ -312,18 +312,28 @@ export class ChannelsService {
   async updateChannelMute(
     channel_id: string,
     user_id: string,
-    mute: boolean,
+    mute_time: number,
   ): Promise<void> {
-    if (this.muted_users.hasUser(channel_id, user_id) === mute) {
+    // Check the channel exists
+    if (this.muted_users.hasChannel(channel_id) === false) {
+      // Do nothing
+      return;
+    }
+
+    // Check the user in muted list
+    if (this.muted_users.hasUser(channel_id, user_id) === !!mute_time) {
       throw new ConflictException(
         `The user(id: ${user_id}) is already ${
-          mute ? 'muted' : 'unmuted'
+          mute_time ? 'muted' : 'unmuted'
         } in this channel(id: ${channel_id})`,
       );
     }
 
-    if (mute) {
+    if (mute_time) {
       this.muted_users.pushUser(channel_id, user_id);
+      setTimeout(() => {
+        this.updateChannelMute(channel_id, user_id, 0);
+      }, mute_time);
     } else {
       this.muted_users.popUser(channel_id, user_id);
     }
@@ -333,7 +343,7 @@ export class ChannelsService {
         type: Notify.MUTE,
         participant: this.usersService.getUserById(user_id),
         text: null,
-        check: mute,
+        check: !!mute_time,
       },
     });
   }
