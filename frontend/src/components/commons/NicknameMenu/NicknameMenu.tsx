@@ -6,13 +6,13 @@ import {
   ADD_TO_BLACKLIST,
   DELETE_FROM_BLACKLIST,
   GET_MY_BLACKLIST,
-} from '../../../utils/gqls';
-import handleError from '../../../utils/handleError';
+} from '../../../utils/Apollo/gqls';
 import {
   AddToBlackListResponse,
   DeleteFromBlackListResponse,
   GetMyBlacklistResponse,
-} from '../../../utils/responseModels';
+} from '../../../utils/Apollo/responseModels';
+import handleError from '../../../utils/handleError';
 import ErrorAlert from '../ErrorAlert';
 import ChannelNicknameMenu from './ChannelNicknameMenu';
 
