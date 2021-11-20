@@ -7,11 +7,11 @@ export const UserID = createParamDecorator(
     if (context.getType() === 'http') {
       return context.switchToHttp().getRequest().user.id;
     } else if (context.getType<GqlContextType>() === 'graphql') {
-      // return GqlExecutionContext.create(context).getContext().req.user.id; // 임시로 바꿔놓음.
-      const token = GqlExecutionContext.create(context)
-        .getContext()
-        .req.headers.authorization.split(' ')[1];
-      return verify(token, process.env.JWT_SECRET);
+      return GqlExecutionContext.create(context).getContext().req.user.id;
+      // const token = GqlExecutionContext.create(context)
+      //   .getContext()
+      //   .req.headers.authorization.split(' ')[1];
+      // return verify(token, process.env.JWT_SECRET);
     }
   },
 );
