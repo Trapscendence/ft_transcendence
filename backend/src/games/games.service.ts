@@ -11,6 +11,8 @@ import {
   InGameNotifyType,
 } from './models/game.model';
 
+const START_DELAY = 2000;
+
 @Injectable()
 export class GamesService {
   constructor(
@@ -160,7 +162,7 @@ export class GamesService {
           paddle_info: this.makePaddleInfo(),
         },
       });
-    }, 3000); // NOTE: 3초 후 게임 시작
+    }, START_DELAY); // NOTE: 딜레이 후 게임 시작
 
     return true;
   }
@@ -285,7 +287,7 @@ export class GamesService {
           paddle_info: this.makePaddleInfo(),
         },
       });
-    }, 3000); // NOTE: 3초 후 게임 재시작
+    }, START_DELAY); // NOTE: 딜레이 후 게임 재시작
 
     return true;
   }
