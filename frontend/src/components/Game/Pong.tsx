@@ -126,8 +126,9 @@ export default function Pong({
   useEffect(() => {
     if (!data) return;
 
+    // console.log(data.subscribeInGameCanvas);
+
     const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
-    // syncCanvas(data.subscribeInGameCanvas.canvas_info);
 
     switch (type) {
       case CanvasNotifyType.BALL:
@@ -287,15 +288,38 @@ export default function Pong({
       void sendBallCollision();
     }
 
-    // if (upPressed) {
-    setMyPaddleY((prev) => prev + myPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
-    if (myPaddleY < 0) {
-      setMyPaddleY(0);
+    // NOTE: 백업... 여차하면 다시 돌려야하니까.
+    // // if (upPressed) {
+    // setMyPaddleY((prev) => prev + myPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
+    // if (myPaddleY < 0) {
+    //   setMyPaddleY(0);
+    // }
+    // // } else if (downPressed) {
+    // // setMyPaddleY((prev) => prev + D_PADDLEY);
+    // if (myPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
+    //   setMyPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+    // }
+    // // }
+
+    setLeftPaddleY((prev) => prev + leftPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
+    if (leftPaddleY < 0) {
+      setLeftPaddleY(0);
     }
     // } else if (downPressed) {
     // setMyPaddleY((prev) => prev + D_PADDLEY);
-    if (myPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
-      setMyPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+    if (leftPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
+      setLeftPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+    }
+    // }
+
+    setRightPaddleY((prev) => prev + rightPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
+    if (rightPaddleY < 0) {
+      setRightPaddleY(0);
+    }
+    // } else if (downPressed) {
+    // setMyPaddleY((prev) => prev + D_PADDLEY);
+    if (rightPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
+      setRightPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
     }
     // }
 
@@ -346,8 +370,8 @@ export default function Pong({
 
   // useInterval(draw, isPlaying ? 10 : null);
   // useInterval(draw, 10);
-  // useInterval(draw, 30); // NOTE: 대략 30fps?
-  useInterval(draw, 100); // NOTE: 대략 30fps?
+  useInterval(draw, 30); // NOTE: 대략 30fps?
+  // useInterval(draw, 100); // NOTE: 대략 30fps?
 
   return (
     <>
