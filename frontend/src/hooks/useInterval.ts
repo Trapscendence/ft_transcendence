@@ -8,6 +8,7 @@ export default function useInterval(
 
   // Remember the latest callback if it changes.
   useLayoutEffect(() => {
+    // console.log('eeee');
     savedCallback.current = callback;
   }, [callback]);
 

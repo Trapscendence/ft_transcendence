@@ -86,3 +86,13 @@ export enum GameNotifyType {
   JOIN = 'JOIN',
   BOOM = 'BOOM',
 }
+
+export enum GameType {
+  RANK = 'RANK',
+  CUSTOM = 'CUSTOM',
+}
+
+export enum CanvasNotifyType {
+  BALL = 'BALL',
+  PADDLE = 'PADDLE',
+}

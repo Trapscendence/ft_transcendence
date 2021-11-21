@@ -2,6 +2,7 @@ import { Inject } from '@nestjs/common';
 import {
   Args,
   ID,
+  Int,
   Mutation,
   Query,
   Resolver,
@@ -12,7 +13,12 @@ import { PUB_SUB } from 'src/pubsub.module';
 import { UserID } from 'src/users/decorators/user-id.decorator';
 import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
-import { Game, GameNotify } from './models/game.model';
+import {
+  CanvasNotify,
+  Game,
+  GameNotify,
+  InGameNotify,
+} from './models/game.model';
 
 @Resolver((of) => Game)
 export class GamesResolver {
@@ -26,9 +32,10 @@ export class GamesResolver {
    ** ANCHOR: Query
    */
 
-  // @Query((returns) => Game)
-  // async game(@Args('game_id', { type: () => ID! }) game_id: string) {
-  // }
+  @Query((returns) => Game)
+  async game(@Args('game_id', { type: () => ID! }) game_id: string) {
+    return await this.gamesService.getGame(game_id);
+  }
 
   /*
    ** ANCHOR: Mutation
@@ -60,6 +67,36 @@ export class GamesResolver {
     return await this.gamesService.notJoinGame(user_id, game_id);
   }
 
+  @Mutation((returns) => Boolean)
+  async movePaddle(
+    @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+    @Args('y', { type: () => Int! }) y: number,
+    @Args('dy', { type: () => Int! }) dy: number,
+    @Args('isLeft', { type: () => Boolean! }) isLeft: boolean,
+  ) {
+    return await this.gamesService.movePaddle(user_id, game_id, y, dy, isLeft);
+  }
+
+  @Mutation((returns) => Boolean)
+  async ballCollision(
+    @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+    @Args('x', { type: () => Int! }) x: number,
+    @Args('y', { type: () => Int! }) y: number,
+    @Args('dx', { type: () => Int! }) dx: number,
+    @Args('dy', { type: () => Int! }) dy: number,
+  ) {
+    return await this.gamesService.ballCollision(
+      user_id,
+      game_id,
+      x,
+      y,
+      dx,
+      dy,
+    );
+  }
+
   /*
    ** ANCHOR: Subscription
    */
@@ -67,5 +104,23 @@ export class GamesResolver {
   @Subscription((returns) => GameNotify)
   subscribeMatch(@UserID() user_id: string) {
     return this.pubSub.asyncIterator(`registered_${user_id}`);
+  }
+
+  @Subscription((returns) => InGameNotify)
+  subscribeInGame(
+    // @UserID() user_id: string, // NOTE: 나중에 필요하면 추가
+    @Args('game_id', { type: () => ID! }) game_id: string,
+  ) {
+    // return this.pubSub.asyncIterator(`ingame_${game_id}_${user_id}`);
+    return this.pubSub.asyncIterator(`ingame_${game_id}`); // NOTE: 이렇게 해도 될까? 아 나중에 고치자...
+  }
+
+  @Subscription((returns) => CanvasNotify)
+  subscribeInGameCanvas(
+    // @UserID() user_id: string, // NOTE: 나중에 필요하면 추가
+    @Args('game_id', { type: () => ID! }) game_id: string,
+  ) {
+    // return this.pubSub.asyncIterator(`ingame_${game_id}_${user_id}`);
+    return this.pubSub.asyncIterator(`ingame_canvas_${game_id}`);
   }
 }

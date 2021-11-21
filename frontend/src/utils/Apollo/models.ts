@@ -11,9 +11,9 @@ export interface IChannelListItem {
 export interface IUser {
   id: string;
   nickname: string;
-  avatar: string;
+  avatar?: string; // NOTE: 백엔드의 미구현으로 임시 ?처리
   status_message?: string;
-  status: UserStatus;
+  status?: UserStatus;
 }
 
 export interface IChannel {
@@ -51,3 +51,28 @@ export interface IChatting {
 //     nickname: string;
 //   };
 // }
+
+export interface ICanvasInfo {
+  ball_x: number;
+  ball_y: number;
+  ball_dx: number;
+  ball_dy: number;
+  left_paddle_y: number;
+  left_paddle_dy: number;
+  right_paddle_y: number;
+  right_paddle_dy: number;
+}
+
+export interface BallInfo {
+  ball_x: number;
+  ball_y: number;
+  ball_dx: number;
+  ball_dy: number;
+}
+
+export interface PaddleInfo {
+  left_paddle_y: number;
+  left_paddle_dy: number;
+  right_paddle_y: number;
+  right_paddle_dy: number;
+}

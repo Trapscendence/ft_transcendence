@@ -3,7 +3,13 @@ import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
-import { Game, GameNotifyType, GameType } from './models/game.model';
+import {
+  CanvasNotifyType,
+  Game,
+  GameNotifyType,
+  GameType,
+  InGameNotifyType,
+} from './models/game.model';
 
 @Injectable()
 export class GamesService {
@@ -22,14 +28,21 @@ export class GamesService {
   private waiting: Map<string, string[]>;
 
   // NOTE: 임시
-  makeCanvasInfo() {
+  makeBallInfo() {
     return {
       ball_x: 250,
-      ball_y: 250,
-      ball_dx: 1,
-      ball_dy: 1,
+      ball_y: 400,
+      ball_dx: 2,
+      ball_dy: 2,
+    };
+  }
+
+  makePaddleInfo() {
+    return {
       left_paddle_y: 250,
+      left_paddle_dy: 0,
       right_paddle_y: 250,
+      right_paddle_dy: 0,
     };
   }
 
@@ -38,7 +51,9 @@ export class GamesService {
     return {
       // id: new Date().getTime().toString(),
       id: '1',
-      canvas_info: this.makeCanvasInfo(),
+      // canvas_info: this.makeCanvasInfo(),
+      ball_info: this.makeBallInfo(),
+      paddle_info: this.makePaddleInfo(),
       game_type: GameType.RANK,
       left_score: 0,
       right_score: 0,
@@ -52,6 +67,14 @@ export class GamesService {
   /*
    ** ANCHOR: Query
    */
+
+  async getGame(game_id: string) {
+    const game = this.games.get(game_id);
+
+    if (!game) throw Error('This game is not available.');
+
+    return game;
+  }
 
   /*
    ** ANCHOR: Mutation
@@ -96,6 +119,9 @@ export class GamesService {
   async joinGame(user_id: string, game_id: string): Promise<boolean> {
     if (!this.waiting.get(game_id)) throw Error('game is not vailable.');
 
+    const game = this.games.get(game_id);
+    if (!game) throw Error('game is not vailable.');
+
     this.waiting.set(
       game_id,
       this.waiting.get(game_id).filter((val) => {
@@ -117,10 +143,20 @@ export class GamesService {
       subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
     });
 
+    this.pubSub.publish(`ingame_canvas_${game_id}`, {
+      subscribeInGameCanvas: {
+        game_id,
+        ball_info: game.ball_info,
+        paddle_info: game.paddle_info,
+      },
+    });
+
     return true;
   }
 
   async notJoinGame(user_id: string, game_id: string): Promise<boolean> {
+    if (!this.waiting.get(game_id)) throw Error('game is not vailable.');
+
     const leftId = this.games.get(game_id).left_player.id;
     const rightId = this.games.get(game_id).right_player.id;
 
@@ -136,4 +172,76 @@ export class GamesService {
 
     return true;
   }
+
+  // NOTE: 시간 남으면 나중에 user_id로 검증도 추가해야... 그 의도로 user_id 받음
+  async movePaddle(
+    user_id: string,
+    game_id: string,
+    y: number,
+    dy: number,
+    isLeft: boolean,
+  ) {
+    const game = this.games.get(game_id);
+    if (!game) throw Error('This game is not available.');
+
+    console.log('paddle', y, dy, isLeft);
+
+    if (isLeft) {
+      this.pubSub.publish(`ingame_canvas_${game_id}`, {
+        subscribeInGameCanvas: {
+          game_id,
+          type: CanvasNotifyType.PADDLE,
+          paddle_info: {
+            ...game.paddle_info,
+            left_paddle_y: y,
+            left_paddle_dy: dy,
+          },
+        },
+      });
+    } else {
+      this.pubSub.publish(`ingame_canvas_${game_id}`, {
+        subscribeInGameCanvas: {
+          game_id,
+          type: CanvasNotifyType.PADDLE,
+          paddle_info: {
+            ...game.paddle_info,
+            right_paddle_y: y,
+            right_paddle_dy: dy,
+          },
+        },
+      });
+    }
+
+    return true;
+  } // NOTE: 프론트에서 눌렀는지 안눌렀는지, 어느 방향인지를 dy로 포괄적으로 보내줌
+
+  async ballCollision(
+    user_id: string,
+    game_id: string,
+    x: number,
+    y: number,
+    dx: number,
+    dy: number,
+    // isLeft: string,
+  ) {
+    const game = this.games.get(game_id);
+    if (!game) throw Error('This game is not available.');
+
+    console.log('ball', x, y, dx, dy);
+
+    this.pubSub.publish(`ingame_canvas_${game_id}`, {
+      subscribeInGameCanvas: {
+        game_id, // NOTE: game_id는 필요할까?
+        type: CanvasNotifyType.BALL,
+        ball_info: {
+          ball_x: x,
+          ball_y: y,
+          ball_dx: dx,
+          ball_dy: dy,
+        },
+      },
+    });
+
+    return true;
+  } // NOTE: 프론트에서 왼쪽인 사람만 보낸다. 공이 충돌이 일어나면 위치와 속도를 보낸다.
 }
