@@ -29,6 +29,10 @@ const START_LEFT_PADDLE_Y = 250;
 // const START_RIGHT_PADDLE_Y = Math.floor((CANVAS_HEIGHT - PADDLE_HEIGHT) / 2);
 const START_RIGHT_PADDLE_Y = 250;
 
+// NOTE: 백엔드 시작값과 동일하게 맞춰야 위화감이 없다. (시작 딜레이 후 캔버스 초기값을 전달받으므로)
+// 처음 렌더링을 주석처리하면, 위의 값들이 직접 렌더링되는 경우는 없음. 근데 맨 처음에 렌더링 되어있는게 보기 좋은 듯...
+// 따라서 상수화해서 백엔드, 프론트엔드 값을 동일하게 맞추는 것이 제일 나을 듯
+
 interface PongProps {
   isLeft: boolean;
   gameId: string;
@@ -42,11 +46,12 @@ export default function Pong({
 }: // initBallInfo,
 // initPaddleInfo,
 PongProps): JSX.Element {
+  /*
+   ** ANCHOR: states
+   */
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-  // const [upPressed, setUpPressed] = useState<boolean>(false);
-  // const [downPressed, setDownPressed] = useState<boolean>(false);
-  const [keyDown, setKeyDown] = useState(false);
 
   const [x, setX] = useState(START_X);
   const [y, setY] = useState(START_Y);
@@ -57,15 +62,14 @@ PongProps): JSX.Element {
   const [leftPaddleDy, setLeftPaddleDy] = useState(0);
   const [rightPaddleDy, setRightPaddleDy] = useState(0);
 
+  const [keyDown, setKeyDown] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  // const [leftScore, setLeftScore] = useState(0);
-  // const [rightScore, setRightScore] = useState(0);
 
   const myPaddleY = isLeft ? leftPaddleY : rightPaddleY;
-  // const myPaddleDy = isLeft ? leftPaddleDy : rightPaddleDy;
-  // const setMyPaddleY = isLeft ? setLeftPaddleY : setRightPaddleY;
-  // const setMyPaddleDy = isLeft ? setLeftPaddleDy : setRightPaddleDy;
-  // const setEnemyPaddle = isLeft ? setRightPaddleY : setLeftPaddleY; // NOTE: 나중에 서버와 통신할떄 쓰일 것...
+
+  /*
+   ** ANCHOR: Apollo
+   */
 
   const { data, error } = useSubscription<{
     subscribeInGameCanvas: {
@@ -100,70 +104,6 @@ PongProps): JSX.Element {
     }
   );
 
-  const syncBall = (ballInfo: BallInfo) => {
-    const { ball_x, ball_y, ball_dx, ball_dy } = ballInfo;
-
-    setX(ball_x);
-    setY(ball_y);
-    setDx(ball_dx);
-    setDy(ball_dy);
-  };
-
-  const syncPaddle = (paddleInfo: PaddleInfo) => {
-    const { left_paddle_y, right_paddle_y, left_paddle_dy, right_paddle_dy } =
-      paddleInfo;
-
-    console.log(left_paddle_y, right_paddle_y, left_paddle_dy, right_paddle_dy);
-
-    setLeftPaddleY(left_paddle_y);
-    setRightPaddleY(right_paddle_y);
-    setLeftPaddleDy(left_paddle_dy);
-    setRightPaddleDy(right_paddle_dy);
-  };
-
-  // useEffect(() => {
-  //   syncBall(initBallInfo);
-  // }, [initBallInfo]);
-
-  // useEffect(() => {
-  //   syncPaddle(initPaddleInfo);
-  // }, [initPaddleInfo]);
-
-  // useEffect(()=>{
-  //   reset
-  // })
-
-  // useEffect(() => {
-  //   setIsPlaying(true); // NOTE: 이때만 해주면 될까?
-  // }, []);
-
-  useEffect(() => {
-    if (!data) return;
-
-    // console.log(data.subscribeInGameCanvas);
-
-    const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
-
-    switch (type) {
-      case CanvasNotifyType.BALL:
-        if (!ball_info) return;
-        if (isLeft) return;
-        syncBall(ball_info);
-        break;
-
-      case CanvasNotifyType.PADDLE:
-        if (!paddle_info) return;
-        syncPaddle(paddle_info);
-        break;
-
-      case CanvasNotifyType.START:
-        if (!ball_info || !paddle_info) return;
-        setIsPlaying(true);
-        syncBall(ball_info);
-        syncPaddle(paddle_info);
-    }
-  }, [data]);
-
   const [movePaddle, { error: movePaddleError }] = useMutation<{
     movePaddle: boolean;
   }>(
@@ -175,7 +115,6 @@ PongProps): JSX.Element {
         $isLeft: Boolean!
       ) {
         movePaddle(game_id: $game_id, y: $y, dy: $dy, isLeft: $isLeft)
-        # movePaddle(game_id: $game_id, dy: $dy, isLeft: $isLeft)
       }
     `
   );
@@ -206,6 +145,56 @@ PongProps): JSX.Element {
     `
   );
 
+  /*
+   ** ANCHOR: useEffect
+   */
+
+  const syncBall = (ballInfo: BallInfo) => {
+    const { ball_x, ball_y, ball_dx, ball_dy } = ballInfo;
+
+    setX(ball_x);
+    setY(ball_y);
+    setDx(ball_dx);
+    setDy(ball_dy);
+  };
+
+  const syncPaddle = (paddleInfo: PaddleInfo) => {
+    const { left_paddle_y, right_paddle_y, left_paddle_dy, right_paddle_dy } =
+      paddleInfo;
+
+    setLeftPaddleY(left_paddle_y);
+    setRightPaddleY(right_paddle_y);
+    setLeftPaddleDy(left_paddle_dy);
+    setRightPaddleDy(right_paddle_dy);
+  };
+
+  useEffect(() => {
+    if (!data) return;
+
+    // console.log(data.subscribeInGameCanvas);
+
+    const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
+
+    switch (type) {
+      case CanvasNotifyType.BALL:
+        if (!ball_info) return;
+        if (isLeft) return;
+        syncBall(ball_info);
+        break;
+
+      case CanvasNotifyType.PADDLE:
+        if (!paddle_info) return;
+        syncPaddle(paddle_info);
+        break;
+
+      case CanvasNotifyType.START:
+        if (!ball_info || !paddle_info) return;
+        setIsPlaying(true);
+        syncBall(ball_info);
+        syncPaddle(paddle_info);
+    }
+  }, [data]);
+
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -217,6 +206,10 @@ PongProps): JSX.Element {
     drawLeftPaddle();
     drawRightPaddle();
   }, [ctx]);
+
+  /*
+   ** ANCHOR: Draw Functions
+   */
 
   const drawBall = () => {
     if (!ctx) return;
@@ -253,32 +246,16 @@ PongProps): JSX.Element {
     ctx.closePath();
   };
 
-  // const resetGame = () => {
-  //   if (!ctx) return;
-
-  //   // console.log('reset');
-  //   // setIsPlaying(false);
-
-  //   setX(START_X);
-  //   setY(START_Y);
-  //   setDx(START_DX);
-  //   setDy(START_DY);
-  //   setLeftPaddleY(START_LEFT_PADDLE_Y);
-  //   setRightPaddleY(START_RIGHT_PADDLE_Y);
-  // };
-
   const sendBallCollision = async () => {
-    if (!isLeft) return; // NOTE 임시!
-
-    // console.log('send', { game_id: gameId, x, y, dx, dy });
+    if (!isLeft) return; // NOTE: left 유저만 정보 전송... 추후 라운드마다 호스트 번갈아 바꾸는 식으로 개선
 
     await ballCollision({
       variables: { game_id: gameId, x, y, dx, dy },
     });
-  };
+  }; // NOTE: try-catch 추가해야 할 수도...
 
   const sendWinRound = async (isLeftWin: boolean) => {
-    if (!isLeft) return; // NOTE: left 유저만 정보 전송
+    if (!isLeft) return;
 
     await winRound({
       variables: { game_id: gameId, isLeftWin },
@@ -302,63 +279,38 @@ PongProps): JSX.Element {
       if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
         setDx((prev) => -prev);
       } else {
-        // setRightScore((prev) => prev + 1);
         setIsPlaying(false);
-        // resetGame();
         void sendWinRound(!isLeft);
         return;
       }
-      void sendBallCollision(); // NOTE: void로 하면 어떻게 될까?
+      void sendBallCollision();
     } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
       // NOTE: 공이 오른쪽으로 갔을 때
       if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
         setDx((prev) => -prev);
       } else {
-        // setLeftScore((prev) => prev + 1);
         setIsPlaying(false);
-        // resetGame();
         void sendWinRound(isLeft);
         return;
       }
       void sendBallCollision();
     }
 
-    // NOTE: 백업... 여차하면 다시 돌려야하니까.
-    // // if (upPressed) {
-    // setMyPaddleY((prev) => prev + myPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
-    // if (myPaddleY < 0) {
-    //   setMyPaddleY(0);
-    // }
-    // // } else if (downPressed) {
-    // // setMyPaddleY((prev) => prev + D_PADDLEY);
-    // if (myPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
-    //   setMyPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
-    // }
-    // // }
-
     setLeftPaddleY((prev) => prev + leftPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
     if (leftPaddleY < 0) {
       setLeftPaddleY(0);
     }
-    // } else if (downPressed) {
-    // setMyPaddleY((prev) => prev + D_PADDLEY);
     if (leftPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
       setLeftPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
     }
-    // }
 
-    setRightPaddleY((prev) => prev + rightPaddleDy); // NOTE: canvas는 아래로 갈수록 y가 크다.
+    setRightPaddleY((prev) => prev + rightPaddleDy);
     if (rightPaddleY < 0) {
       setRightPaddleY(0);
     }
-    // } else if (downPressed) {
-    // setMyPaddleY((prev) => prev + D_PADDLEY);
     if (rightPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
       setRightPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
     }
-    // }
-
-    // console.log(x, y, dx, dy);
 
     setX((prev) => prev + dx);
     setY((prev) => prev + dy);
@@ -368,17 +320,11 @@ PongProps): JSX.Element {
     if (keyDown) return;
     setKeyDown(true);
 
-    // console.log('keydown!', keyDown);
-
     if (e.key == 'Up' || e.key == 'ArrowUp') {
-      // setUpPressed(true);
-      // setMyPaddleDy(-PADDLE_DY);
       await movePaddle({
         variables: { game_id: gameId, y: myPaddleY, dy: -PADDLE_DY, isLeft },
       });
     } else if (e.key == 'Down' || e.key == 'ArrowDown') {
-      // setDownPressed(true);
-      // setMyPaddleDy(PADDLE_DY);
       await movePaddle({
         variables: { game_id: gameId, y: myPaddleY, dy: PADDLE_DY, isLeft },
       });
@@ -389,37 +335,32 @@ PongProps): JSX.Element {
     if (!keyDown) return;
     setKeyDown(false);
 
-    // console.log('keyup!', keyDown);
-
-    if (e.key == 'Up' || e.key == 'ArrowUp') {
-      // setUpPressed(false);
-      // setMyPaddleDy(0);
-    } else if (e.key == 'Down' || e.key == 'ArrowDown') {
-      // setDownPressed(false);
-      // setMyPaddleDy(0);
-    }
-    await movePaddle({
-      variables: { game_id: gameId, y: myPaddleY, dy: 0, isLeft },
-    });
+    if (
+      e.key == 'Up' ||
+      e.key == 'ArrowUp' ||
+      e.key == 'Down' ||
+      e.key == 'ArrowDown'
+    ) {
+      await movePaddle({
+        variables: { game_id: gameId, y: myPaddleY, dy: 0, isLeft },
+      });
+    } // NOTE: 사실 e.key에 대한 검사 없이도 잘 작동... 예외를 잘 모르겠다.
   };
 
-  useInterval(draw, isPlaying ? 30 : null);
-  // useInterval(draw, 30); // NOTE: 대략 30fps?
-  // useInterval(draw, 100); // NOTE: 테스트용
+  useInterval(draw, isPlaying ? 30 : null); // NOTE: 대략 30fps
+  // useInterval(draw, 30);
+
+  const errorVar =
+    error || movePaddleError || ballCollisionError || winRoundError;
 
   return (
     <>
-      {error && <ErrorAlert name="Pong" error={error} />}
+      {errorVar && <ErrorAlert name="Pong" error={errorVar} />}
       <Box
         sx={{
           textAlign: 'center',
         }}
       >
-        {/* <Button onClick={() => setIsPlaying((prev) => !prev)}>toggle game</Button> */}
-        {/* <Typography>score</Typography>
-      <Typography>
-        {leftScore} | {rightScore}
-      </Typography> */}
         <canvas
           id="canvas"
           ref={canvasRef}

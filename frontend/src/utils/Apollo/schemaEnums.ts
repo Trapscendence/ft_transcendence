@@ -97,3 +97,9 @@ export enum CanvasNotifyType {
   PADDLE = 'PADDLE',
   START = 'START',
 }
+
+export enum InGameNotifyType {
+  OBSERVER = 'OBSERVER',
+  WINLOSE = 'WINLOSE',
+  END = 'END',
+}

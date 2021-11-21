@@ -145,14 +145,6 @@ export class GamesService {
       subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
     });
 
-    this.pubSub.publish(`ingame_canvas_${game_id}`, {
-      subscribeInGameCanvas: {
-        game_id,
-        ball_info: game.ball_info,
-        paddle_info: game.paddle_info,
-      },
-    });
-
     setTimeout(() => {
       this.pubSub.publish(`ingame_canvas_${game_id}`, {
         subscribeInGameCanvas: {
