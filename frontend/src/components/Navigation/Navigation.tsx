@@ -11,12 +11,17 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
   Box,
+  Button,
   CircularProgress,
   Divider,
+  Drawer,
+  List,
+  ListItem,
   Stack,
   Tab,
   Tabs,
 } from '@mui/material';
+import ListItemText from '@mui/material/ListItemText';
 import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
@@ -83,81 +88,142 @@ function Navigation(): JSX.Element {
   const onClickPlay = () => {
     setLoading((value) => !value); // NOTE: loading을 사용하는 toggle... 더 나은 상태 작성법이 있나?
   };
-
+  const [open, setOpen] = React.useState(false);
+  const toggleDrawer = (newOpen: boolean) => () => {
+    setOpen(newOpen);
+    console.log(open);
+  };
   return (
-    <Box
-      py={1}
-      sx={{
-        position: 'fixed',
-        zIndex: 1,
-        bgcolor: 'white',
-        // width: '90px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        height: '100vh',
-        borderRight: '1px solid #e0e0e0',
-      }}
-    >
-      <Box>
-        <Tabs
-          value={tabValue}
-          onChange={handleChange}
-          orientation="vertical"
-          // textColor="secondary"
-          // indicatorColor="secondary"
-        >
-          <Tab aria-label="/home" icon={<Home />} />
-          <Tab
-            aria-label={'/profile/' + currentUser.id}
-            icon={<AccountCircle />}
-          />
-          <Tab aria-label="/rank" icon={<Analytics />} />
-          <Tab aria-label="/channel" icon={<Forum />} />
-          <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
-        </Tabs>
-        <Divider />
-        <Box
-          onClick={onClickPlay}
-          sx={{ position: 'relative', cursor: 'pointer' }}
-        >
-          <Tab
-            icon={<VideogameAsset />}
-            // disabled={loading}
-            sx={{ color: loading ? 'text.disabled' : '' }}
-          />
-          {loading && (
-            <CircularProgress
-              // color="secondary"
-              size={35}
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                marginTop: '-17px',
-                marginLeft: '-17px',
-                zIndex: 1,
-              }}
+    <Box>
+      <Box
+        py={1}
+        sx={{
+          position: 'fixed',
+          zIndex: 1,
+          bgcolor: 'white',
+          // width: '90px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          height: '100vh',
+          borderRight: '1px solid #e0e0e0',
+        }}
+      >
+        <Box>
+          <Tabs
+            value={tabValue}
+            onChange={handleChange}
+            orientation="vertical"
+            // textColor="secondary"
+            // indicatorColor="secondary"
+          >
+            <Tab aria-label="/home" icon={<Home />} />
+            <Tab
+              aria-label={'/profile/' + currentUser.id}
+              icon={<AccountCircle />}
             />
-          )}
+            <Tab aria-label="/rank" icon={<Analytics />} />
+            <Tab aria-label="/channel" icon={<Forum />} />
+            <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
+          </Tabs>
+          <Divider />
+          <Box
+            onClick={onClickPlay}
+            sx={{ position: 'relative', cursor: 'pointer' }}
+          >
+            <Tab
+              icon={<VideogameAsset />}
+              // disabled={loading}
+              sx={{ color: loading ? 'text.disabled' : '' }}
+            />
+            {loading && (
+              <CircularProgress
+                // color="secondary"
+                size={35}
+                sx={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  marginTop: '-17px',
+                  marginLeft: '-17px',
+                  zIndex: 1,
+                }}
+              />
+            )}
+          </Box>
         </Box>
+        <Stack>
+          <Tabs
+            // onChange={handleChange}
+            orientation="vertical"
+            textColor="secondary"
+            indicatorColor="secondary"
+          >
+            <Tab
+              aria-label="auth/logout"
+              icon={<LogoutIcon />}
+              onClick={logOut}
+            />
+            <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
+          </Tabs>
+        </Stack>
+
+        <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
+          <Stack
+            sx={{
+              height: '100vh',
+              backgroundColor: '#F0F0F0',
+            }}
+            direction="column"
+            justifyContent="space-between"
+          >
+            <List>
+              {['공지사항', '패치노트', '게임규칙', '멋진그림', '크레딧'].map(
+                (text, index) => (
+                  <ListItem button={false} key={index}>
+                    <Button
+                      color="secondary"
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: '#708090',
+                        width: '170px',
+                        padding: '5px',
+                        margin: '1px',
+                      }}
+                    >
+                      <ListItemText primary={text} />
+                    </Button>
+                  </ListItem>
+                )
+              )}
+            </List>
+            <Box />
+            <List>
+              {['유저목록', '게임목록', '채널목록'].map((text, index) => (
+                <ListItem key={index}>
+                  <Button
+                    color="secondary"
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      backgroundColor: '#708090',
+                      width: '170px',
+                      padding: '5px',
+                      margin: '1px',
+                    }}
+                  >
+                    <ListItemText primary={text} />
+                  </Button>
+                </ListItem>
+              ))}
+            </List>
+          </Stack>
+        </Drawer>
       </Box>
-      <Stack>
-        <Tabs
-          // onChange={handleChange}
-          orientation="vertical"
-          textColor="secondary"
-          indicatorColor="secondary"
-        >
-          <Tab
-            aria-label="auth/logout"
-            icon={<LogoutIcon />}
-            onClick={logOut}
-          />
-          <Tab icon={<MoreHoriz />} />
-        </Tabs>
-      </Stack>
     </Box>
   );
 }

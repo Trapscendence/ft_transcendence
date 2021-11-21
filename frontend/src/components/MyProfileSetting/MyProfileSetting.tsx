@@ -169,7 +169,7 @@ export default function MyProfileSetting(): JSX.Element {
           <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
               <Typography variant="body2">
-                인증방식 <br /> - 구글 / 42 <br /> - otp
+                2차 인증 <br /> - 구글 인증 : <br /> 사용중 or 활성화하기
               </Typography>
             </Paper>
           </Grid>

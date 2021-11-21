@@ -1,6 +1,12 @@
+import Rank from '../../components/RankPage';
+
 function RankPage(): JSX.Element {
-  return <div>RankPage</div>;
-  // return <Box></Box>;
+  return (
+    <div
+    >
+      <Rank />
+    </div>
+  );
 }
 
 export default RankPage;
