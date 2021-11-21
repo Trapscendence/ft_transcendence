@@ -95,4 +95,5 @@ export enum GameType {
 export enum CanvasNotifyType {
   BALL = 'BALL',
   PADDLE = 'PADDLE',
+  START = 'START',
 }

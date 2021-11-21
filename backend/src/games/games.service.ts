@@ -31,7 +31,7 @@ export class GamesService {
   makeBallInfo() {
     return {
       ball_x: 250,
-      ball_y: 400,
+      ball_y: 470, // NOTE: 상수화 필요
       ball_dx: 2,
       ball_dy: 2,
     };
@@ -151,6 +151,17 @@ export class GamesService {
       },
     });
 
+    setTimeout(() => {
+      this.pubSub.publish(`ingame_canvas_${game_id}`, {
+        subscribeInGameCanvas: {
+          game_id,
+          type: CanvasNotifyType.START,
+          ball_info: this.makeBallInfo(),
+          paddle_info: this.makePaddleInfo(),
+        },
+      });
+    }, 3000); // NOTE: 3초 후 게임 시작
+
     return true;
   }
 
@@ -244,4 +255,44 @@ export class GamesService {
 
     return true;
   } // NOTE: 프론트에서 왼쪽인 사람만 보낸다. 공이 충돌이 일어나면 위치와 속도를 보낸다.
+
+  async winRound(
+    user_id: string,
+    game_id: string,
+    isLeft: boolean,
+  ): Promise<boolean> {
+    const game = this.games.get(game_id);
+    if (!game) throw Error('This game is not available.');
+
+    if (isLeft) {
+      game.left_score += 1;
+      console.log('left', game.left_score, game.right_score);
+    } else {
+      game.right_score += 1;
+      console.log('right', game.left_score, game.right_score);
+    }
+
+    game.ball_info = this.makeBallInfo();
+    game.paddle_info = this.makePaddleInfo();
+
+    this.pubSub.publish(`ingame_${game_id}`, {
+      subscribeInGame: {
+        type: InGameNotifyType.WINLOSE,
+        game_id,
+      },
+    });
+
+    setTimeout(() => {
+      this.pubSub.publish(`ingame_canvas_${game_id}`, {
+        subscribeInGameCanvas: {
+          game_id,
+          type: CanvasNotifyType.START,
+          ball_info: this.makeBallInfo(),
+          paddle_info: this.makePaddleInfo(),
+        },
+      });
+    }, 3000); // NOTE: 3초 후 게임 재시작
+
+    return true;
+  }
 }

@@ -23,8 +23,8 @@ registerEnumType(GameNotifyType, {
 export enum InGameNotifyType {
   // BALL = 'BALL',
   // PADDLE = 'PADDLE',
-  OBSERVER = 'OBSERVER',
   WINLOSE = 'WINLOSE',
+  OBSERVER = 'OBSERVER',
   END = 'END',
 }
 
@@ -35,6 +35,8 @@ registerEnumType(InGameNotifyType, {
 export enum CanvasNotifyType {
   BALL = 'BALL',
   PADDLE = 'PADDLE',
+  // END = 'END',
+  START = 'START',
 }
 
 registerEnumType(CanvasNotifyType, {
@@ -79,9 +81,10 @@ export class GameNotify {
   @Field((type) => ID)
   game_id: string;
 }
+
 @ObjectType()
 export class InGameNotify {
-  @Field((type) => GameNotifyType)
+  @Field((type) => InGameNotifyType)
   type: InGameNotifyType;
 
   @Field((type) => ID)

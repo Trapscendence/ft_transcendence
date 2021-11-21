@@ -1,4 +1,5 @@
 import { useQuery, useSubscription } from '@apollo/client';
+import { Typography } from '@material-ui/core';
 import { Card } from '@mui/material';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
@@ -31,12 +32,12 @@ export default function Game(): JSX.Element {
 
   const { game_id } = location.state;
 
-  const { data: gameData } = useQuery<{
+  const { data: gameData, refetch } = useQuery<{
     game: {
       id: string;
       game_type: GameType;
-      ball_info: BallInfo;
-      paddle_info: PaddleInfo;
+      // ball_info: BallInfo;
+      // paddle_info: PaddleInfo;
       left_score: number;
       right_score: number;
       left_player: {
@@ -58,18 +59,18 @@ export default function Game(): JSX.Element {
         game(game_id: $game_id) {
           id
           game_type
-          ball_info {
-            ball_x
-            ball_y
-            ball_dx
-            ball_dy
-          }
-          paddle_info {
-            left_paddle_y
-            left_paddle_dy
-            right_paddle_y
-            right_paddle_dy
-          }
+          # ball_info {
+          #   ball_x
+          #   ball_y
+          #   ball_dx
+          #   ball_dy
+          # }
+          # paddle_info {
+          #   left_paddle_y
+          #   left_paddle_dy
+          #   right_paddle_y
+          #   right_paddle_dy
+          # }
           left_score
           right_score
           left_player {
@@ -94,7 +95,7 @@ export default function Game(): JSX.Element {
   );
 
   const { data, error } = useSubscription<{
-    subscriptionInGame: {
+    subscribeInGame: {
       type: InGameNotifyType;
       game_id: string;
     };
@@ -121,14 +122,16 @@ export default function Game(): JSX.Element {
   useEffect(() => {
     if (!data) return;
 
-    console.log(data.subscriptionInGame);
+    console.log(data.subscribeInGame);
+
+    void refetch();
   }, [data]);
 
   if (!gameData) return <></>;
 
   const {
-    ball_info,
-    paddle_info,
+    // ball_info,
+    // paddle_info,
     left_score,
     right_score,
     left_player,
@@ -144,16 +147,18 @@ export default function Game(): JSX.Element {
       <Box display="flex" justifyContent="space-between">
         <Card sx={{ display: 'flex' }}>
           <UserSummary IUser={left_player} />
+          <Typography>score: {left_score}</Typography>
         </Card>
         <Card>
           <UserSummary IUser={right_player} />
+          <Typography>score: {right_score}</Typography>
         </Card>
       </Box>
       <Pong
         isLeft={isLeft}
         gameId={game_id}
-        initBallInfo={ball_info}
-        initPaddleInfo={paddle_info}
+        // initBallInfo={ball_info}
+        // initPaddleInfo={paddle_info}
       />
     </>
   );

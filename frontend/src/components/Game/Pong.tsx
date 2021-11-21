@@ -4,7 +4,7 @@ import gql from 'graphql-tag';
 import { useEffect, useRef, useState } from 'react';
 
 import useInterval from '../../hooks/useInterval';
-import { BallInfo, ICanvasInfo, PaddleInfo } from '../../utils/Apollo/models';
+import { BallInfo, PaddleInfo } from '../../utils/Apollo/models';
 import { CanvasNotifyType } from '../../utils/Apollo/schemaEnums';
 import ErrorAlert from '../commons/ErrorAlert';
 
@@ -15,29 +15,33 @@ const PADDLE_HEIGHT = 75;
 const PADDLE_WIDTH = 10;
 const PADDLE_DY = 7;
 
-const START_X = Math.floor(CANVAS_WIDTH / 2);
+// const START_X = CANVAS_WIDTH / 2;
+const START_X = 250;
 // const START_Y = CANVAS_HEIGHT / 2;
-const START_Y = CANVAS_HEIGHT - 30;
+// const START_Y = CANVAS_HEIGHT - 30;
+const START_Y = 470;
 // const START_DX = 2;
 const START_DX = 0;
 // const START_DY = -2;
 const START_DY = 0;
-const START_LEFT_PADDLE_Y = Math.floor((CANVAS_HEIGHT - PADDLE_HEIGHT) / 2);
-const START_RIGHT_PADDLE_Y = Math.floor((CANVAS_HEIGHT - PADDLE_HEIGHT) / 2);
+// const START_LEFT_PADDLE_Y = Math.floor((CANVAS_HEIGHT - PADDLE_HEIGHT) / 2);
+const START_LEFT_PADDLE_Y = 250;
+// const START_RIGHT_PADDLE_Y = Math.floor((CANVAS_HEIGHT - PADDLE_HEIGHT) / 2);
+const START_RIGHT_PADDLE_Y = 250;
 
 interface PongProps {
   isLeft: boolean;
   gameId: string;
-  initBallInfo: BallInfo;
-  initPaddleInfo: PaddleInfo;
+  // initBallInfo: BallInfo;
+  // initPaddleInfo: PaddleInfo;
 }
 
 export default function Pong({
   isLeft,
   gameId,
-  initBallInfo,
-  initPaddleInfo,
-}: PongProps): JSX.Element {
+}: // initBallInfo,
+// initPaddleInfo,
+PongProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
   // const [upPressed, setUpPressed] = useState<boolean>(false);
@@ -53,14 +57,14 @@ export default function Pong({
   const [leftPaddleDy, setLeftPaddleDy] = useState(0);
   const [rightPaddleDy, setRightPaddleDy] = useState(0);
 
-  // const [isPlaying, setIsPlaying] = useState(false);
-  const [leftScore, setLeftScore] = useState(0);
-  const [rightScore, setRightScore] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  // const [leftScore, setLeftScore] = useState(0);
+  // const [rightScore, setRightScore] = useState(0);
 
   const myPaddleY = isLeft ? leftPaddleY : rightPaddleY;
-  const myPaddleDy = isLeft ? leftPaddleDy : rightPaddleDy;
-  const setMyPaddleY = isLeft ? setLeftPaddleY : setRightPaddleY;
-  const setMyPaddleDy = isLeft ? setLeftPaddleDy : setRightPaddleDy;
+  // const myPaddleDy = isLeft ? leftPaddleDy : rightPaddleDy;
+  // const setMyPaddleY = isLeft ? setLeftPaddleY : setRightPaddleY;
+  // const setMyPaddleDy = isLeft ? setLeftPaddleDy : setRightPaddleDy;
   // const setEnemyPaddle = isLeft ? setRightPaddleY : setLeftPaddleY; // NOTE: 나중에 서버와 통신할떄 쓰일 것...
 
   const { data, error } = useSubscription<{
@@ -115,18 +119,26 @@ export default function Pong({
     setRightPaddleDy(right_paddle_dy);
   };
 
-  useEffect(() => {
-    syncBall(initBallInfo);
-  }, [initBallInfo]);
+  // useEffect(() => {
+  //   syncBall(initBallInfo);
+  // }, [initBallInfo]);
 
-  useEffect(() => {
-    syncPaddle(initPaddleInfo);
-  }, [initPaddleInfo]);
+  // useEffect(() => {
+  //   syncPaddle(initPaddleInfo);
+  // }, [initPaddleInfo]);
+
+  // useEffect(()=>{
+  //   reset
+  // })
+
+  // useEffect(() => {
+  //   setIsPlaying(true); // NOTE: 이때만 해주면 될까?
+  // }, []);
 
   useEffect(() => {
     if (!data) return;
 
-    // console.log(data.subscribeInGameCanvas);
+    console.log(data.subscribeInGameCanvas);
 
     const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
 
@@ -142,6 +154,12 @@ export default function Pong({
         if (!paddle_info) return;
         syncPaddle(paddle_info);
         break;
+
+      case CanvasNotifyType.START:
+        if (!ball_info || !paddle_info) return;
+        setIsPlaying(true);
+        syncBall(ball_info);
+        syncPaddle(paddle_info);
     }
   }, [data]);
 
@@ -173,6 +191,16 @@ export default function Pong({
         $dy: Int!
       ) {
         ballCollision(game_id: $game_id, x: $x, y: $y, dx: $dx, dy: $dy)
+      }
+    `
+  );
+
+  const [winRound, { error: winRoundError }] = useMutation<{
+    winRound: boolean;
+  }>(
+    gql`
+      mutation WinRound($game_id: ID!, $isLeft: Boolean!) {
+        winRound(game_id: $game_id, isLeft: $isLeft)
       }
     `
   );
@@ -248,6 +276,14 @@ export default function Pong({
     });
   };
 
+  const sendWinRound = async () => {
+    if (!isLeft) return; // NOTE: left 유저만 정보 전송
+
+    await winRound({
+      variables: { game_id: gameId, isLeft },
+    });
+  };
+
   const draw = () => {
     if (!ctx) return;
 
@@ -259,32 +295,30 @@ export default function Pong({
     if (y + dy > ctx.canvas.height - BALL_RADIUS || y + dy < BALL_RADIUS) {
       setDy((prev) => -prev);
     }
+
     if (x + dx < BALL_RADIUS) {
       // NOTE: 공이 왼쪽으로 갔을 때
-      // if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
-      setDx((prev) => {
-        // console.log(prev);
-        return -prev;
-      });
-      // } else {
-      // setRightScore((prev) => prev + 1);
-      // resetGame();
-      // }
-
+      if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        // setRightScore((prev) => prev + 1);
+        setIsPlaying(false);
+        // resetGame();
+        void sendWinRound();
+        return;
+      }
       void sendBallCollision(); // NOTE: void로 하면 어떻게 될까?
     } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
       // NOTE: 공이 오른쪽으로 갔을 때
-      // if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
-      setDx((prev) => {
-        // console.log(prev);
-        return -prev;
-      });
-      // setDx((prev) => -prev);
-      // } else {
-      // setLeftScore((prev) => prev + 1);
-      // resetGame();
-      // }
-
+      if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        // setLeftScore((prev) => prev + 1);
+        setIsPlaying(false);
+        // resetGame();
+        void sendWinRound();
+        return;
+      }
       void sendBallCollision();
     }
 
@@ -368,10 +402,9 @@ export default function Pong({
     });
   };
 
-  // useInterval(draw, isPlaying ? 10 : null);
-  // useInterval(draw, 10);
-  useInterval(draw, 30); // NOTE: 대략 30fps?
-  // useInterval(draw, 100); // NOTE: 대략 30fps?
+  useInterval(draw, isPlaying ? 30 : null);
+  // useInterval(draw, 30); // NOTE: 대략 30fps?
+  // useInterval(draw, 100); // NOTE: 테스트용
 
   return (
     <>
