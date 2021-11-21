@@ -195,33 +195,27 @@ export class GamesService {
     const game = this.games.get(game_id);
     if (!game) throw Error('This game is not available.');
 
-    console.log('paddle', y, dy, isLeft);
-
     if (isLeft) {
-      this.pubSub.publish(`ingame_canvas_${game_id}`, {
-        subscribeInGameCanvas: {
-          game_id,
-          type: CanvasNotifyType.PADDLE,
-          paddle_info: {
-            ...game.paddle_info,
-            left_paddle_y: y,
-            left_paddle_dy: dy,
-          },
-        },
-      });
+      game.paddle_info = {
+        ...game.paddle_info,
+        left_paddle_y: y,
+        left_paddle_dy: dy,
+      };
     } else {
-      this.pubSub.publish(`ingame_canvas_${game_id}`, {
-        subscribeInGameCanvas: {
-          game_id,
-          type: CanvasNotifyType.PADDLE,
-          paddle_info: {
-            ...game.paddle_info,
-            right_paddle_y: y,
-            right_paddle_dy: dy,
-          },
-        },
-      });
+      game.paddle_info = {
+        ...game.paddle_info,
+        right_paddle_y: y,
+        right_paddle_dy: dy,
+      };
     }
+
+    this.pubSub.publish(`ingame_canvas_${game_id}`, {
+      subscribeInGameCanvas: {
+        game_id,
+        type: CanvasNotifyType.PADDLE,
+        paddle_info: game.paddle_info,
+      },
+    });
 
     return true;
   } // NOTE: 프론트에서 눌렀는지 안눌렀는지, 어느 방향인지를 dy로 포괄적으로 보내줌

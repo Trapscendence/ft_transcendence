@@ -110,8 +110,10 @@ PongProps): JSX.Element {
   };
 
   const syncPaddle = (paddleInfo: PaddleInfo) => {
-    const { left_paddle_y, left_paddle_dy, right_paddle_y, right_paddle_dy } =
+    const { left_paddle_y, right_paddle_y, left_paddle_dy, right_paddle_dy } =
       paddleInfo;
+
+    console.log(left_paddle_y, right_paddle_y, left_paddle_dy, right_paddle_dy);
 
     setLeftPaddleY(left_paddle_y);
     setRightPaddleY(right_paddle_y);
@@ -138,7 +140,7 @@ PongProps): JSX.Element {
   useEffect(() => {
     if (!data) return;
 
-    console.log(data.subscribeInGameCanvas);
+    // console.log(data.subscribeInGameCanvas);
 
     const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
 
@@ -150,7 +152,6 @@ PongProps): JSX.Element {
         break;
 
       case CanvasNotifyType.PADDLE:
-        // if (!paddle_info) return;
         if (!paddle_info) return;
         syncPaddle(paddle_info);
         break;
@@ -298,27 +299,27 @@ PongProps): JSX.Element {
 
     if (x + dx < BALL_RADIUS) {
       // NOTE: 공이 왼쪽으로 갔을 때
-      if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
-        setDx((prev) => -prev);
-      } else {
-        // setRightScore((prev) => prev + 1);
-        setIsPlaying(false);
-        // resetGame();
-        void sendWinRound(!isLeft);
-        return;
-      }
+      // if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
+      setDx((prev) => -prev);
+      // } else {
+      //   // setRightScore((prev) => prev + 1);
+      //   setIsPlaying(false);
+      //   // resetGame();
+      //   void sendWinRound(!isLeft);
+      //   return;
+      // }
       void sendBallCollision(); // NOTE: void로 하면 어떻게 될까?
     } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
       // NOTE: 공이 오른쪽으로 갔을 때
-      if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
-        setDx((prev) => -prev);
-      } else {
-        // setLeftScore((prev) => prev + 1);
-        setIsPlaying(false);
-        // resetGame();
-        void sendWinRound(isLeft);
-        return;
-      }
+      // if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
+      setDx((prev) => -prev);
+      // } else {
+      //   // setLeftScore((prev) => prev + 1);
+      //   setIsPlaying(false);
+      //   // resetGame();
+      //   void sendWinRound(isLeft);
+      //   return;
+      // }
       void sendBallCollision();
     }
 
