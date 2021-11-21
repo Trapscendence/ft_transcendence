@@ -199,8 +199,8 @@ PongProps): JSX.Element {
     winRound: boolean;
   }>(
     gql`
-      mutation WinRound($game_id: ID!, $isLeft: Boolean!) {
-        winRound(game_id: $game_id, isLeft: $isLeft)
+      mutation WinRound($game_id: ID!, $isLeftWin: Boolean!) {
+        winRound(game_id: $game_id, isLeftWin: $isLeftWin)
       }
     `
   );
@@ -276,11 +276,11 @@ PongProps): JSX.Element {
     });
   };
 
-  const sendWinRound = async () => {
+  const sendWinRound = async (isLeftWin: boolean) => {
     if (!isLeft) return; // NOTE: left 유저만 정보 전송
 
     await winRound({
-      variables: { game_id: gameId, isLeft },
+      variables: { game_id: gameId, isLeftWin },
     });
   };
 
@@ -304,7 +304,7 @@ PongProps): JSX.Element {
         // setRightScore((prev) => prev + 1);
         setIsPlaying(false);
         // resetGame();
-        void sendWinRound();
+        void sendWinRound(!isLeft);
         return;
       }
       void sendBallCollision(); // NOTE: void로 하면 어떻게 될까?
@@ -316,7 +316,7 @@ PongProps): JSX.Element {
         // setLeftScore((prev) => prev + 1);
         setIsPlaying(false);
         // resetGame();
-        void sendWinRound();
+        void sendWinRound(isLeft);
         return;
       }
       void sendBallCollision();

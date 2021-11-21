@@ -101,9 +101,9 @@ export class GamesResolver {
   async winRound(
     @UserID() user_id: string,
     @Args('game_id', { type: () => ID! }) game_id: string,
-    @Args('isLeft', { type: () => Boolean! }) isLeft: boolean,
+    @Args('isLeftWin', { type: () => Boolean! }) isLeftWin: boolean,
   ) {
-    return await this.gamesService.winRound(user_id, game_id, isLeft);
+    return await this.gamesService.winRound(user_id, game_id, isLeftWin);
   }
 
   /*

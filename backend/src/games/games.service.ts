@@ -259,12 +259,12 @@ export class GamesService {
   async winRound(
     user_id: string,
     game_id: string,
-    isLeft: boolean,
+    isLeftWin: boolean,
   ): Promise<boolean> {
     const game = this.games.get(game_id);
     if (!game) throw Error('This game is not available.');
 
-    if (isLeft) {
+    if (isLeftWin) {
       game.left_score += 1;
       console.log('left', game.left_score, game.right_score);
     } else {
