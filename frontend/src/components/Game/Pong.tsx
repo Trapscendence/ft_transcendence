@@ -299,27 +299,27 @@ PongProps): JSX.Element {
 
     if (x + dx < BALL_RADIUS) {
       // NOTE: 공이 왼쪽으로 갔을 때
-      // if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
-      setDx((prev) => -prev);
-      // } else {
-      //   // setRightScore((prev) => prev + 1);
-      //   setIsPlaying(false);
-      //   // resetGame();
-      //   void sendWinRound(!isLeft);
-      //   return;
-      // }
+      if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        // setRightScore((prev) => prev + 1);
+        setIsPlaying(false);
+        // resetGame();
+        void sendWinRound(!isLeft);
+        return;
+      }
       void sendBallCollision(); // NOTE: void로 하면 어떻게 될까?
     } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
       // NOTE: 공이 오른쪽으로 갔을 때
-      // if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
-      setDx((prev) => -prev);
-      // } else {
-      //   // setLeftScore((prev) => prev + 1);
-      //   setIsPlaying(false);
-      //   // resetGame();
-      //   void sendWinRound(isLeft);
-      //   return;
-      // }
+      if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
+        setDx((prev) => -prev);
+      } else {
+        // setLeftScore((prev) => prev + 1);
+        setIsPlaying(false);
+        // resetGame();
+        void sendWinRound(isLeft);
+        return;
+      }
       void sendBallCollision();
     }
 
