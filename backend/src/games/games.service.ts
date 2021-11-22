@@ -6,9 +6,9 @@ import { UsersService } from 'src/users/users.service';
 import {
   CanvasNotifyType,
   Game,
-  GameNotifyType,
+  RegisterNotifyType,
   GameType,
-  InGameNotifyType,
+  GameNotifyType,
 } from './models/game.model';
 
 const START_DELAY = 2000;
@@ -48,12 +48,9 @@ export class GamesService {
     };
   }
 
-  // NOTE: 임시
-  async makeGame(leftId: string, rightId: string) {
+  async makeRankGame(leftId: string, rightId: string) {
     return {
-      // id: new Date().getTime().toString(),
-      id: '1',
-      // canvas_info: this.makeCanvasInfo(),
+      id: new Date().getTime().toString(),
       ball_info: this.makeBallInfo(),
       paddle_info: this.makePaddleInfo(),
       game_type: GameType.RANK,
@@ -82,7 +79,7 @@ export class GamesService {
    ** ANCHOR: Mutation
    */
 
-  async registerMatch(user_id: string): Promise<boolean> {
+  async registerGame(user_id: string): Promise<boolean> {
     if (this.queue.find((val) => val === user_id))
       throw Error(`this user(${user_id}) already registered.`);
 
@@ -90,26 +87,33 @@ export class GamesService {
 
     if (this.queue.length < 2) return true;
 
-    const leftId = this.queue.pop();
-    const rightId = this.queue.pop();
-    const newGame = await this.makeGame(leftId, rightId);
+    const leftId = this.queue.shift();
+    const rightId = this.queue.shift();
+
+    const newGame = await this.makeRankGame(leftId, rightId);
     this.games.set(newGame.id, newGame);
     this.waiting.set(newGame.id, [
       newGame.left_player.id.toString(),
       newGame.right_player.id.toString(),
     ]);
 
-    this.pubSub.publish(`registered_${leftId}`, {
-      subscribeMatch: { type: GameNotifyType.MATCHED, game_id: newGame.id },
+    this.pubSub.publish(`register_${leftId}`, {
+      subscribeRegister: {
+        type: RegisterNotifyType.MATCHED,
+        game_id: newGame.id,
+      },
     });
-    this.pubSub.publish(`registered_${rightId}`, {
-      subscribeMatch: { type: GameNotifyType.MATCHED, game_id: newGame.id },
+    this.pubSub.publish(`register_${rightId}`, {
+      subscribeRegister: {
+        type: RegisterNotifyType.MATCHED,
+        game_id: newGame.id,
+      },
     });
 
     return true;
   }
 
-  async cancelRegister(user_id: string): Promise<boolean> {
+  async unregisterGame(user_id: string): Promise<boolean> {
     if (!this.queue.find((val) => val === user_id)) {
       return false;
     } // NOTE: 큐에 없으면 false
@@ -138,16 +142,16 @@ export class GamesService {
     const leftId = this.games.get(game_id).left_player.id;
     const rightId = this.games.get(game_id).right_player.id;
 
-    this.pubSub.publish(`registered_${leftId}`, {
-      subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
+    this.pubSub.publish(`register_${leftId}`, {
+      subscribeRegister: { type: RegisterNotifyType.JOIN, game_id: game_id },
     });
-    this.pubSub.publish(`registered_${rightId}`, {
-      subscribeMatch: { type: GameNotifyType.JOIN, game_id: game_id },
+    this.pubSub.publish(`register_${rightId}`, {
+      subscribeRegister: { type: RegisterNotifyType.JOIN, game_id: game_id },
     });
 
     setTimeout(() => {
-      this.pubSub.publish(`ingame_canvas_${game_id}`, {
-        subscribeInGameCanvas: {
+      this.pubSub.publish(`canvas_${game_id}`, {
+        subscribeCanvas: {
           game_id,
           type: CanvasNotifyType.START,
           ball_info: this.makeBallInfo(),
@@ -165,11 +169,11 @@ export class GamesService {
     const leftId = this.games.get(game_id).left_player.id;
     const rightId = this.games.get(game_id).right_player.id;
 
-    this.pubSub.publish(`registered_${leftId}`, {
-      subscribeMatch: { type: GameNotifyType.BOOM, game_id: game_id },
+    this.pubSub.publish(`register_${leftId}`, {
+      subscribeRegister: { type: RegisterNotifyType.BOOM, game_id: game_id },
     });
-    this.pubSub.publish(`registered_${rightId}`, {
-      subscribeMatch: { type: GameNotifyType.BOOM, game_id: game_id },
+    this.pubSub.publish(`register_${rightId}`, {
+      subscribeRegister: { type: RegisterNotifyType.BOOM, game_id: game_id },
     });
 
     this.waiting.delete(game_id);
@@ -178,7 +182,7 @@ export class GamesService {
     return true;
   }
 
-  // NOTE: 시간 남으면 나중에 user_id로 검증도 추가해야... 그 의도로 user_id 받음
+  // NOTE: 추후 user_id로 검증도 추가해야... 현재는 user_id 미사용
   async movePaddle(
     user_id: string,
     game_id: string,
@@ -203,8 +207,8 @@ export class GamesService {
       };
     }
 
-    this.pubSub.publish(`ingame_canvas_${game_id}`, {
-      subscribeInGameCanvas: {
+    this.pubSub.publish(`canvas_${game_id}`, {
+      subscribeCanvas: {
         game_id,
         type: CanvasNotifyType.PADDLE,
         paddle_info: game.paddle_info,
@@ -226,10 +230,10 @@ export class GamesService {
     const game = this.games.get(game_id);
     if (!game) throw Error('This game is not available.');
 
-    console.log('ball', x, y, dx, dy);
+    // console.log('ball', x, y, dx, dy);
 
-    this.pubSub.publish(`ingame_canvas_${game_id}`, {
-      subscribeInGameCanvas: {
+    this.pubSub.publish(`canvas_${game_id}`, {
+      subscribeCanvas: {
         game_id, // NOTE: game_id는 필요할까?
         type: CanvasNotifyType.BALL,
         ball_info: {
@@ -263,16 +267,29 @@ export class GamesService {
     game.ball_info = this.makeBallInfo();
     game.paddle_info = this.makePaddleInfo();
 
-    this.pubSub.publish(`ingame_${game_id}`, {
-      subscribeInGame: {
-        type: InGameNotifyType.WINLOSE,
+    this.pubSub.publish(`game_${game_id}`, {
+      subscribeGame: {
+        type: GameNotifyType.WINLOSE,
         game_id,
       },
     });
 
+    if (game.left_score > 0 || game.right_score > 0) {
+      this.games.delete(game_id);
+      this.pubSub.publish(`game_${game_id}`, {
+        subscribeGame: {
+          type: GameNotifyType.END,
+          game_id,
+        },
+      });
+
+      return true;
+    } // NOTE: 일단은 3점 얻으면 승리
+    // TODO: 테스트용으로 1점만 내도 끝나게
+
     setTimeout(() => {
-      this.pubSub.publish(`ingame_canvas_${game_id}`, {
-        subscribeInGameCanvas: {
+      this.pubSub.publish(`canvas_${game_id}`, {
+        subscribeCanvas: {
           game_id,
           type: CanvasNotifyType.START,
           ball_info: this.makeBallInfo(),

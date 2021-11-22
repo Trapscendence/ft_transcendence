@@ -10,17 +10,17 @@ registerEnumType(GameType, {
   name: 'GameType',
 });
 
-export enum GameNotifyType {
+export enum RegisterNotifyType {
   MATCHED = 'MATCHED',
   JOIN = 'JOIN',
   BOOM = 'BOOM',
 }
 
-registerEnumType(GameNotifyType, {
-  name: 'GameNotifyType',
+registerEnumType(RegisterNotifyType, {
+  name: 'RegisterNotifyType',
 });
 
-export enum InGameNotifyType {
+export enum GameNotifyType {
   // BALL = 'BALL',
   // PADDLE = 'PADDLE',
   WINLOSE = 'WINLOSE',
@@ -28,8 +28,8 @@ export enum InGameNotifyType {
   END = 'END',
 }
 
-registerEnumType(InGameNotifyType, {
-  name: 'InGameNotifyType',
+registerEnumType(GameNotifyType, {
+  name: 'GameNotifyType',
 });
 
 export enum CanvasNotifyType {
@@ -74,18 +74,18 @@ export class PaddleInfo {
 }
 
 @ObjectType()
-export class GameNotify {
-  @Field((type) => GameNotifyType)
-  type: GameNotifyType;
+export class RegisterNotify {
+  @Field((type) => RegisterNotifyType)
+  type: RegisterNotifyType;
 
   @Field((type) => ID)
   game_id: string;
 }
 
 @ObjectType()
-export class InGameNotify {
-  @Field((type) => InGameNotifyType)
-  type: InGameNotifyType;
+export class GameNotify {
+  @Field((type) => GameNotifyType)
+  type: GameNotifyType;
 
   @Field((type) => ID)
   game_id: string;

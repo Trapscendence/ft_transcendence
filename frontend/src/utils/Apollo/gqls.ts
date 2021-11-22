@@ -278,9 +278,9 @@ export const SUBSCRIBE_CHANNEL = gql`
   }
 `;
 
-export const SUBSCRIBE_MATCH = gql`
-  subscription SubscribeMatch {
-    subscribeMatch {
+export const SUBSCRIBE_REGISTER = gql`
+  subscription SubscribeRegister {
+    subscribeRegister {
       type
       game_id
     }

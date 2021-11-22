@@ -7,9 +7,9 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 
 import useSnackbar from '../../hooks/useSnackbar';
-import { SUBSCRIBE_MATCH } from '../../utils/Apollo/gqls';
-import { SubscribeMatchResponse } from '../../utils/Apollo/responseModels';
-import { GameNotifyType } from '../../utils/Apollo/schemaEnums';
+import { SUBSCRIBE_REGISTER } from '../../utils/Apollo/gqls';
+import { SubscribeRegisterResponse } from '../../utils/Apollo/responseModels';
+import { RegisterNotifyType } from '../../utils/Apollo/schemaEnums';
 import handleError from '../../utils/handleError';
 import ErrorAlert from '../commons/ErrorAlert';
 import MsgSnackbar from '../commons/MsgSnackbar';
@@ -21,59 +21,59 @@ export default function Matching(): JSX.Element {
   const [btnLoading, setBtnLoading] = useState(false);
   const history = useHistory();
 
-  const { data: matchData, error } =
-    useSubscription<SubscribeMatchResponse>(SUBSCRIBE_MATCH);
+  const { data: registerData, error } =
+    useSubscription<SubscribeRegisterResponse>(SUBSCRIBE_REGISTER);
 
-  const [registerMatch, { error: registerError }] = useMutation<{
-    registerMatch: boolean;
+  const [registerGame, { error: registerError }] = useMutation<{
+    registerGame: boolean;
   }>(gql`
-    mutation RegisterMatch {
-      registerMatch
+    mutation RegisterGame {
+      registerGame
     }
   `);
 
-  const [cancelRegister, { error: cancelError }] = useMutation<{
-    cancelRegister: boolean;
+  const [unregisterGame, { error: cancelError }] = useMutation<{
+    unregisterGame: boolean;
   }>(gql`
-    mutation CancelRegister {
-      cancelRegister
+    mutation UnregisterGame {
+      unregisterGame
     }
   `);
 
   const [alertMsg, displayAlertMsg] = useSnackbar(3000);
 
   useEffect(() => {
-    if (!matchData) return;
+    if (!registerData) return;
 
     setBtnLoading(false);
 
-    console.log(matchData.subscribeMatch);
+    console.log(registerData.subscribeRegister);
 
-    const { type, game_id } = matchData.subscribeMatch;
+    const { type, game_id } = registerData.subscribeRegister;
 
     switch (type) {
-      case GameNotifyType.MATCHED:
+      case RegisterNotifyType.MATCHED:
         setRegistered(false);
         setMatched(true);
         break;
-      case GameNotifyType.JOIN:
+      case RegisterNotifyType.JOIN:
         setMatched(false);
         history.push('/game', { game_id });
         break;
-      case GameNotifyType.BOOM:
+      case RegisterNotifyType.BOOM:
         setMatched(false);
         displayAlertMsg(`Match is canceled.`);
         break;
     }
-  }, [matchData]);
+  }, [registerData]);
 
   const onClickPlay = async () => {
     if (registered) {
       setRegistered(false);
-      await handleError(cancelRegister);
+      await handleError(unregisterGame);
     } else {
       setRegistered(true);
-      await handleError(registerMatch);
+      await handleError(registerGame);
     }
   };
 
@@ -83,10 +83,10 @@ export default function Matching(): JSX.Element {
     <>
       {errorVar && <ErrorAlert name="Matching" error={errorVar} />}
 
-      {matchData && (
+      {registerData && (
         <MatchedModal
           open={matched}
-          id={matchData.subscribeMatch.game_id}
+          id={registerData.subscribeRegister.game_id}
           btnLoading={btnLoading}
           setBtnLoading={setBtnLoading}
         />

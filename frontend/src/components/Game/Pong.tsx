@@ -72,7 +72,7 @@ PongProps): JSX.Element {
    */
 
   const { data, error } = useSubscription<{
-    subscribeInGameCanvas: {
+    subscribeCanvas: {
       game_id: string;
       type: CanvasNotifyType;
       ball_info?: BallInfo;
@@ -80,8 +80,8 @@ PongProps): JSX.Element {
     };
   }>(
     gql`
-      subscription SubscribeInGameCanvas($game_id: ID!) {
-        subscribeInGameCanvas(game_id: $game_id) {
+      subscription SubscribeCanvas($game_id: ID!) {
+        subscribeCanvas(game_id: $game_id) {
           game_id
           type
           ball_info {
@@ -173,7 +173,7 @@ PongProps): JSX.Element {
 
     // console.log(data.subscribeInGameCanvas);
 
-    const { type, ball_info, paddle_info } = data.subscribeInGameCanvas;
+    const { type, ball_info, paddle_info } = data.subscribeCanvas;
 
     switch (type) {
       case CanvasNotifyType.BALL:

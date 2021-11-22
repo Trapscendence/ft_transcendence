@@ -17,7 +17,7 @@ import {
   CanvasNotify,
   Game,
   GameNotify,
-  InGameNotify,
+  RegisterNotify,
 } from './models/game.model';
 
 @Resolver((of) => Game)
@@ -42,13 +42,13 @@ export class GamesResolver {
    */
 
   @Mutation((returns) => Boolean) // NOTE: null, void가 불가능? 어떻게 하는지 모르겠다.
-  async registerMatch(@UserID() user_id: string): Promise<boolean> {
-    return await this.gamesService.registerMatch(user_id);
+  async registerGame(@UserID() user_id: string): Promise<boolean> {
+    return await this.gamesService.registerGame(user_id);
   }
 
   @Mutation((returns) => Boolean)
-  async cancelRegister(@UserID() user_id: string): Promise<boolean> {
-    return await this.gamesService.cancelRegister(user_id);
+  async unregisterGame(@UserID() user_id: string): Promise<boolean> {
+    return await this.gamesService.unregisterGame(user_id);
   }
 
   @Mutation((returns) => Boolean)
@@ -110,26 +110,26 @@ export class GamesResolver {
    ** ANCHOR: Subscription
    */
 
-  @Subscription((returns) => GameNotify)
-  subscribeMatch(@UserID() user_id: string) {
-    return this.pubSub.asyncIterator(`registered_${user_id}`);
+  @Subscription((returns) => RegisterNotify)
+  subscribeRegister(@UserID() user_id: string) {
+    return this.pubSub.asyncIterator(`register_${user_id}`);
   }
 
-  @Subscription((returns) => InGameNotify)
-  subscribeInGame(
+  @Subscription((returns) => GameNotify)
+  subscribeGame(
     // @UserID() user_id: string, // NOTE: 나중에 필요하면 추가
     @Args('game_id', { type: () => ID! }) game_id: string,
   ) {
     // return this.pubSub.asyncIterator(`ingame_${game_id}_${user_id}`);
-    return this.pubSub.asyncIterator(`ingame_${game_id}`); // NOTE: 이렇게 해도 될까? 아 나중에 고치자...
+    return this.pubSub.asyncIterator(`game_${game_id}`); // NOTE: 이렇게 해도 될까? 아 나중에 고치자...
   }
 
   @Subscription((returns) => CanvasNotify)
-  subscribeInGameCanvas(
+  subscribeCanvas(
     // @UserID() user_id: string, // NOTE: 나중에 필요하면 추가
     @Args('game_id', { type: () => ID! }) game_id: string,
   ) {
     // return this.pubSub.asyncIterator(`ingame_${game_id}_${user_id}`);
-    return this.pubSub.asyncIterator(`ingame_canvas_${game_id}`);
+    return this.pubSub.asyncIterator(`canvas_${game_id}`);
   }
 }

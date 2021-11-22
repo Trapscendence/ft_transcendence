@@ -3,13 +3,14 @@ import { Typography } from '@material-ui/core';
 import { Card } from '@mui/material';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Redirect, useLocation } from 'react-router';
 
 import { userIdVar } from '../..';
-import { GameType, InGameNotifyType } from '../../utils/Apollo/schemaEnums';
+import { GameNotifyType, GameType } from '../../utils/Apollo/schemaEnums';
 import ErrorAlert from '../commons/ErrorAlert';
 import UserSummary from '../commons/UserSummary';
+import GameEndModal from './GameEndModal';
 import Pong from './Pong';
 
 interface locationState {
@@ -22,6 +23,8 @@ export default function Game(): JSX.Element {
   if (!location.state) return <Redirect to="/home" />;
 
   const { game_id } = location.state;
+
+  const [isGameEnd, setIdGameEnd] = useState(false);
 
   const { data: gameData, refetch } = useQuery<{
     game: {
@@ -72,14 +75,14 @@ export default function Game(): JSX.Element {
   );
 
   const { data, error } = useSubscription<{
-    subscribeInGame: {
-      type: InGameNotifyType;
+    subscribeGame: {
+      type: GameNotifyType;
       game_id: string;
     };
   }>(
     gql`
-      subscription SubscribeInGame($game_id: ID!) {
-        subscribeInGame(game_id: $game_id) {
+      subscription SubscribeGame($game_id: ID!) {
+        subscribeGame(game_id: $game_id) {
           type
           game_id
         }
@@ -96,6 +99,14 @@ export default function Game(): JSX.Element {
     // console.log(data.subscribeInGame);
 
     void refetch();
+
+    const { type } = data.subscribeGame;
+
+    switch (type) {
+      case GameNotifyType.END:
+        setIdGameEnd(true);
+        break;
+    }
   }, [data]);
 
   if (!gameData) return <></>;
@@ -103,10 +114,12 @@ export default function Game(): JSX.Element {
   const { left_score, right_score, left_player, right_player } = gameData.game;
   const isLeft = left_player.id === userIdVar();
   const round = left_score + right_score + 1;
+  // const isGameEnd = left_score > 3 || right_score > 3;
 
   return (
     <>
       {error && <ErrorAlert name="Game" error={error} />}
+      {isGameEnd && <GameEndModal open={isGameEnd} />}
       <Card sx={{ m: 1, p: 1, bgcolor: 'secondary.light' }}>
         <Typography>round: {round}</Typography>
       </Card>
