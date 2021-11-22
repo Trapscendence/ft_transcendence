@@ -76,6 +76,7 @@ export class GamesService {
   }
 
   getGameByUserId(user_id: string): Game {
+    // console.log(this.userMap);
     const game = this.userMap.get(user_id);
     if (!game) return null;
     return game;
@@ -124,11 +125,12 @@ export class GamesService {
   }
 
   async unregisterGame(user_id: string): Promise<boolean> {
-    if (!this.queue.find((val) => val === user_id)) {
+    if (!this.queue.find((val) => val === user_id.toString())) {
+      // NOTE: ToString... 😡
       return false;
     } // NOTE: 큐에 없으면 false
 
-    this.queue = this.queue.filter((val) => val !== user_id);
+    this.queue = this.queue.filter((val) => val !== user_id.toString());
     return true;
   }
 
@@ -268,27 +270,15 @@ export class GamesService {
 
     if (isLeftWin) {
       game.left_score += 1;
-      console.log('left', game.left_score, game.right_score);
     } else {
       game.right_score += 1;
-      console.log('right', game.left_score, game.right_score);
     }
-
-    game.ball_info = this.makeBallInfo();
-    game.paddle_info = this.makePaddleInfo();
-
-    this.pubSub.publish(`game_${game_id}`, {
-      subscribeGame: {
-        type: GameNotifyType.WINLOSE,
-        game_id,
-      },
-    });
 
     // TODO: 끝나는 점수도 상수화해야
     if (game.left_score > 2 || game.right_score > 2) {
       const winner = game.left_score > 2 ? game.left_player : game.right_player;
-      this.userMap.delete(game.left_player.id);
-      this.userMap.delete(game.right_player.id);
+      this.userMap.delete(game.left_player.id.toString());
+      this.userMap.delete(game.right_player.id.toString());
       this.games.delete(game_id);
       this.pubSub.publish(`game_${game_id}`, {
         subscribeGame: {
@@ -299,6 +289,16 @@ export class GamesService {
       });
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
+
+    game.ball_info = this.makeBallInfo();
+    game.paddle_info = this.makePaddleInfo();
+
+    this.pubSub.publish(`game_${game_id}`, {
+      subscribeGame: {
+        type: GameNotifyType.WINLOSE,
+        game_id,
+      },
+    });
 
     setTimeout(() => {
       this.pubSub.publish(`canvas_${game_id}`, {
@@ -333,7 +333,6 @@ export class GamesService {
         winner,
       },
     });
-
     return true;
   }
 }

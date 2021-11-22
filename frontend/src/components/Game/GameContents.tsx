@@ -7,17 +7,16 @@ import {
 import { Button, Card, CardActions, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useHistory } from 'react-router';
 
 import { userIdVar } from '../..';
 import { GameNotifyType, GameType } from '../../utils/Apollo/schemaEnums';
 import { User } from '../../utils/Apollo/User';
 import ErrorAlert from '../commons/ErrorAlert';
-import GameEndModal from './GameEndModal';
 import Pong from './Pong';
 
-interface InGameProps {
+interface GameContentsProps {
   gameData: {
     id: string;
     game_type: GameType;
@@ -41,6 +40,7 @@ interface InGameProps {
   ) => Promise<
     ApolloQueryResult<{
       user: {
+        id: string;
         game: {
           id: string;
           game_type: GameType;
@@ -64,15 +64,14 @@ interface InGameProps {
   >;
 }
 
-export default function InGame({
+export default function GameContents({
   gameData,
   refetchGameData,
-}: InGameProps): JSX.Element {
+}: GameContentsProps): JSX.Element {
   const { id, left_score, right_score, left_player, right_player } = gameData;
   const isLeft = left_player.id === userIdVar();
   const round = left_score + right_score + 1;
 
-  const [gameWinner, setGameWinner] = useState<string | null>(null);
   const history = useHistory();
 
   const { data, error } = useSubscription<{
@@ -167,7 +166,6 @@ export default function InGame({
         </Card>
       </Box>
       <Pong isLeft={isLeft} gameId={id} />
-      {/* {gameWinner && <GameEndModal open={!!gameWinner} winner={gameWinner} />} */}
     </>
   );
 }
