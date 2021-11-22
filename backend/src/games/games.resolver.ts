@@ -106,6 +106,15 @@ export class GamesResolver {
     return await this.gamesService.winRound(user_id, game_id, isLeftWin);
   }
 
+  @Mutation((returns) => Boolean)
+  async surrenderGame(
+    // @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+    @Args('isLeft', { type: () => Boolean! }) isLeft: boolean,
+  ) {
+    return await this.gamesService.surrenderGame(game_id, isLeft);
+  }
+
   /*
    ** ANCHOR: Subscription
    */

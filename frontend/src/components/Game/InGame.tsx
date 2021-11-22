@@ -1,13 +1,14 @@
 import {
   ApolloQueryResult,
   OperationVariables,
+  useMutation,
   useSubscription,
 } from '@apollo/client';
-import { Typography } from '@material-ui/core';
-import { Card } from '@mui/material';
+import { Button, Card, CardActions, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
 import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
 import { userIdVar } from '../..';
 import { GameNotifyType, GameType } from '../../utils/Apollo/schemaEnums';
@@ -18,26 +19,22 @@ import Pong from './Pong';
 
 interface InGameProps {
   gameData: {
-    user: {
-      game: {
-        id: string;
-        game_type: GameType;
-        left_score: number;
-        right_score: number;
-        left_player: {
-          id: string;
-          nickname: string;
-        };
-        right_player: {
-          id: string;
-          nickname: string;
-        };
-        observers: {
-          id: string;
-          nickname: string;
-        }[];
-      };
+    id: string;
+    game_type: GameType;
+    left_score: number;
+    right_score: number;
+    left_player: {
+      id: string;
+      nickname: string;
     };
+    right_player: {
+      id: string;
+      nickname: string;
+    };
+    observers: {
+      id: string;
+      nickname: string;
+    }[];
   };
   refetchGameData: (
     variables?: Partial<OperationVariables> | undefined
@@ -71,12 +68,12 @@ export default function InGame({
   gameData,
   refetchGameData,
 }: InGameProps): JSX.Element {
-  const { id, left_score, right_score, left_player, right_player } =
-    gameData.user.game;
+  const { id, left_score, right_score, left_player, right_player } = gameData;
   const isLeft = left_player.id === userIdVar();
   const round = left_score + right_score + 1;
 
   const [gameWinner, setGameWinner] = useState<string | null>(null);
+  const history = useHistory();
 
   const { data, error } = useSubscription<{
     subscribeGame: {
@@ -101,6 +98,19 @@ export default function InGame({
     }
   );
 
+  const [surrenderGame, { error: surrenderGameError }] = useMutation<{
+    surrenderGame: boolean;
+  }>(
+    gql`
+      mutation SurrenderGame($game_id: ID!, $isLeft: Boolean!) {
+        surrenderGame(game_id: $game_id, isLeft: $isLeft)
+      }
+    `,
+    {
+      variables: { game_id: id, isLeft },
+    }
+  );
+
   useEffect(() => {
     if (!data) return;
 
@@ -113,16 +123,38 @@ export default function InGame({
     switch (type) {
       case GameNotifyType.END:
         if (!winner) return;
-        setGameWinner(winner.nickname);
+        history.push('/home', { winner });
         break;
     }
   }, [data]);
 
+  const onClickSurrender = async () => {
+    await surrenderGame();
+  };
+
   return (
     <>
       {error && <ErrorAlert name="Game" error={error} />}
-      <Card sx={{ m: 1, p: 1, bgcolor: 'secondary.light' }}>
+      <Card
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          m: 1,
+          p: 1,
+          bgcolor: 'secondary.light',
+        }}
+      >
         <Typography>round: {round}</Typography>
+        <CardActions>
+          <Button
+            variant="contained"
+            sx={{ bgcolor: 'secondary' }}
+            onClick={onClickSurrender}
+          >
+            surrender
+          </Button>
+        </CardActions>
       </Card>
       <Box display="flex" justifyContent="space-between">
         <Card variant="outlined" sx={{ m: 1, p: 1 }}>
@@ -135,7 +167,9 @@ export default function InGame({
         </Card>
       </Box>
       <Pong isLeft={isLeft} gameId={id} />
-      {gameWinner && <GameEndModal open={!!gameWinner} winner={gameWinner} />}
+      {/* {gameWinner && <GameEndModal open={!!gameWinner} winner={gameWinner} />} */}
     </>
   );
 }
+
+// NOTE: InGame 컴포넌트를 공통으로 쓰고, 상위에서 관전인지 플레이어인지 결정하는?

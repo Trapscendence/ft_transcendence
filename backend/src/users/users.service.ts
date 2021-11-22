@@ -382,7 +382,10 @@ export class UsersService {
     }
   }
 
-  getGameByUserId(id: string): Game {
-    return this.gamesService.getGameByUserId(id);
+  async getGameByUserId(id: string): Promise<Game> {
+    const ret = await this.gamesService.getGameByUserId(id.toString());
+
+    return ret;
+    // return await this.gamesService.getGameByUserId(id);
   }
 }

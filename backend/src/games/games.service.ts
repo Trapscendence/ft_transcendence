@@ -71,18 +71,13 @@ export class GamesService {
 
   async getGame(game_id: string) {
     const game = this.games.get(game_id);
-
     if (!game) throw Error('This game is not available.');
-
     return game;
   }
 
   getGameByUserId(user_id: string): Game {
     const game = this.userMap.get(user_id);
-    // if (!game_id) throw Error('This game_id is not abailable.');
-
     if (!game) return null;
-
     return game;
   }
 
@@ -94,7 +89,7 @@ export class GamesService {
     if (this.queue.find((val) => val === user_id))
       throw Error(`this user(${user_id}) already registered.`);
 
-    this.queue.push(user_id);
+    this.queue.push(user_id.toString()); // NOTE: number로 들어옵니다... 😡
 
     if (this.queue.length < 2) return true;
 
@@ -110,6 +105,7 @@ export class GamesService {
     this.userMap.set(leftId, newGame);
     this.userMap.set(rightId, newGame); // NOTE: 임시
 
+    // await setTimeout(() => {
     this.pubSub.publish(`register_${leftId}`, {
       subscribeRegister: {
         type: RegisterNotifyType.MATCHED,
@@ -122,6 +118,7 @@ export class GamesService {
         game_id: newGame.id,
       },
     });
+    // }, 3000);
 
     return true;
   }
@@ -290,6 +287,9 @@ export class GamesService {
     // TODO: 끝나는 점수도 상수화해야
     if (game.left_score > 2 || game.right_score > 2) {
       const winner = game.left_score > 2 ? game.left_player : game.right_player;
+      this.userMap.delete(game.left_player.id);
+      this.userMap.delete(game.right_player.id);
+      this.games.delete(game_id);
       this.pubSub.publish(`game_${game_id}`, {
         subscribeGame: {
           type: GameNotifyType.END,
@@ -297,9 +297,6 @@ export class GamesService {
           winner,
         },
       });
-      this.userMap.delete(game.left_player.id);
-      this.userMap.delete(game.right_player.id);
-      this.games.delete(game_id);
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
 
@@ -313,6 +310,29 @@ export class GamesService {
         },
       });
     }, START_DELAY); // NOTE: 딜레이 후 게임 재시작
+
+    return true;
+  }
+
+  async surrenderGame(
+    // user_id: string,
+    game_id: string,
+    isLeft: boolean,
+  ): Promise<boolean> {
+    const game = this.games.get(game_id);
+    if (!game) throw Error('This game is not available.');
+
+    const winner = isLeft ? game.right_player : game.left_player;
+    this.userMap.delete(game.left_player.id.toString());
+    this.userMap.delete(game.right_player.id.toString()); // NOTE: number 타입... 😡
+    this.games.delete(game_id);
+    this.pubSub.publish(`game_${game_id}`, {
+      subscribeGame: {
+        type: GameNotifyType.END,
+        game_id,
+        winner,
+      },
+    });
 
     return true;
   }

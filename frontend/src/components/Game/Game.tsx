@@ -1,5 +1,7 @@
 import { useQuery } from '@apollo/client';
 import gql from 'graphql-tag';
+import { useEffect } from 'react';
+import { Redirect } from 'react-router';
 
 import { userIdVar } from '../..';
 import { GameType } from '../../utils/Apollo/schemaEnums';
@@ -29,7 +31,7 @@ export default function Game(): JSX.Element {
     };
   }>(
     gql`
-      query getGameByUserId($id: ID!) {
+      query GetGameByUserId($id: ID!) {
         user(id: $id) {
           game {
             id
@@ -55,12 +57,24 @@ export default function Game(): JSX.Element {
     `,
     {
       variables: { id: userIdVar() },
+      // onCompleted: (d) => {
+      //   console.log('re??', d);
+      // },
     }
   );
 
-  if (!gameData) return <></>;
+  useEffect(() => {
+    void refetch();
+  });
 
-  return <InGame gameData={gameData} refetchGameData={refetch} />;
+  if (!gameData) {
+    return <></>;
+  }
+
+  // if (!gameData.user.game) return <Redirect to="/home" />;
+  if (!gameData.user.game) return <></>;
+
+  return <InGame gameData={gameData.user.game} refetchGameData={refetch} />;
 }
 
 // NOTE: 나중에는 라운드 별로 호스트가 달라지도록... 지금은 그냥 왼쪽 유저가 호스트

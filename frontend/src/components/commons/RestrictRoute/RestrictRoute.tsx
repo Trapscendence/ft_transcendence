@@ -1,6 +1,7 @@
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
+import { useEffect } from 'react';
 import { Redirect, Route, RouteComponentProps } from 'react-router';
 
 import { userIdVar } from '../../..';
@@ -19,9 +20,11 @@ function RestrictRoute({
   ...rest
 }: RestrictRouteProps): JSX.Element {
   const userId = useReactiveVar(userIdVar);
+  if (!userId) return <Redirect to="/login" />;
 
-  const { data: gameData } = useQuery<{
+  const { data: gameData, refetch } = useQuery<{
     user: {
+      id: string;
       game: {
         id: string;
       };
@@ -30,6 +33,7 @@ function RestrictRoute({
     gql`
       query getGameByUserId($id: ID!) {
         user(id: $id) {
+          id
           game {
             id
           }
@@ -41,9 +45,13 @@ function RestrictRoute({
     }
   );
 
+  useEffect(() => {
+    void refetch();
+  }, []);
+
   if (!gameData) return <></>;
-  if (!userId) return <Redirect to="/login" />;
-  if (gameData.user.game.id) return <Redirect to="/game" />;
+
+  if (gameData.user.game) return <Redirect to="/game" />;
 
   return (
     <Route
