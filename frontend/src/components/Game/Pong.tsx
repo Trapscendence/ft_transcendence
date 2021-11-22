@@ -356,7 +356,12 @@ PongProps): JSX.Element {
   };
 
   useInterval(draw, isPlaying ? 30 : null); // NOTE: 대략 30fps
-  // useInterval(draw, 30);
+  useInterval(
+    () => {
+      void sendBallCollision();
+    },
+    isPlaying ? 500 : null
+  );
 
   const errorVar =
     error || movePaddleError || ballCollisionError || winRoundError;
