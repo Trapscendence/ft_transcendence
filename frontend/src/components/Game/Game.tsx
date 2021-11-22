@@ -8,6 +8,7 @@ import { Redirect, useLocation } from 'react-router';
 
 import { userIdVar } from '../..';
 import { GameNotifyType, GameType } from '../../utils/Apollo/schemaEnums';
+import { User } from '../../utils/Apollo/User';
 import ErrorAlert from '../commons/ErrorAlert';
 import UserSummary from '../commons/UserSummary';
 import GameEndModal from './GameEndModal';
@@ -24,7 +25,7 @@ export default function Game(): JSX.Element {
 
   const { game_id } = location.state;
 
-  const [isGameEnd, setIdGameEnd] = useState(false);
+  const [gameWinner, setGameWinner] = useState<string | null>(null);
 
   const { data: gameData, refetch } = useQuery<{
     game: {
@@ -78,6 +79,7 @@ export default function Game(): JSX.Element {
     subscribeGame: {
       type: GameNotifyType;
       game_id: string;
+      winner?: User;
     };
   }>(
     gql`
@@ -85,6 +87,9 @@ export default function Game(): JSX.Element {
         subscribeGame(game_id: $game_id) {
           type
           game_id
+          winner {
+            nickname
+          }
         }
       }
     `,
@@ -100,11 +105,12 @@ export default function Game(): JSX.Element {
 
     void refetch();
 
-    const { type } = data.subscribeGame;
+    const { type, winner } = data.subscribeGame;
 
     switch (type) {
       case GameNotifyType.END:
-        setIdGameEnd(true);
+        if (!winner) return;
+        setGameWinner(winner.nickname);
         break;
     }
   }, [data]);
@@ -114,34 +120,25 @@ export default function Game(): JSX.Element {
   const { left_score, right_score, left_player, right_player } = gameData.game;
   const isLeft = left_player.id === userIdVar();
   const round = left_score + right_score + 1;
-  // const isGameEnd = left_score > 3 || right_score > 3;
 
   return (
     <>
       {error && <ErrorAlert name="Game" error={error} />}
-      {isGameEnd && <GameEndModal open={isGameEnd} />}
       <Card sx={{ m: 1, p: 1, bgcolor: 'secondary.light' }}>
         <Typography>round: {round}</Typography>
       </Card>
       <Box display="flex" justifyContent="space-between">
-        {/* <Card sx={{ display: 'flex' }}> */}
         <Card variant="outlined" sx={{ m: 1, p: 1 }}>
-          {/* <UserSummary IUser={left_player} /> */}
           <Typography>{left_player.nickname}</Typography>
           <Typography>score: {left_score}</Typography>
         </Card>
         <Card variant="outlined" sx={{ m: 1, p: 1 }}>
-          {/* <UserSummary IUser={right_player} /> */}
           <Typography>{right_player.nickname}</Typography>
           <Typography>score: {right_score}</Typography>
         </Card>
       </Box>
-      <Pong
-        isLeft={isLeft}
-        gameId={game_id}
-        // initBallInfo={ball_info}
-        // initPaddleInfo={paddle_info}
-      />
+      <Pong isLeft={isLeft} gameId={game_id} />
+      {gameWinner && <GameEndModal open={!!gameWinner} winner={gameWinner} />}
     </>
   );
 }

@@ -90,6 +90,9 @@ export class GameNotify {
   @Field((type) => ID)
   game_id: string;
 
+  @Field((type) => User, { nullable: true })
+  winner: User;
+
   // @Field((type) => CanvasInfo, { nullable: true })
   // canvas_info: CanvasInfo;
 }

@@ -274,18 +274,19 @@ export class GamesService {
       },
     });
 
-    if (game.left_score > 0 || game.right_score > 0) {
-      this.games.delete(game_id);
+    // TODO: 끝나는 점수도 상수화해야
+    if (game.left_score > 2 || game.right_score > 2) {
+      const winner = game.left_score > 2 ? game.left_player : game.right_player;
       this.pubSub.publish(`game_${game_id}`, {
         subscribeGame: {
           type: GameNotifyType.END,
           game_id,
+          winner,
         },
       });
-
+      this.games.delete(game_id);
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
-    // TODO: 테스트용으로 1점만 내도 끝나게
 
     setTimeout(() => {
       this.pubSub.publish(`canvas_${game_id}`, {

@@ -1,12 +1,18 @@
-import { Button, CardContent, Modal, Typography } from '@material-ui/core';
-import { LoadingButton } from '@mui/lab';
-import { Card, CardActions } from '@mui/material';
+import { Button, CardContent, Modal } from '@material-ui/core';
+import { Card, CardActions, Typography } from '@mui/material';
+import { useHistory } from 'react-router';
 
 interface GameEndModalProps {
   open: boolean;
+  winner: string;
 }
 
-export default function GameEndModal({ open }: GameEndModalProps): JSX.Element {
+export default function GameEndModal({
+  open,
+  winner,
+}: GameEndModalProps): JSX.Element {
+  const history = useHistory();
+
   return (
     <>
       <Modal
@@ -27,15 +33,15 @@ export default function GameEndModal({ open }: GameEndModalProps): JSX.Element {
           }}
         >
           <CardContent>
-            <Typography>
-              Game is matched! Would you like to join the game?
-            </Typography>
+            <Typography>The game is over!</Typography>
+            <Typography>Winner is {winner}.</Typography>
           </CardContent>
           <CardActions>
             <Button
               variant="contained"
-              // disabled={btnLoading}
-              // onClick={onClickNo}
+              onClick={() => {
+                history.push('/home');
+              }}
             >
               exit game
             </Button>
