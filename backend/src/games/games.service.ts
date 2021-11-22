@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import {
   CanvasNotifyType,
@@ -275,20 +276,13 @@ export class GamesService {
     }
 
     // TODO: 끝나는 점수도 상수화해야
-    if (game.left_score > 2 || game.right_score > 2) {
-      const winner = game.left_score > 2 ? game.left_player : game.right_player;
-      this.userMap.delete(game.left_player.id.toString());
-      this.userMap.delete(game.right_player.id.toString());
-      this.games.delete(game_id);
-      this.pubSub.publish(`game_${game_id}`, {
-        subscribeGame: {
-          type: GameNotifyType.END,
-          game_id,
-          winner,
-        },
-      });
-      return true;
-    } // NOTE: 일단은 3점 얻으면 승리
+    // if (game.left_score > 2 || game.right_score > 2) {
+    //   const winner = game.left_score > 2 ? game.left_player : game.right_player;
+    //   this.endGame(game, winner);
+    //   return true;
+    // } // NOTE: 일단은 3점 얻으면 승리
+
+    // NOTE: 관전자 구현을 위해 임시 주석
 
     game.ball_info = this.makeBallInfo();
     game.paddle_info = this.makePaddleInfo();
@@ -314,6 +308,19 @@ export class GamesService {
     return true;
   }
 
+  async endGame(game: Game, winner: User) {
+    this.userMap.delete(game.left_player.id.toString());
+    this.userMap.delete(game.right_player.id.toString()); // NOTE: number 타입... 😡
+    this.games.delete(game.id);
+    this.pubSub.publish(`game_${game.id}`, {
+      subscribeGame: {
+        type: GameNotifyType.END,
+        game_id: game.id,
+        winner,
+      },
+    });
+  }
+
   async surrenderGame(
     // user_id: string,
     game_id: string,
@@ -323,16 +330,7 @@ export class GamesService {
     if (!game) throw Error('This game is not available.');
 
     const winner = isLeft ? game.right_player : game.left_player;
-    this.userMap.delete(game.left_player.id.toString());
-    this.userMap.delete(game.right_player.id.toString()); // NOTE: number 타입... 😡
-    this.games.delete(game_id);
-    this.pubSub.publish(`game_${game_id}`, {
-      subscribeGame: {
-        type: GameNotifyType.END,
-        game_id,
-        winner,
-      },
-    });
+    this.endGame(game, winner);
     return true;
   }
 }

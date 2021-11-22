@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Menu, MenuItem, MenuList } from '@mui/material';
 import gql from 'graphql-tag';
+import { useHistory } from 'react-router';
 
 import { userIdVar } from '../../..';
 import {
@@ -49,13 +50,28 @@ export default function NicknameMenu({
 
   const errorVar = blacklistError || AddError || deleteError;
 
-  // const { data: gameIdData } = useQuery<>(gql`
-  //   query GetGameId($id: ID!) {
-  //     user(id: $id) {
-  //       game_id
-  //     }
-  //   }
-  // `);
+  const { data: gameIdData } = useQuery<{
+    user: { id: string; game: { id: string } };
+  }>(
+    gql`
+      query GetGameId($id: ID!) {
+        user(id: $id) {
+          id
+          game {
+            id
+          }
+        }
+      }
+    `,
+    { variables: { id } }
+  );
+
+  const history = useHistory();
+
+  const onClickObserve = () => {
+    if (gameIdData?.user?.game?.id)
+      history.push('/observe', { game_id: gameIdData.user.game.id });
+  };
 
   if (id === userIdVar()) return <></>;
 
@@ -66,7 +82,9 @@ export default function NicknameMenu({
         <MenuList autoFocusItem={open}>
           <MenuItem>Profile</MenuItem>
           <MenuItem>DM</MenuItem>
-          <MenuItem>Observe the match</MenuItem>
+          {gameIdData?.user?.game?.id && (
+            <MenuItem onClick={onClickObserve}>Observe the match</MenuItem>
+          )}
           <MenuItem>Ask a match</MenuItem>
           {blacklistData &&
           blacklistData.user &&

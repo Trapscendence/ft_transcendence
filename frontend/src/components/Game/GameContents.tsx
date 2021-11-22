@@ -4,6 +4,7 @@ import {
   useMutation,
   useSubscription,
 } from '@apollo/client';
+import { CardContent } from '@material-ui/core';
 import { Button, Card, CardActions, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import gql from 'graphql-tag';
@@ -60,11 +61,13 @@ interface GameContentsProps {
       };
     }>
   >;
+  isObserve: boolean;
 }
 
 export default function GameContents({
   gameData,
   refetchGameData,
+  isObserve,
 }: GameContentsProps): JSX.Element {
   const { id, left_score, right_score, left_player, right_player } = gameData;
   const isLeft = left_player.id === userIdVar();
@@ -143,15 +146,29 @@ export default function GameContents({
           bgcolor: 'secondary.light',
         }}
       >
-        <Typography>round: {round}</Typography>
+        <CardContent>
+          <Typography>{isObserve ? 'Observe mode' : 'Play mode'}</Typography>
+          <Typography>round: {round}</Typography>
+        </CardContent>
         <CardActions>
-          <Button
-            variant="contained"
-            sx={{ bgcolor: 'secondary' }}
-            onClick={onClickSurrender}
-          >
-            surrender
-          </Button>
+          {isObserve ? (
+            <Button
+              variant="contained"
+              onClick={() => {
+                history.push('/home');
+              }}
+            >
+              leave game
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              sx={{ bgcolor: 'secondary' }}
+              onClick={onClickSurrender}
+            >
+              surrender
+            </Button>
+          )}
         </CardActions>
       </Card>
       <Box display="flex" justifyContent="space-between">
@@ -164,7 +181,7 @@ export default function GameContents({
           <Typography>score: {right_score}</Typography>
         </Card>
       </Box>
-      <Pong isLeft={isLeft} gameId={id} />
+      <Pong isLeft={isLeft} gameId={id} isObserve={isObserve} />
     </>
   );
 }

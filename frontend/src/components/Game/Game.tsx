@@ -64,7 +64,13 @@ export default function Game(): JSX.Element {
   if (error) return <ErrorAlert name="Game" error={error} />;
   if (!data) return <></>;
 
-  return <GameContents gameData={data.game} refetchGameData={refetch} />;
+  return (
+    <GameContents
+      gameData={data.game}
+      refetchGameData={refetch}
+      isObserve={false}
+    />
+  );
 }
 
 // NOTE: 나중에는 라운드 별로 호스트가 달라지도록... 지금은 그냥 왼쪽 유저가 호스트

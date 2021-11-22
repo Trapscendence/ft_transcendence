@@ -36,6 +36,7 @@ const START_RIGHT_PADDLE_Y = 250;
 interface PongProps {
   isLeft: boolean;
   gameId: string;
+  isObserve: boolean;
   // initBallInfo: BallInfo;
   // initPaddleInfo: PaddleInfo;
 }
@@ -43,6 +44,7 @@ interface PongProps {
 export default function Pong({
   isLeft,
   gameId,
+  isObserve,
 }: // initBallInfo,
 // initPaddleInfo,
 PongProps): JSX.Element {
@@ -148,6 +150,10 @@ PongProps): JSX.Element {
   /*
    ** ANCHOR: useEffect
    */
+
+  useEffect(() => {
+    setIsPlaying(true);
+  }, []);
 
   const syncBall = (ballInfo: BallInfo) => {
     const { ball_x, ball_y, ball_dx, ball_dy } = ballInfo;
@@ -317,6 +323,7 @@ PongProps): JSX.Element {
   };
 
   const keyDownHandler = async (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (isObserve) return;
     if (keyDown) return;
     setKeyDown(true);
 
@@ -332,6 +339,7 @@ PongProps): JSX.Element {
   };
 
   const keyUpHandler = async (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (isObserve) return;
     if (!keyDown) return;
     setKeyDown(false);
 
