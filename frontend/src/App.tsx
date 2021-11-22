@@ -43,7 +43,7 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/profile/my" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
         <RestrictRoute exact path="/admin" component={Admin} />
-        <RestrictRoute exact path="/game" component={Game} />
+        <Route exact path="/game" component={Game} />
       </Switch>
     </BrowserRouter>
   );
