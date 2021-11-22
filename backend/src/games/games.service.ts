@@ -276,13 +276,11 @@ export class GamesService {
     }
 
     // TODO: 끝나는 점수도 상수화해야
-    // if (game.left_score > 2 || game.right_score > 2) {
-    //   const winner = game.left_score > 2 ? game.left_player : game.right_player;
-    //   this.endGame(game, winner);
-    //   return true;
-    // } // NOTE: 일단은 3점 얻으면 승리
-
-    // NOTE: 관전자 구현을 위해 임시 주석
+    if (game.left_score > 2 || game.right_score > 2) {
+      const winner = game.left_score > 2 ? game.left_player : game.right_player;
+      this.endGame(game, winner);
+      return true;
+    } // NOTE: 일단은 3점 얻으면 승리
 
     game.ball_info = this.makeBallInfo();
     game.paddle_info = this.makePaddleInfo();

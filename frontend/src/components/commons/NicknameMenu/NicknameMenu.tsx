@@ -82,10 +82,11 @@ export default function NicknameMenu({
         <MenuList autoFocusItem={open}>
           <MenuItem>Profile</MenuItem>
           <MenuItem>DM</MenuItem>
-          {gameIdData?.user?.game?.id && (
+          {gameIdData?.user?.game?.id ? (
             <MenuItem onClick={onClickObserve}>Observe the match</MenuItem>
+          ) : (
+            <MenuItem>Ask a match</MenuItem>
           )}
-          <MenuItem>Ask a match</MenuItem>
           {blacklistData &&
           blacklistData.user &&
           blacklistData.user.blacklist.find((black) => black.id === id) ? (
