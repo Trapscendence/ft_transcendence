@@ -39,26 +39,24 @@ interface GameContentsProps {
     variables?: Partial<OperationVariables> | undefined
   ) => Promise<
     ApolloQueryResult<{
-      user: {
+      // id: string;
+      game: {
         id: string;
-        game: {
+        game_type: GameType;
+        left_score: number;
+        right_score: number;
+        left_player: {
           id: string;
-          game_type: GameType;
-          left_score: number;
-          right_score: number;
-          left_player: {
-            id: string;
-            nickname: string;
-          };
-          right_player: {
-            id: string;
-            nickname: string;
-          };
-          observers: {
-            id: string;
-            nickname: string;
-          }[];
+          nickname: string;
         };
+        right_player: {
+          id: string;
+          nickname: string;
+        };
+        observers: {
+          id: string;
+          nickname: string;
+        }[];
       };
     }>
   >;
@@ -113,13 +111,14 @@ export default function GameContents({
   useEffect(() => {
     if (!data) return;
 
-    // console.log(data.subscribeInGame);
-
-    void refetchGameData();
+    console.log(data.subscribeGame);
 
     const { type, winner } = data.subscribeGame;
 
     switch (type) {
+      case GameNotifyType.WINLOSE:
+        void refetchGameData();
+        break;
       case GameNotifyType.END:
         if (!winner) return;
         history.push('/home', { winner });

@@ -58,8 +58,8 @@ export default function Matching(): JSX.Element {
         break;
       case RegisterNotifyType.JOIN:
         setMatched(false);
-        // history.push('/game', { game_id });
-        history.push('/game');
+        history.push('/game', { game_id });
+        // history.push('/game');
         break;
       case RegisterNotifyType.BOOM:
         setMatched(false);
