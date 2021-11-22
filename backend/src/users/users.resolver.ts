@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import {
   Query,
@@ -17,12 +17,16 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
+import { GamesService } from 'src/games/games.service';
+import { Game } from 'src/games/models/game.model';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
+    // private readonly gamesService: GamesService,
+    // @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -130,4 +134,10 @@ export class UsersResolver {
   //   const { id } = user;
   //   return await this.matchService
   // }
+
+  @ResolveField('game', (returns) => Game, { nullable: true })
+  async getGame(@Parent() user: User): Promise<Game | null> {
+    const { id } = user;
+    return await this.usersService.getGameByUserId(id);
+  }
 }

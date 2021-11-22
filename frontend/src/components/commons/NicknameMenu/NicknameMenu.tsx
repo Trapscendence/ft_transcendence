@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Menu, MenuItem, MenuList } from '@mui/material';
+import gql from 'graphql-tag';
 
 import { userIdVar } from '../../..';
 import {
@@ -47,6 +48,14 @@ export default function NicknameMenu({
     });
 
   const errorVar = blacklistError || AddError || deleteError;
+
+  // const { data: gameIdData } = useQuery<>(gql`
+  //   query GetGameId($id: ID!) {
+  //     user(id: $id) {
+  //       game_id
+  //     }
+  //   }
+  // `);
 
   if (id === userIdVar()) return <></>;
 

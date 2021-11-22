@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
@@ -17,17 +17,19 @@ const START_DELAY = 2000;
 export class GamesService {
   constructor(
     private databaseService: DatabaseService,
-    private usersService: UsersService,
+    @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {
     this.queue = [];
     this.games = new Map<string, Game>();
     this.waiting = new Map<string, string[]>();
+    this.userMap = new Map<string, Game>();
   }
 
   private queue: string[];
   private games: Map<string, Game>;
   private waiting: Map<string, string[]>;
+  private userMap: Map<string, Game>; // NOTE: user_id - game_id
 
   // NOTE: 임시
   makeBallInfo() {
@@ -75,6 +77,15 @@ export class GamesService {
     return game;
   }
 
+  getGameByUserId(user_id: string): Game {
+    const game = this.userMap.get(user_id);
+    // if (!game_id) throw Error('This game_id is not abailable.');
+
+    if (!game) return null;
+
+    return game;
+  }
+
   /*
    ** ANCHOR: Mutation
    */
@@ -96,6 +107,8 @@ export class GamesService {
       newGame.left_player.id.toString(),
       newGame.right_player.id.toString(),
     ]);
+    this.userMap.set(leftId, newGame);
+    this.userMap.set(rightId, newGame); // NOTE: 임시
 
     this.pubSub.publish(`register_${leftId}`, {
       subscribeRegister: {
@@ -284,6 +297,8 @@ export class GamesService {
           winner,
         },
       });
+      this.userMap.delete(game.left_player.id);
+      this.userMap.delete(game.right_player.id);
       this.games.delete(game_id);
       return true;
     } // NOTE: 일단은 3점 얻으면 승리

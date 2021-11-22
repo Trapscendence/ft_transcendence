@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,10 +11,15 @@ import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
+import { GamesService } from 'src/games/games.service';
+import { Game } from 'src/games/models/game.model';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
+  ) {}
 
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
@@ -373,5 +380,9 @@ export class UsersService {
     } else {
       return select_site_role[0].site_role;
     }
+  }
+
+  getGameByUserId(id: string): Game {
+    return this.gamesService.getGameByUserId(id);
   }
 }

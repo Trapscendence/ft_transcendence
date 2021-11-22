@@ -24,7 +24,7 @@ import {
 export class GamesResolver {
   constructor(
     private readonly gamesService: GamesService,
-    private readonly usersService: UsersService,
+    // private readonly usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
