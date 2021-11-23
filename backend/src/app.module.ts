@@ -20,6 +20,7 @@ import { StatusModule } from './status/status.module';
 import { JwtDTO } from './auth/dto/jwt.dto';
 import { Context } from 'graphql-ws';
 import { AuthService } from './auth/auth.service';
+import { GamesService } from './games/games.service';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AuthService } from './auth/auth.service';
       useFactory: async (
         statusService: StatusService,
         authService: AuthService,
+        gamesService: GamesService,
       ) => {
         return {
           playground: {

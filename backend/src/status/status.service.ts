@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { GamesService } from 'src/games/games.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserStatus } from 'src/users/models/user.model';
 
@@ -7,7 +8,10 @@ import { UserStatus } from 'src/users/models/user.model';
 export class StatusService {
   container: Map<string, [UserStatus, Set<WebSocket>]>;
 
-  constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {
+  constructor(
+    private readonly gamesService: GamesService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {
     this.container = new Map<string, [UserStatus, Set<WebSocket>]>();
   }
 
@@ -43,6 +47,7 @@ export class StatusService {
     if (!wsSet) return;
     wsSet.delete(ws);
     if (!wsSet.size) {
+      this.gamesService.surrenderGameWithUserId(user_id);
       this.container.delete(user_id);
       this.pubSub.publish(`status_of_${user_id}`, {
         statusChange: UserStatus.OFFLINE,
