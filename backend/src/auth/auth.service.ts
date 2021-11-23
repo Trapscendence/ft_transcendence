@@ -16,4 +16,9 @@ export class AuthService {
 
     return access_token;
   }
+
+  async extractUserId(token: string): Promise<string> {
+    const { id } = this.jwtService.verify(token) as JwtDTO;
+    return id;
+  }
 }

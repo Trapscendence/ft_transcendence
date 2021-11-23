@@ -9,24 +9,25 @@ import {
   ID,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { User, UserRole } from './models/user.model';
+import { UserID } from 'src/users/decorators/user-id.decorator';
+import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
-import { UserID } from './decorators/user-id.decorator';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
+import { StatusService } from 'src/status/status.service';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
-    // private readonly gamesService: GamesService,
-    // @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
+    private readonly statusService: StatusService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -129,6 +130,12 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
   }
+
+  @ResolveField('status', (returns) => UserStatus)
+  getStatus(@Parent() user: User): UserStatus {
+    const { id } = user;
+    return this.statusService.getStatus(id);
+  }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;
@@ -139,5 +146,14 @@ export class UsersResolver {
   async getGame(@Parent() user: User): Promise<Game | null> {
     const { id } = user;
     return await this.usersService.getGameByUserId(id);
+  }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
+
+  @Subscription((returns) => UserStatus)
+  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
+    return this.pubSub.asyncIterator(`status_of_${user_id}`);
   }
 }
