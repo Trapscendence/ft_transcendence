@@ -22,6 +22,7 @@ import {
 } from '../../utils/Apollo/responseModels';
 import { Notify } from '../../utils/Apollo/schemaEnums';
 import ErrorAlert from '../commons/ErrorAlert';
+import LoadingBackdrop from '../commons/LoadingBackdrop';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
 import ParticipantsList from './ParticipantsList';
@@ -50,8 +51,11 @@ export default function Channel({
 
   const [alertMsg, displayAlertMsg] = useSnackbar(3000);
 
-  const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
+  const {
+    data: blacklistData,
+    error: blacklistError,
+    loading: blacklistLoading,
+  } = useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
   const { data: subscribeData, error: subscribeError } =
     useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
@@ -123,6 +127,8 @@ export default function Channel({
   }, [subscribeData]);
 
   const errorVar = blacklistError || subscribeError;
+
+  if (blacklistLoading) return <LoadingBackdrop loading={blacklistLoading} />;
 
   if (!blacklistData) return <></>;
 

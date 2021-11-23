@@ -24,7 +24,7 @@ import {
 export class GamesResolver {
   constructor(
     private readonly gamesService: GamesService,
-    private readonly usersService: UsersService,
+    // private readonly usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -104,6 +104,30 @@ export class GamesResolver {
     @Args('isLeftWin', { type: () => Boolean! }) isLeftWin: boolean,
   ) {
     return await this.gamesService.winRound(user_id, game_id, isLeftWin);
+  }
+
+  @Mutation((returns) => Boolean)
+  async surrenderGame(
+    // @UserID() user_id: string,
+    @Args('game_id', { type: () => ID! }) game_id: string,
+    @Args('isLeft', { type: () => Boolean! }) isLeft: boolean,
+  ) {
+    return await this.gamesService.surrenderGame(game_id, isLeft);
+  }
+
+  @Mutation((returns) => Boolean)
+  async makeCustomGame(
+    @UserID() user_id: string,
+    @Args('target_id', { type: () => ID! }) target_id: string,
+    @Args('isBallNormal', { type: () => Boolean! }) isBallNormal: boolean,
+    @Args('isPaddleNormal', { type: () => Boolean! }) isPaddleNormal: boolean,
+  ) {
+    return await this.gamesService.makeCustomGame(
+      user_id,
+      target_id,
+      isBallNormal,
+      isPaddleNormal,
+    );
   }
 
   /*

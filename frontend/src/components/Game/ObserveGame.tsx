@@ -7,7 +7,7 @@ import ErrorAlert from '../commons/ErrorAlert';
 import LoadingBackdrop from '../commons/LoadingBackdrop';
 import GameContents from './GameContents';
 
-export default function Game(): JSX.Element {
+export default function ObserveGame(): JSX.Element {
   const location = useLocation<{ game_id: string }>();
 
   if (!location.state) return <Redirect to="/home" />;
@@ -62,9 +62,7 @@ export default function Game(): JSX.Element {
     <GameContents
       gameData={data.game}
       refetchGameData={refetch}
-      isObserve={false}
+      isObserve={true}
     />
   );
 }
-
-// NOTE: 나중에는 라운드 별로 호스트가 달라지도록... 지금은 그냥 왼쪽 유저가 호스트

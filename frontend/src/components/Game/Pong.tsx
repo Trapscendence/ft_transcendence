@@ -11,7 +11,7 @@ import ErrorAlert from '../commons/ErrorAlert';
 const CANVAS_WIDTH = 500;
 const CANVAS_HEIGHT = 500;
 const BALL_RADIUS = 10;
-const PADDLE_HEIGHT = 75;
+// const PADDLE_HEIGHT = 75;
 const PADDLE_WIDTH = 10;
 const PADDLE_DY = 7;
 
@@ -36,6 +36,8 @@ const START_RIGHT_PADDLE_Y = 250;
 interface PongProps {
   isLeft: boolean;
   gameId: string;
+  isObserve: boolean;
+  paddleHeight: number;
   // initBallInfo: BallInfo;
   // initPaddleInfo: PaddleInfo;
 }
@@ -43,6 +45,8 @@ interface PongProps {
 export default function Pong({
   isLeft,
   gameId,
+  isObserve,
+  paddleHeight,
 }: // initBallInfo,
 // initPaddleInfo,
 PongProps): JSX.Element {
@@ -149,6 +153,10 @@ PongProps): JSX.Element {
    ** ANCHOR: useEffect
    */
 
+  useEffect(() => {
+    setIsPlaying(true);
+  }, []);
+
   const syncBall = (ballInfo: BallInfo) => {
     const { ball_x, ball_y, ball_dx, ball_dy } = ballInfo;
 
@@ -225,7 +233,7 @@ PongProps): JSX.Element {
     if (!ctx) return;
 
     ctx.beginPath();
-    ctx.rect(0, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+    ctx.rect(0, leftPaddleY, PADDLE_WIDTH, paddleHeight);
     ctx.fillStyle = '#7e57c2';
     ctx.fill();
     ctx.closePath();
@@ -239,7 +247,7 @@ PongProps): JSX.Element {
       ctx.canvas.width - PADDLE_WIDTH,
       rightPaddleY,
       PADDLE_WIDTH,
-      PADDLE_HEIGHT
+      paddleHeight
     );
     ctx.fillStyle = '#7e57c2';
     ctx.fill();
@@ -276,7 +284,7 @@ PongProps): JSX.Element {
 
     if (x + dx < BALL_RADIUS) {
       // NOTE: 공이 왼쪽으로 갔을 때
-      if (y > leftPaddleY && y < leftPaddleY + PADDLE_HEIGHT) {
+      if (y > leftPaddleY && y < leftPaddleY + paddleHeight) {
         setDx((prev) => -prev);
       } else {
         setIsPlaying(false);
@@ -286,7 +294,7 @@ PongProps): JSX.Element {
       void sendBallCollision();
     } else if (x + dx > ctx.canvas.width - BALL_RADIUS) {
       // NOTE: 공이 오른쪽으로 갔을 때
-      if (y > rightPaddleY && y < rightPaddleY + PADDLE_HEIGHT) {
+      if (y > rightPaddleY && y < rightPaddleY + paddleHeight) {
         setDx((prev) => -prev);
       } else {
         setIsPlaying(false);
@@ -300,16 +308,16 @@ PongProps): JSX.Element {
     if (leftPaddleY < 0) {
       setLeftPaddleY(0);
     }
-    if (leftPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
-      setLeftPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+    if (leftPaddleY + paddleHeight > ctx.canvas.height) {
+      setLeftPaddleY(ctx.canvas.height - paddleHeight);
     }
 
     setRightPaddleY((prev) => prev + rightPaddleDy);
     if (rightPaddleY < 0) {
       setRightPaddleY(0);
     }
-    if (rightPaddleY + PADDLE_HEIGHT > ctx.canvas.height) {
-      setRightPaddleY(ctx.canvas.height - PADDLE_HEIGHT);
+    if (rightPaddleY + paddleHeight > ctx.canvas.height) {
+      setRightPaddleY(ctx.canvas.height - paddleHeight);
     }
 
     setX((prev) => prev + dx);
@@ -317,6 +325,7 @@ PongProps): JSX.Element {
   };
 
   const keyDownHandler = async (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (isObserve) return;
     if (keyDown) return;
     setKeyDown(true);
 
@@ -332,6 +341,7 @@ PongProps): JSX.Element {
   };
 
   const keyUpHandler = async (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+    if (isObserve) return;
     if (!keyDown) return;
     setKeyDown(false);
 
@@ -348,7 +358,12 @@ PongProps): JSX.Element {
   };
 
   useInterval(draw, isPlaying ? 30 : null); // NOTE: 대략 30fps
-  // useInterval(draw, 30);
+  useInterval(
+    () => {
+      void sendBallCollision();
+    },
+    isPlaying ? 500 : null
+  );
 
   const errorVar =
     error || movePaddleError || ballCollisionError || winRoundError;

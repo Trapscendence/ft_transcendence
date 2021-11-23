@@ -83,6 +83,7 @@ export enum Notify {
 
 export enum RegisterNotifyType {
   MATCHED = 'MATCHED',
+  ASKED = 'ASKED',
   JOIN = 'JOIN',
   BOOM = 'BOOM',
 }

@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { schema } from 'src/utils/envs';
 import {
@@ -18,20 +19,22 @@ const START_DELAY = 2000;
 export class GamesService {
   constructor(
     private databaseService: DatabaseService,
-    private usersService: UsersService,
+    @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {
     this.queue = [];
     this.games = new Map<string, Game>();
     this.waiting = new Map<string, string[]>();
+    this.userMap = new Map<string, Game>();
   }
 
   private queue: string[];
   private games: Map<string, Game>;
   private waiting: Map<string, string[]>;
+  private userMap: Map<string, Game>; // NOTE: user_id - game_id
 
   // NOTE: 임시
-  makeBallInfo() {
+  normalBallInfo() {
     return {
       ball_x: 250,
       ball_y: 470, // NOTE: 상수화 필요
@@ -40,7 +43,7 @@ export class GamesService {
     };
   }
 
-  makePaddleInfo() {
+  paddleInfo() {
     return {
       left_paddle_y: 250,
       left_paddle_dy: 0,
@@ -49,20 +52,51 @@ export class GamesService {
     };
   }
 
-  async makeRankGame(leftId: string, rightId: string) {
+  hardBallInfo() {
+    return {
+      ball_x: 250,
+      ball_y: 470, // NOTE: 상수화 필요
+      ball_dx: 5,
+      ball_dy: 5,
+    };
+  }
+
+  async rankGame(leftId: string, rightId: string) {
     return {
       id: new Date().getTime().toString(),
-      ball_info: this.makeBallInfo(),
-      paddle_info: this.makePaddleInfo(),
+      ball_info: this.normalBallInfo(),
+      paddle_info: this.paddleInfo(),
       game_type: GameType.RANK,
       left_score: 0,
       right_score: 0,
       left_player: await this.usersService.getUserById(leftId),
       right_player: await this.usersService.getUserById(rightId),
-      observers: [],
-      obstacles: [],
+      paddle_height: 75,
     };
   }
+
+  async customGame(
+    leftId: string,
+    rightId: string,
+    isBallNormal: boolean,
+    isPaddleNormal: boolean,
+  ) {
+    return {
+      id: new Date().getTime().toString(),
+      ball_info: isBallNormal ? this.normalBallInfo() : this.hardBallInfo(),
+      paddle_info: this.paddleInfo(),
+      game_type: GameType.CUSTOM,
+      left_score: 0,
+      right_score: 0,
+      left_player: await this.usersService.getUserById(leftId),
+      right_player: await this.usersService.getUserById(rightId),
+      // observers: [],
+      // obstacles: [],
+      paddle_height: isPaddleNormal ? 75 : 35,
+    };
+  }
+
+  // TODO: observers, obstacles 필드 삭제
 
   /*
    ** ANCHOR: Query
@@ -70,9 +104,14 @@ export class GamesService {
 
   async getGame(game_id: string) {
     const game = this.games.get(game_id);
-
     if (!game) throw Error('This game is not available.');
+    return game;
+  }
 
+  getGameByUserId(user_id: string): Game {
+    // console.log(this.userMap);
+    const game = this.userMap.get(user_id);
+    if (!game) return null;
     return game;
   }
 
@@ -84,20 +123,23 @@ export class GamesService {
     if (this.queue.find((val) => val === user_id))
       throw Error(`this user(${user_id}) already registered.`);
 
-    this.queue.push(user_id);
+    this.queue.push(user_id.toString()); // NOTE: number로 들어옵니다... 😡
 
     if (this.queue.length < 2) return false; // 게임이 만들어졌는지 아닌지 확인 용도
 
     const leftId = this.queue.shift();
     const rightId = this.queue.shift();
 
-    const newGame = await this.makeRankGame(leftId, rightId);
+    const newGame = await this.rankGame(leftId, rightId);
     this.games.set(newGame.id, newGame);
     this.waiting.set(newGame.id, [
       newGame.left_player.id.toString(),
       newGame.right_player.id.toString(),
     ]);
+    this.userMap.set(leftId, newGame);
+    this.userMap.set(rightId, newGame); // NOTE: 아마 위치를 옮겨야 할듯. 너무 이른 시점에 세팅하는 것 같다.
 
+    // await setTimeout(() => {
     this.pubSub.publish(`register_${leftId}`, {
       subscribeRegister: {
         type: RegisterNotifyType.MATCHED,
@@ -110,16 +152,18 @@ export class GamesService {
         game_id: newGame.id,
       },
     });
+    // }, 3000);
 
     return true;
   }
 
   async unregisterGame(user_id: string): Promise<boolean> {
-    if (!this.queue.find((val) => val === user_id)) {
+    if (!this.queue.find((val) => val === user_id.toString())) {
+      // NOTE: ToString... 😡
       return false;
     } // NOTE: 큐에 없으면 false
 
-    this.queue = this.queue.filter((val) => val !== user_id);
+    this.queue = this.queue.filter((val) => val !== user_id.toString());
     return true;
   }
 
@@ -155,8 +199,8 @@ export class GamesService {
         subscribeCanvas: {
           game_id,
           type: CanvasNotifyType.START,
-          ball_info: this.makeBallInfo(),
-          paddle_info: this.makePaddleInfo(),
+          ball_info: game.ball_info,
+          paddle_info: game.paddle_info,
         },
       });
     }, START_DELAY); // NOTE: 딜레이 후 게임 시작
@@ -259,14 +303,16 @@ export class GamesService {
 
     if (isLeftWin) {
       game.left_score += 1;
-      console.log('left', game.left_score, game.right_score);
     } else {
       game.right_score += 1;
-      console.log('right', game.left_score, game.right_score);
     }
 
-    game.ball_info = this.makeBallInfo();
-    game.paddle_info = this.makePaddleInfo();
+    // TODO: 끝나는 점수도 상수화해야
+    if (game.left_score > 2 || game.right_score > 2) {
+      const winner = game.left_score > 2 ? game.left_player : game.right_player;
+      this.endGame(game, winner);
+      return true;
+    } // NOTE: 일단은 3점 얻으면 승리
 
     this.pubSub.publish(`game_${game_id}`, {
       subscribeGame: {
@@ -275,40 +321,74 @@ export class GamesService {
       },
     });
 
-    // TODO: 끝나는 점수도 상수화해야
-    if (game.left_score > 2 || game.right_score > 2) {
-      // if (true) { // NOTE: SQL test를 위해서 잠시 바꿔놓음
-      const winner = game.left_score > 2 ? game.left_player : game.right_player;
-      const loser = winner == game.left_player ? game.right_player : game.left_player;
-      this.pubSub.publish(`game_${game_id}`, {
-        subscribeGame: {
-          type: GameNotifyType.END,
+    game.ball_info = { ...game.ball_info, ball_x: 250, ball_y: 470 }; // TODO: 상수화 필요
+    game.paddle_info = this.paddleInfo();
+
+    setTimeout(() => {
+      this.pubSub.publish(`canvas_${game_id}`, {
+        subscribeCanvas: {
           game_id,
-          winner,
+          type: CanvasNotifyType.START,
+          ball_info: game.ball_info,
+          paddle_info: game.paddle_info,
         },
       });
-      this.games.delete(game_id);
-      this.databaseService.executeQuery(`
-        INSERT INTO ${schema}.match(
-          winner,
-          loser,
-          win_points,
-          lose_points,
-          date,
-          ladder
-        )
-        VALUES (
-          ($1),
-          ($2),
-          ($3),
-          ($4),
-          ($5),
-          false
-        );
-      `, [winner.id, loser.id, 5, 5, (new Date()).getTime])
+    }, START_DELAY); // NOTE: 딜레이 후 게임 재시작
 
-      return true;
-    } // NOTE: 일단은 3점 얻으면 승리
-
+    return true;
   }
+
+  async endGame(game: Game, winner: User) {
+    this.userMap.delete(game.left_player.id.toString());
+    this.userMap.delete(game.right_player.id.toString()); // NOTE: number 타입... 😡
+    this.games.delete(game.id);
+    this.pubSub.publish(`game_${game.id}`, {
+      subscribeGame: {
+        type: GameNotifyType.END,
+        game_id: game.id,
+        winner,
+      },
+    });
+  }
+
+  async surrenderGame(
+    // user_id: string,
+    game_id: string,
+    isLeft: boolean,
+  ): Promise<boolean> {
+    const game = this.games.get(game_id);
+    if (!game) throw Error('This game is not available.');
+
+    const winner = isLeft ? game.right_player : game.left_player;
+    this.endGame(game, winner);
+    return true;
+  }
+
+  async makeCustomGame(
+    user_id: string,
+    target_id: string,
+    isBallNormal: boolean,
+    isPaddleNormal: boolean,
+  ) {
+    const newGame = await this.customGame(
+      user_id,
+      target_id,
+      isBallNormal,
+      isPaddleNormal,
+    );
+    this.games.set(newGame.id, newGame);
+    this.waiting.set(newGame.id, [newGame.right_player.id.toString()]);
+    this.userMap.set(user_id, newGame);
+    this.userMap.set(target_id, newGame);
+
+    this.pubSub.publish(`register_${target_id}`, {
+      subscribeRegister: {
+        type: RegisterNotifyType.ASKED,
+        game_id: newGame.id,
+        custom_host_nickname: newGame.left_player.nickname,
+      },
+    });
+
+    return true;
+  } // NOTE: target(right_player)만 join 혹은 notJoin을 한다?
 }

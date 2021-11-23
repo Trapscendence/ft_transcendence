@@ -48,7 +48,7 @@ export default function GameEndModal({
           </CardContent>
           <CardActions>
             <Button variant="contained" onClick={onClickBtn}>
-              exit game
+              ok
             </Button>
           </CardActions>
         </Card>
