@@ -283,6 +283,7 @@ export const SUBSCRIBE_REGISTER = gql`
     subscribeRegister {
       type
       game_id
+      custom_host_nickname
     }
   }
 `;

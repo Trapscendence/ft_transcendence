@@ -115,6 +115,21 @@ export class GamesResolver {
     return await this.gamesService.surrenderGame(game_id, isLeft);
   }
 
+  @Mutation((returns) => Boolean)
+  async makeCustomGame(
+    @UserID() user_id: string,
+    @Args('target_id', { type: () => ID! }) target_id: string,
+    @Args('isBallNormal', { type: () => Boolean! }) isBallNormal: boolean,
+    @Args('isPaddleNormal', { type: () => Boolean! }) isPaddleNormal: boolean,
+  ) {
+    return await this.gamesService.makeCustomGame(
+      user_id,
+      target_id,
+      isBallNormal,
+      isPaddleNormal,
+    );
+  }
+
   /*
    ** ANCHOR: Subscription
    */

@@ -11,6 +11,7 @@ interface MatchedModalProps {
   id: string;
   btnLoading: boolean;
   setBtnLoading: (bool: boolean) => void;
+  customNick: string | null;
 }
 
 export default function MatchedModal({
@@ -18,6 +19,7 @@ export default function MatchedModal({
   id,
   btnLoading,
   setBtnLoading,
+  customNick,
 }: MatchedModalProps): JSX.Element {
   const [joinGame, { error: joinError }] = useMutation<{ joinGame: boolean }>(
     gql`
@@ -80,7 +82,9 @@ export default function MatchedModal({
         >
           <CardContent>
             <Typography>
-              Game is matched! Would you like to join the game?
+              {customNick
+                ? `Custom game is asked from ${customNick}! Would you like to join the game?`
+                : 'Rank game is matched! Would you like to join the game?'}
             </Typography>
           </CardContent>
           <CardActions>

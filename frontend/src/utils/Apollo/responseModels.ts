@@ -86,5 +86,6 @@ export interface SubscribeRegisterResponse {
   subscribeRegister: {
     type: RegisterNotifyType;
     game_id: string;
+    custom_host_nickname?: string;
   };
 }
