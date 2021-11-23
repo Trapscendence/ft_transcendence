@@ -31,10 +31,7 @@ interface GameContentsProps {
       id: string;
       nickname: string;
     };
-    observers: {
-      id: string;
-      nickname: string;
-    }[];
+    paddle_height: number;
   };
   refetchGameData: (
     variables?: Partial<OperationVariables> | undefined
@@ -54,10 +51,7 @@ interface GameContentsProps {
           id: string;
           nickname: string;
         };
-        observers: {
-          id: string;
-          nickname: string;
-        }[];
+        paddle_height: number;
       };
     }>
   >;
@@ -69,7 +63,14 @@ export default function GameContents({
   refetchGameData,
   isObserve,
 }: GameContentsProps): JSX.Element {
-  const { id, left_score, right_score, left_player, right_player } = gameData;
+  const {
+    id,
+    left_score,
+    right_score,
+    left_player,
+    right_player,
+    paddle_height,
+  } = gameData;
   const isLeft = left_player.id === userIdVar();
   const round = left_score + right_score + 1;
 
@@ -114,7 +115,7 @@ export default function GameContents({
   useEffect(() => {
     if (!data) return;
 
-    console.log(data.subscribeGame);
+    // console.log(data.subscribeGame);
 
     const { type, winner } = data.subscribeGame;
 
@@ -181,7 +182,12 @@ export default function GameContents({
           <Typography>score: {right_score}</Typography>
         </Card>
       </Box>
-      <Pong isLeft={isLeft} gameId={id} isObserve={isObserve} />
+      <Pong
+        isLeft={isLeft}
+        gameId={id}
+        isObserve={isObserve}
+        paddleHeight={paddle_height}
+      />
     </>
   );
 }

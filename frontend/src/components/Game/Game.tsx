@@ -28,10 +28,7 @@ export default function Game(): JSX.Element {
         id: string;
         nickname: string;
       };
-      observers: {
-        id: string;
-        nickname: string;
-      }[];
+      paddle_height: number;
     };
   }>(
     gql`
@@ -50,10 +47,7 @@ export default function Game(): JSX.Element {
             id
             nickname
           }
-          observers {
-            id
-            nickname
-          }
+          paddle_height
         }
       }
     `,

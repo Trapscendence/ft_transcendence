@@ -1,4 +1,6 @@
+import { useMutation } from '@apollo/client';
 import { FormControl, FormLabel } from '@material-ui/core';
+import { LoadingButton } from '@mui/lab';
 import {
   Button,
   Card,
@@ -8,34 +10,58 @@ import {
   Modal,
   Radio,
   RadioGroup,
-  TextField,
-  Typography,
 } from '@mui/material';
-import { useRadioGroup } from '@mui/material/RadioGroup';
+import gql from 'graphql-tag';
 import { useState } from 'react';
 
 interface CustomGameModalProps {
+  id: string;
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function CustomGameModal({
+  id,
   open,
   setOpen,
 }: CustomGameModalProps) {
-  const [paddle, setPaddle] = useState('normal');
-  const [ball, setBall] = useState('normal');
+  const [isPaddleNormal, setIsPaddleNormal] = useState(true);
+  const [isBallNormal, setIsBallNormal] = useState(true);
+  const [btnLoading, setBtnLoading] = useState(false);
+
+  const [makeCustomGame] = useMutation<{ makeCustomGame: boolean }>(gql`
+    mutation MakeCustomGame(
+      $target_id: ID!
+      $isBallNormal: Boolean!
+      $isPaddleNormal: Boolean!
+    ) {
+      makeCustomGame(
+        target_id: $target_id
+        isBallNormal: $isBallNormal
+        isPaddleNormal: $isPaddleNormal
+      )
+    }
+  `);
 
   const handleChangePaddle = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPaddle((event.target as HTMLInputElement).value);
+    setIsPaddleNormal((event.target as HTMLInputElement).value === 'normal');
   };
 
   const handelChangeBall = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBall((event.target as HTMLInputElement).value);
+    setIsBallNormal((event.target as HTMLInputElement).value === 'normal');
   };
 
-  const onClickBtn = () => {
-    console.log(paddle, ball);
+  const onClickBtn = async () => {
+    console.log(isPaddleNormal, isBallNormal);
+
+    setBtnLoading(true);
+    await makeCustomGame({
+      variables: {
+        target_id: id,
+        isBallNormal,
+        isPaddleNormal,
+      },
+    });
   };
 
   return (
@@ -65,7 +91,7 @@ export default function CustomGameModal({
               <RadioGroup
                 row
                 aria-label="paddle"
-                value={paddle}
+                value={isPaddleNormal ? 'normal' : 'hard'}
                 onChange={handleChangePaddle}
                 name="paddle-length"
                 sx={{ mb: 1 }}
@@ -86,7 +112,7 @@ export default function CustomGameModal({
                 row
                 aria-label="ball"
                 name="ball-speed"
-                value={ball}
+                value={isBallNormal ? 'normal' : 'hard'}
                 onChange={handelChangeBall}
               >
                 <FormControlLabel
@@ -103,9 +129,13 @@ export default function CustomGameModal({
             </FormControl>
           </CardContent>
           <CardActions>
-            <Button variant="contained" onClick={onClickBtn}>
+            <LoadingButton
+              loading={btnLoading}
+              variant="contained"
+              onClick={onClickBtn}
+            >
               make custom game
-            </Button>
+            </LoadingButton>
           </CardActions>
         </Card>
       </Modal>

@@ -11,7 +11,8 @@ registerEnumType(GameType, {
 });
 
 export enum RegisterNotifyType {
-  MATCHED = 'MATCHED',
+  MATCHED = 'MATCHED', // NOTE: 랭크게임 매칭
+  ASKED = 'ASKED', // NOTE: 커스텀게임 제안
   JOIN = 'JOIN',
   BOOM = 'BOOM',
 }
@@ -80,6 +81,9 @@ export class RegisterNotify {
 
   @Field((type) => ID)
   game_id: string;
+
+  @Field({ nullable: true })
+  custom_host_nickname: string;
 }
 
 @ObjectType()
@@ -156,12 +160,15 @@ export class Game {
   @Field()
   right_player: User;
 
-  @Field((type) => [User])
-  observers: User[];
+  // @Field((type) => [User])
+  // observers: User[];
 
-  @Field((type) => [Obstacle])
-  obstacles: Obstacle[];
+  // @Field((type) => [Obstacle])
+  // obstacles: Obstacle[];
 
   // @Field()
   // game_speed: number; // NOTE: dx, dy와 겹치나?
+
+  @Field()
+  paddle_height: number;
 }

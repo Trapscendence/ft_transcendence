@@ -19,6 +19,7 @@ export default function Matching(): JSX.Element {
   const [registered, setRegistered] = useState(false);
   const [matched, setMatched] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
+  const [customNick, setCustomNick] = useState<string | null>(null);
   const history = useHistory();
 
   const { data: registerData, error } =
@@ -49,19 +50,27 @@ export default function Matching(): JSX.Element {
 
     console.log(registerData.subscribeRegister);
 
-    const { type, game_id } = registerData.subscribeRegister;
+    const { type, game_id, custom_host_nickname } =
+      registerData.subscribeRegister;
 
     switch (type) {
+      case RegisterNotifyType.ASKED:
+        if (!custom_host_nickname) return;
+        setCustomNick(custom_host_nickname);
+        setMatched(true);
+        break;
       case RegisterNotifyType.MATCHED:
         setRegistered(false);
         setMatched(true);
         break;
       case RegisterNotifyType.JOIN:
+        setCustomNick(null);
         setMatched(false);
         history.push('/game', { game_id });
         // history.push('/game');
         break;
       case RegisterNotifyType.BOOM:
+        setCustomNick(null);
         setMatched(false);
         displayAlertMsg(`Match is canceled.`);
         break;
@@ -90,6 +99,7 @@ export default function Matching(): JSX.Element {
           id={registerData.subscribeRegister.game_id}
           btnLoading={btnLoading}
           setBtnLoading={setBtnLoading}
+          customNick={customNick}
         />
       )}
 

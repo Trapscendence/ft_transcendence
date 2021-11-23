@@ -33,7 +33,7 @@ export class GamesService {
   private userMap: Map<string, Game>; // NOTE: user_id - game_id
 
   // NOTE: 임시
-  makeBallInfo() {
+  normalBallInfo() {
     return {
       ball_x: 250,
       ball_y: 470, // NOTE: 상수화 필요
@@ -42,7 +42,7 @@ export class GamesService {
     };
   }
 
-  makePaddleInfo() {
+  paddleInfo() {
     return {
       left_paddle_y: 250,
       left_paddle_dy: 0,
@@ -51,20 +51,51 @@ export class GamesService {
     };
   }
 
-  async makeRankGame(leftId: string, rightId: string) {
+  hardBallInfo() {
+    return {
+      ball_x: 250,
+      ball_y: 470, // NOTE: 상수화 필요
+      ball_dx: 5,
+      ball_dy: 5,
+    };
+  }
+
+  async rankGame(leftId: string, rightId: string) {
     return {
       id: new Date().getTime().toString(),
-      ball_info: this.makeBallInfo(),
-      paddle_info: this.makePaddleInfo(),
+      ball_info: this.normalBallInfo(),
+      paddle_info: this.paddleInfo(),
       game_type: GameType.RANK,
       left_score: 0,
       right_score: 0,
       left_player: await this.usersService.getUserById(leftId),
       right_player: await this.usersService.getUserById(rightId),
-      observers: [],
-      obstacles: [],
+      paddle_height: 75,
     };
   }
+
+  async customGame(
+    leftId: string,
+    rightId: string,
+    isBallNormal: boolean,
+    isPaddleNormal: boolean,
+  ) {
+    return {
+      id: new Date().getTime().toString(),
+      ball_info: isBallNormal ? this.normalBallInfo() : this.hardBallInfo(),
+      paddle_info: this.paddleInfo(),
+      game_type: GameType.CUSTOM,
+      left_score: 0,
+      right_score: 0,
+      left_player: await this.usersService.getUserById(leftId),
+      right_player: await this.usersService.getUserById(rightId),
+      // observers: [],
+      // obstacles: [],
+      paddle_height: isPaddleNormal ? 75 : 35,
+    };
+  }
+
+  // TODO: observers, obstacles 필드 삭제
 
   /*
    ** ANCHOR: Query
@@ -98,14 +129,14 @@ export class GamesService {
     const leftId = this.queue.shift();
     const rightId = this.queue.shift();
 
-    const newGame = await this.makeRankGame(leftId, rightId);
+    const newGame = await this.rankGame(leftId, rightId);
     this.games.set(newGame.id, newGame);
     this.waiting.set(newGame.id, [
       newGame.left_player.id.toString(),
       newGame.right_player.id.toString(),
     ]);
     this.userMap.set(leftId, newGame);
-    this.userMap.set(rightId, newGame); // NOTE: 임시
+    this.userMap.set(rightId, newGame); // NOTE: 아마 위치를 옮겨야 할듯. 너무 이른 시점에 세팅하는 것 같다.
 
     // await setTimeout(() => {
     this.pubSub.publish(`register_${leftId}`, {
@@ -167,8 +198,8 @@ export class GamesService {
         subscribeCanvas: {
           game_id,
           type: CanvasNotifyType.START,
-          ball_info: this.makeBallInfo(),
-          paddle_info: this.makePaddleInfo(),
+          ball_info: game.ball_info,
+          paddle_info: game.paddle_info,
         },
       });
     }, START_DELAY); // NOTE: 딜레이 후 게임 시작
@@ -282,9 +313,6 @@ export class GamesService {
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
 
-    game.ball_info = this.makeBallInfo();
-    game.paddle_info = this.makePaddleInfo();
-
     this.pubSub.publish(`game_${game_id}`, {
       subscribeGame: {
         type: GameNotifyType.WINLOSE,
@@ -292,13 +320,16 @@ export class GamesService {
       },
     });
 
+    game.ball_info = { ...game.ball_info, ball_x: 250, ball_y: 470 }; // TODO: 상수화 필요
+    game.paddle_info = this.paddleInfo();
+
     setTimeout(() => {
       this.pubSub.publish(`canvas_${game_id}`, {
         subscribeCanvas: {
           game_id,
           type: CanvasNotifyType.START,
-          ball_info: this.makeBallInfo(),
-          paddle_info: this.makePaddleInfo(),
+          ball_info: game.ball_info,
+          paddle_info: game.paddle_info,
         },
       });
     }, START_DELAY); // NOTE: 딜레이 후 게임 재시작
@@ -331,4 +362,40 @@ export class GamesService {
     this.endGame(game, winner);
     return true;
   }
+
+  surrenderGameWithUserId(user_id: string) {
+    const game = this.userMap.get(user_id);
+    if (!game) return null;
+
+    const isLeft = game.left_player.id == user_id; // NOTE: 현재 user_id 타입이 멋대로라 === 비교를 안했음
+    this.surrenderGame(game.id, isLeft);
+  } // NOTE: onDisconnect에서 사용할 함수
+
+  async makeCustomGame(
+    user_id: string,
+    target_id: string,
+    isBallNormal: boolean,
+    isPaddleNormal: boolean,
+  ) {
+    const newGame = await this.customGame(
+      user_id,
+      target_id,
+      isBallNormal,
+      isPaddleNormal,
+    );
+    this.games.set(newGame.id, newGame);
+    this.waiting.set(newGame.id, [newGame.right_player.id.toString()]);
+    this.userMap.set(user_id, newGame);
+    this.userMap.set(target_id, newGame);
+
+    this.pubSub.publish(`register_${target_id}`, {
+      subscribeRegister: {
+        type: RegisterNotifyType.ASKED,
+        game_id: newGame.id,
+        custom_host_nickname: newGame.left_player.nickname,
+      },
+    });
+
+    return true;
+  } // NOTE: target(right_player)만 join 혹은 notJoin을 한다?
 }

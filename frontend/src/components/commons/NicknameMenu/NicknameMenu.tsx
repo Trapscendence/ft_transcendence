@@ -98,7 +98,7 @@ export default function NicknameMenu({
             </MenuItem>
           )}
           {gameModal && (
-            <CustomGameModal open={gameModal} setOpen={setGameModal} />
+            <CustomGameModal id={id} open={gameModal} setOpen={setGameModal} />
           )}
           {blacklistData &&
           blacklistData.user &&
