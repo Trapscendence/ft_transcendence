@@ -101,6 +101,14 @@ export class UsersResolver {
     return await this.usersService.deleteFromBlackList(user_id, black_id);
   }
 
+  @Mutation((returns) => Boolean)
+  setStatus(
+    @UserID() user_id: string,
+    @Args('status', { type: () => UserStatus }) status: UserStatus,
+  ): boolean {
+    return this.statusService.setStatus(user_id, status);
+  }
+
   /*
    ** ANCHOR: ResolveField
    */
