@@ -18,6 +18,7 @@ import { StatusService } from './status/status.service';
 import { StatusModule } from './status/status.module';
 import { JwtDTO } from './auth/dto/jwt.dto';
 import { Context } from 'graphql-ws';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -32,9 +33,12 @@ import { Context } from 'graphql-ws';
     // }),
 
     GraphQLModule.forRootAsync({
-      imports: [StatusModule],
-      inject: [StatusService],
-      useFactory: async (statusService: StatusService) => {
+      imports: [StatusModule, AuthModule],
+      inject: [StatusService, AuthService],
+      useFactory: async (
+        statusService: StatusService,
+        authService: AuthService,
+      ) => {
         return {
           playground: {
             subscriptionEndpoint: 'ws://localhost:7000/subscriptions',
@@ -51,7 +55,7 @@ import { Context } from 'graphql-ws';
             // },
             'subscriptions-transport-ws': {
               path: '/subscriptions',
-              onConnect: (
+              onConnect: async (
                 connectionParams: any,
                 webSocket: WebSocket,
                 context: any,
@@ -59,23 +63,17 @@ import { Context } from 'graphql-ws';
                 const auth = context.upgradeReq?.headers?.authorization;
                 if (auth) {
                   const token = auth.split(' ')[1];
-                  const { id } = verify(
-                    token,
-                    process.env.JWT_SECRET,
-                  ) as JwtDTO;
-                  statusService.newConnection(id, token);
+                  const id = await authService.extractUserId(token);
+                  statusService.newConnection(id, webSocket);
                 }
                 return connectionParams;
               },
-              onDisconnect(webSocket: WebSocket, context: any) {
+              onDisconnect: async (webSocket: WebSocket, context: any) => {
                 const auth = context.upgradeReq?.headers?.authorization;
                 if (auth) {
                   const token = auth.split(' ')[1];
-                  const { id } = verify(
-                    token,
-                    process.env.JWT_SECRET,
-                  ) as JwtDTO;
-                  statusService.deleteConnection(id, token);
+                  const id = await authService.extractUserId(token);
+                  statusService.deleteConnection(id, webSocket);
                 }
               },
             },
