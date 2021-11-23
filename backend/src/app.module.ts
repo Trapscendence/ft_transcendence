@@ -18,9 +18,13 @@ import { GamesModule } from './games/games.module';
 @Module({
   imports: [
     GraphQLModule.forRoot({
+      playground: {
+        subscriptionEndpoint: 'ws://localhost:7000/subscriptions',
+      },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {
+
         // NOTE: production에선 grapqh-ws를 켜야함
         // 'graphql-ws': {
         //   onConnect: (ctx: Context<unknown>) => {

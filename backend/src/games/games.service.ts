@@ -3,6 +3,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
+import { schema } from 'src/utils/envs';
 import {
   CanvasNotifyType,
   Game,
@@ -85,7 +86,7 @@ export class GamesService {
 
     this.queue.push(user_id);
 
-    if (this.queue.length < 2) return true;
+    if (this.queue.length < 2) return false; // 게임이 만들어졌는지 아닌지 확인 용도
 
     const leftId = this.queue.shift();
     const rightId = this.queue.shift();
@@ -276,7 +277,9 @@ export class GamesService {
 
     // TODO: 끝나는 점수도 상수화해야
     if (game.left_score > 2 || game.right_score > 2) {
+      // if (true) { // NOTE: SQL test를 위해서 잠시 바꿔놓음
       const winner = game.left_score > 2 ? game.left_player : game.right_player;
+      const loser = winner == game.left_player ? game.right_player : game.left_player;
       this.pubSub.publish(`game_${game_id}`, {
         subscribeGame: {
           type: GameNotifyType.END,
@@ -285,20 +288,27 @@ export class GamesService {
         },
       });
       this.games.delete(game_id);
+      this.databaseService.executeQuery(`
+        INSERT INTO ${schema}.match(
+          winner,
+          loser,
+          win_points,
+          lose_points,
+          date,
+          ladder
+        )
+        VALUES (
+          ($1),
+          ($2),
+          ($3),
+          ($4),
+          ($5),
+          false
+        );
+      `, [winner.id, loser.id, 5, 5, (new Date()).getTime])
+
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
 
-    setTimeout(() => {
-      this.pubSub.publish(`canvas_${game_id}`, {
-        subscribeCanvas: {
-          game_id,
-          type: CanvasNotifyType.START,
-          ball_info: this.makeBallInfo(),
-          paddle_info: this.makePaddleInfo(),
-        },
-      });
-    }, START_DELAY); // NOTE: 딜레이 후 게임 재시작
-
-    return true;
   }
 }
