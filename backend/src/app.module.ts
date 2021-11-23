@@ -16,50 +16,75 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { verify } from 'jsonwebtoken';
 import { StatusService } from './status/status.service';
 import { StatusModule } from './status/status.module';
+import { JwtDTO } from './auth/dto/jwt.dto';
+import { Context } from 'graphql-ws';
 
 @Module({
   imports: [
     // GraphQLModule.forRoot({
     //   autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
     //   installSubscriptionHandlers: true,
-    //   subscriptions: { 'subscriptions-transport-ws': true },
+    //   subscriptions: { 'graphql-ws': true },
     //   cors: {
-    //     origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+    //     origin: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
     //     credentials: true,
     //   },
     // }),
+
     GraphQLModule.forRootAsync({
       imports: [StatusModule],
       inject: [StatusService],
       useFactory: (statusService: StatusService) => {
         return {
+          playground: {
+            subscriptionEndpoint: 'ws://localhost:7000/subscriptions',
+          },
           autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
           installSubscriptionHandlers: true,
           subscriptions: {
             // NOTE: production에선 grapqh-ws를 켜야함
             // 'graphql-ws': {
+            //   path: '/subscriptions',
             //   onConnect: (ctx: Context<unknown>) => {
             //     console.log(ctx.connectionParams.authrization);
             //   },
             // },
             'subscriptions-transport-ws': {
-              onConnect: (connectionParams, webSocket, context) => {
-                if (connectionParams.authorization) {
-                  const token = connectionParams.authorization.split(' ')[1];
-                  const user_id = verify(
+              path: '/subscriptions',
+              onConnect: (
+                connectionParams: any,
+                webSocket: WebSocket,
+                context: any,
+              ) => {
+                // console.log(context.upgradeReq.headers);
+                // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+                const auth = context.upgradeReq?.headers?.authorization;
+                if (auth) {
+                  const token = auth.split(' ')[1];
+                  const { id } = verify(
                     token,
                     process.env.JWT_SECRET,
-                  ) as string;
-                  statusService.newConnection(user_id, webSocket);
+                  ) as JwtDTO;
+                  statusService.newConnection(id, token);
                 }
+                return connectionParams;
               },
-              onDisconnect(webSocket, context) {
-                statusService.deleteConnection(webSocket);
+              onDisconnect(webSocket: WebSocket, context: any) {
+                const auth = context.upgradeReq?.headers?.authorization;
+                if (auth) {
+                  const token = auth.split(' ')[1];
+                  const { id } = verify(
+                    token,
+                    process.env.JWT_SECRET,
+                  ) as JwtDTO;
+                  statusService.deleteConnection(id, token);
+                }
               },
             },
           },
           cors: {
-            origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
+            origin: `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}`,
+            // origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
             credentials: true,
           },
         };
@@ -75,10 +100,6 @@ import { StatusModule } from './status/status.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    AppService,
-    StatusService,
-  ],
+  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }, AppService],
 })
 export class AppModule {}

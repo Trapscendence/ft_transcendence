@@ -5,17 +5,15 @@ import { UserStatus } from 'src/users/models/user.model';
 
 @Injectable()
 export class StatusService {
-  container: Map<string, [UserStatus, Set<WebSocket>]>;
-  wsOwner: Map<WebSocket, string>;
+  container: Map<string, [UserStatus, Set<string>]>;
 
   constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {
-    this.container = new Map<string, [UserStatus, Set<WebSocket>]>();
-    this.wsOwner = new Map<WebSocket, string>();
+    this.container = new Map<string, [UserStatus, Set<string>]>();
   }
 
   setStatus(user_id: string, status: UserStatus): boolean {
-    this.pubSub.publish(`status_of_${user_id}`, status);
     if (status === UserStatus.OFFLINE) return false;
+    this.pubSub.publish(`status_of_${user_id}`, { statusChange: status });
     const beforeSet = this.container.get(user_id);
     if (!beforeSet) return false;
     beforeSet[0] = status;
@@ -28,31 +26,27 @@ export class StatusService {
     return status;
   }
 
-  newConnection(user_id: string, ws: WebSocket): void {
+  newConnection(user_id: string, token: string): void {
     if (!this.container.has(user_id))
-      this.pubSub.publish(`status_of_${user_id}`, UserStatus.ONLINE);
-    this.wsOwner.set(ws, user_id);
+      this.pubSub.publish(`status_of_${user_id}`, {
+        statusChange: UserStatus.ONLINE,
+      });
     if (!this.container.has(user_id))
-      this.container.set(user_id, [UserStatus.ONLINE, new Set<WebSocket>()]);
+      this.container.set(user_id, [UserStatus.ONLINE, new Set<string>()]);
     const wsSet = this.container.get(user_id)[1];
-    wsSet.add(ws);
+    wsSet.add(token);
   }
 
-  deleteConnection(ws: WebSocket): void {
-    const user_id = this.wsOwner.get(ws);
-    this.wsOwner.delete(ws);
+  deleteConnection(user_id: string, token: string): void {
+    console.log('delete', user_id);
     const wsSet = this.container.get(user_id)?.[1];
     if (!wsSet) return;
-    wsSet.delete(ws);
+    wsSet.delete(token);
     if (!wsSet.size) {
       this.container.delete(user_id);
-      this.pubSub.publish(
-        `status_of_${this.getUserId(ws)}`,
-        UserStatus.OFFLINE,
-      );
+      this.pubSub.publish(`status_of_${user_id}`, {
+        statusChange: UserStatus.OFFLINE,
+      });
     }
-  }
-  getUserId(ws: WebSocket): string {
-    return this.wsOwner.get(ws);
   }
 }
