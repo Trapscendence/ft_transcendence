@@ -34,7 +34,7 @@ import { Context } from 'graphql-ws';
     GraphQLModule.forRootAsync({
       imports: [StatusModule],
       inject: [StatusService],
-      useFactory: (statusService: StatusService) => {
+      useFactory: async (statusService: StatusService) => {
         return {
           playground: {
             subscriptionEndpoint: 'ws://localhost:7000/subscriptions',
@@ -56,8 +56,6 @@ import { Context } from 'graphql-ws';
                 webSocket: WebSocket,
                 context: any,
               ) => {
-                // console.log(context.upgradeReq.headers);
-                // console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
                 const auth = context.upgradeReq?.headers?.authorization;
                 if (auth) {
                   const token = auth.split(' ')[1];

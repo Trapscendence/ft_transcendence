@@ -27,12 +27,12 @@ export class StatusService {
   }
 
   newConnection(user_id: string, token: string): void {
-    if (!this.container.has(user_id))
+    if (!this.container.has(user_id)) {
       this.pubSub.publish(`status_of_${user_id}`, {
         statusChange: UserStatus.ONLINE,
       });
-    if (!this.container.has(user_id))
       this.container.set(user_id, [UserStatus.ONLINE, new Set<string>()]);
+    }
     const wsSet = this.container.get(user_id)[1];
     wsSet.add(token);
   }
