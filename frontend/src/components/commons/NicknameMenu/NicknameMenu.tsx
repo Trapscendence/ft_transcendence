@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Menu, MenuItem, MenuList } from '@mui/material';
 import gql from 'graphql-tag';
+import { useState } from 'react';
 import { useHistory } from 'react-router';
 
 import { userIdVar } from '../../..';
@@ -17,6 +18,7 @@ import {
 import handleError from '../../../utils/handleError';
 import ErrorAlert from '../ErrorAlert';
 import ChannelNicknameMenu from './ChannelNicknameMenu';
+import CustomGameModal from './CustomGameModal';
 
 interface NicknameMenuProps {
   anchorEl: null | HTMLElement;
@@ -33,6 +35,8 @@ export default function NicknameMenu({
   channelId,
   id,
 }: NicknameMenuProps): JSX.Element {
+  const [gameModal, setGameModal] = useState(false);
+
   const { data: blacklistData, error: blacklistError } =
     useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
@@ -83,9 +87,18 @@ export default function NicknameMenu({
           <MenuItem>Profile</MenuItem>
           <MenuItem>DM</MenuItem>
           {gameIdData?.user?.game?.id ? (
-            <MenuItem onClick={onClickObserve}>Observe the match</MenuItem>
+            <MenuItem onClick={onClickObserve}>Observe the game</MenuItem>
           ) : (
-            <MenuItem>Ask a match</MenuItem>
+            <MenuItem
+              onClick={() => {
+                setGameModal(true);
+              }}
+            >
+              Ask a custom game
+            </MenuItem>
+          )}
+          {gameModal && (
+            <CustomGameModal open={gameModal} setOpen={setGameModal} />
           )}
           {blacklistData &&
           blacklistData.user &&
