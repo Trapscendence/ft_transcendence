@@ -107,7 +107,7 @@ services:
       - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./migration/migrations:/mitrations
+      # - ./migration/migrations:/mitrations
 
   proxy:
     environment:
