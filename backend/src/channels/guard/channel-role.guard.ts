@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
-import { JwtDTO } from 'src/auth/dto/jwt.dto';
 import { UserRole } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { CHANNEL_ROLES_KEY } from '../decorators/channel-roles.decorator';
@@ -23,7 +22,7 @@ export class ChannelRoleGuard implements CanActivate {
       return true;
     }
 
-    let user: JwtDTO;
+    let user: { id: string };
 
     if (context.getType() === 'http') {
       user = context.switchToHttp().getRequest().user;

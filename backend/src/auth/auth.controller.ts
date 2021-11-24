@@ -18,22 +18,17 @@ export class AuthController {
   @Get('login/42')
   @UseGuards(AuthGuard('42'))
   @Public()
-  async issueAccessTokenFrom42(@Req() req: Request, @Res() res: Response) {
-    const access_token = await this.authService.issueAccessToken(req.user);
-
-    res.cookie('access_token', access_token, this.cookieOption);
+  async loginWithFortyTwo(@Req() req: Request, @Res() res: Response) {
     res.redirect(
       `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/`,
     );
   }
 
   @Get('logout')
-  async deleteJWT(@Res() res: Response) {
-    res.cookie('access_token', '', this.cookieOption);
-  }
+  async logout(@Res() res: Response) {}
 
   @Get('test')
-  returnUserID(@Req() req) {
-    return `JWT OK, id: ${req.user.id}`;
+  test(@Req() req) {
+    return `Login OK, id: ${req.user.id}`;
   }
 }

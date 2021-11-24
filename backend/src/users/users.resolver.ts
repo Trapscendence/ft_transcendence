@@ -13,12 +13,10 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
 
-@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
