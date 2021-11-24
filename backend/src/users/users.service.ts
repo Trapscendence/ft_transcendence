@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
@@ -59,10 +60,10 @@ export class UsersService {
     throw new NotFoundException('No such user.');
   }
 
-  async getOrCreateUserByOAuth(
-    oauth_id: string,
+  async getUserByOAuth(
     oauth_type: string,
-  ): Promise<User | null> {
+    oauth_id: string,
+  ): Promise<{ id: string; tfa_secret: string } | null> {
     const selectQueryResult = await this.databaseService.executeQuery(`
       SELECT
         id,
@@ -73,37 +74,33 @@ export class UsersService {
         oauth_id = '${oauth_id}'
       AND
         oauth_type = '${oauth_type}';
-          `);
+    `);
 
-    if (selectQueryResult.length === 1) {
-      return selectQueryResult[0];
-    } else if (selectQueryResult.length === 0) {
-      const insertQueryResult = await this.databaseService.executeQuery(`
-      INSERT INTO ${env.database.schema}.user(
-        nickname,
-        oauth_id,
-        oauth_type
-      ) VALUES (
-        '${oauth_type}-${oauth_id}',
-        '${oauth_id}',
-        '${oauth_type}'
-      ) RETURNING id, tfa_secret;
-      `);
+    if (selectQueryResult.length === 1) return selectQueryResult[0];
+    else if (selectQueryResult.length === 0) return null;
+  }
 
-      if (insertQueryResult.length === 1) {
-        return insertQueryResult[0];
-      } else {
-        console.error(
-          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
-        );
-        throw new BadRequestException('Failed to create oauth user');
-      }
-    } else {
-      console.error(
-        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
+  async createUserByOAuth(
+    oauth_type: string,
+    oauth_id: string,
+  ): Promise<{ id: string; tfa_secret: string }> {
+    const insertQueryResult = await this.databaseService.executeQuery(`
+    INSERT INTO ${env.database.schema}.user(
+      nickname,
+      oauth_id,
+      oauth_type
+    ) VALUES (
+      '${oauth_type}-${oauth_id}',
+      '${oauth_id}',
+      '${oauth_type}'
+    ) RETURNING id, tfa_secret;
+    `);
+
+    if (insertQueryResult.length === 1) return insertQueryResult[0];
+    else
+      throw new ConflictException(
+        `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
       );
-      throw new BadRequestException('wrong data from oauth');
-    }
   }
 
   async getUsers(
@@ -128,35 +125,6 @@ export class UsersService {
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
-  }
-
-  async createUser(nickname: string): Promise<User | null> {
-    // Deprecated
-    nickname = sqlEscaper(nickname);
-    const existingUser = await this.databaseService.executeQuery(`
-      SELECT
-        id
-      FROM
-        ${env.database.schema}.user
-      WHERE
-        nickname = '${nickname}'
-      `);
-
-    if (existingUser.length) return null;
-    const users = await this.databaseService.executeQuery(`
-      INSERT INTO
-        ${env.database.schema}.user(
-          nickname,
-          oauth_id,
-          oauth_type
-        )
-      VALUES (
-        '${nickname}',
-        'mock_id', /* 적절한 변환 필요 */
-        'FORTYTWO' )
-      RETURNING *;
-    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
-    return users[0];
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {

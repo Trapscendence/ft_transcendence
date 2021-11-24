@@ -55,9 +55,17 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
-  @Mutation((returns) => User, { nullable: true })
-  async createUser(@Args('nickname') nickname: string): Promise<User | null> {
-    return await this.usersService.createUser(nickname);
+  @Mutation((returns) => ID)
+  async createDummyUser(): Promise<string> {
+    while (true) {
+      try {
+        const { id } = await this.usersService.createUserByOAuth(
+          'DUMMY',
+          `${Math.floor(Math.random() * 100000)}`,
+        );
+        return id;
+      } catch (err) {}
+    }
   }
 
   /*

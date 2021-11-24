@@ -12,4 +12,9 @@ export const env = {
     cookieName: 'TRAP_SESSIONID',
     tableName: 'user_session',
   },
+  fortytwoStrategy: {
+    clientID: process.env.FORTYTWO_APP_ID,
+    clientSecret: process.env.FORTYTWO_APP_SECRET,
+    callbackURL: process.env.FORTYTWO_REDIRECT_URI,
+  },
 };
