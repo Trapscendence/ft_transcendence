@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User, UserRole } from './models/user.model';
-import { schema } from 'src/utils/envs';
+import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 
@@ -28,7 +28,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}';
       `);
@@ -51,7 +51,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = '${nickname}';
     `);
@@ -68,7 +68,7 @@ export class UsersService {
         id,
         tfa_secret
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         oauth_id = '${oauth_id}'
       AND
@@ -79,7 +79,7 @@ export class UsersService {
       return selectQueryResult[0];
     } else if (selectQueryResult.length === 0) {
       const insertQueryResult = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.user(
+      INSERT INTO ${env.database.schema}.user(
         nickname,
         oauth_id,
         oauth_type
@@ -124,7 +124,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
@@ -137,7 +137,7 @@ export class UsersService {
       SELECT
         id
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = '${nickname}'
       `);
@@ -145,7 +145,7 @@ export class UsersService {
     if (existingUser.length) return null;
     const users = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.user(
+        ${env.database.schema}.user(
           nickname,
           oauth_id,
           oauth_type
@@ -163,15 +163,15 @@ export class UsersService {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.friend( my_id, friend_id )
+      INSERT INTO ${env.database.schema}.friend( my_id, friend_id )
       VALUES
         (
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${friend_id} )
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} ),
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${friend_id} )
         ),
         (
-          ( SELECT id from ${schema}.user WHERE id = ${friend_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} )
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${friend_id} ),
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} )
         )
       ON CONFLICT
         ON CONSTRAINT friend_pk
@@ -186,7 +186,7 @@ export class UsersService {
       throw new BadRequestException('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.friend f
+        ${env.database.schema}.friend f
       WHERE
         ( f.my_id = ${user_id} AND f.friend_id = ${friend_id} )
         OR
@@ -206,9 +206,9 @@ export class UsersService {
         rank_score,
         site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       INNER JOIN
-        ${schema}.friend f
+        ${env.database.schema}.friend f
           ON
         u.id = f.friend_id
       WHERE f.my_id = '${id}';
@@ -219,11 +219,11 @@ export class UsersService {
     if (user_id === black_id)
       throw new BadRequestException('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.block( blocker_id, blocked_id )
+      INSERT INTO ${env.database.schema}.block( blocker_id, blocked_id )
       VALUES
       (
-        ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-        ( SELECT id from ${schema}.user WHERE id = ${black_id} )
+        ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} ),
+        ( SELECT id from ${env.database.schema}.user WHERE id = ${black_id} )
       )
       ON CONFLICT
         ON CONSTRAINT block_pk
@@ -243,7 +243,7 @@ export class UsersService {
 
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.block b
+        ${env.database.schema}.block b
       WHERE
         ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
@@ -266,11 +266,11 @@ export class UsersService {
         rank_score,
         site_role
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}'
       INNER JOIN
-        id ON ${schema}.user.id = ${schema}.friend.my_id;
+        id ON ${env.database.schema}.user.id = ${env.database.schema}.friend.my_id;
     `);
   }
 
@@ -284,13 +284,13 @@ export class UsersService {
         rank_score,
         site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       WHERE
           id = (
             SELECT
               blocked_id
             FROM
-              ${schema}.block b
+              ${env.database.schema}.block b
             WHERE
               blocker_id = ${id}
           )
@@ -314,9 +314,9 @@ export class UsersService {
         END
           AS is_private
       FROM
-        ${schema}.channel c
+        ${env.database.schema}.channel c
       INNER JOIN
-        ${schema}.channel_user cu
+        ${env.database.schema}.channel_user cu
           ON
             cu.user_id = '${id}'
               AND
@@ -331,7 +331,7 @@ export class UsersService {
       SELECT
         channel_id
       FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         user_id = '${id}'
     `);
@@ -344,7 +344,7 @@ export class UsersService {
       SELECT
         channel_role
       FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         user_id = '${id}';
     `);
@@ -361,7 +361,7 @@ export class UsersService {
       SELECT
         site_role
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}';
     `);
