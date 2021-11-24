@@ -98,6 +98,15 @@ export class UsersResolver {
     return await this.usersService.deleteFromBlackList(user_id, black_id);
   }
 
+  @Mutation((returns) => Boolean)
+  async setSiteRole(
+    @UserID() user_id: string,
+    @Args('target_id', { type: () => ID }) target_id: string,
+    @Args('role', { type: () => UserRole }) role: UserRole,
+  ): Promise<boolean> {
+    return await this.usersService.setSiteRole(user_id, target_id, role);
+  }
+
   /*
    ** ANCHOR: ResolveField
    */
