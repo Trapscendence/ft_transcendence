@@ -18,14 +18,20 @@ export class AuthController {
   @Get('login/42')
   @UseGuards(AuthGuard('42'))
   @Public()
-  async loginWithFortyTwo(@Req() req: Request, @Res() res: Response) {
+  async loginWithFortyTwo(@Req() req: any, @Res() res: Response) {
+    req.session.uid = req.user.id;
     res.redirect(
       `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/`,
     );
   }
 
   @Get('logout')
-  async logout(@Res() res: Response) {}
+  async logout(@Req() req: any, @Res() res: Response) {
+    req.session.destroy((err) => {
+      if (err) throw err;
+      res.redirect('/');
+    });
+  }
 
   @Get('test')
   test(@Req() req) {

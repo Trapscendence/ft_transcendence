@@ -1,13 +1,8 @@
 import { Logger, Module, OnApplicationShutdown } from '@nestjs/common';
 import { DatabaseService } from './database.service';
-import { Pool } from 'pg';
 import { ModuleRef } from '@nestjs/core';
-import { env } from 'src/utils/envs';
-
-async function databasePoolFactory() {
-  const { user, host, database, password, port } = env.database;
-  return new Pool({ user, host, database, password, port });
-}
+import { databasePoolFactory } from 'src/utils/factories/pool.factory';
+import { Pool } from 'pg';
 
 @Module({
   providers: [
