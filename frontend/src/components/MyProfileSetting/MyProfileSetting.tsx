@@ -63,7 +63,7 @@ export default function MyProfileSetting(): JSX.Element {
       variables: { id: currentUserData?.user.id },
     });
 
-  //----------------------------------------------------------닉네임
+  //ANCHOR----------------------------------------------------------닉네임
   // const [nicknameButtonActive, setNicknameButtonActive] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [nicknameinputSpace, setNicknameInputSpace] = useState<string>('');
@@ -95,11 +95,9 @@ export default function MyProfileSetting(): JSX.Element {
       variables: { black_id: inputSpace.id },
       refetchQueries: [GET_MY_BLACKLIST],
     });
-  const [blackUserId, setBlackUserId] = useState({ id: '' });
 
   const [deleteFromBlackList, { error: deleteError }] =
     useMutation<DeleteFromBlackListResponse>(DELETE_FROM_BLACKLIST, {
-      variables: { black_id: blackUserId.id },
       refetchQueries: [GET_MY_BLACKLIST],
     });
 
@@ -208,19 +206,20 @@ export default function MyProfileSetting(): JSX.Element {
                   <Box />
                 )}
                 <Box>
-                  {blacklistData?.user.blacklist.map(
-                    (blackUser) => (
-                      setBlackUserId(blackUserId),
-                      (
-                        <Box>
-                          <Typography>blackUser.id</Typography>
-                          <button onClick={() => deleteFromBlackList()}>
-                            X
-                          </button>
-                        </Box>
-                      )
-                    )
-                  )}
+                  {blacklistData?.user.blacklist.map((blackUser) => (
+                    <Box>
+                      <Typography>{blackUser.id}</Typography>
+                      <button
+                        onClick={() =>
+                          deleteFromBlackList({
+                            variables: { black_id: blackUser.id },
+                          })
+                        }
+                      >
+                        X
+                      </button>
+                    </Box>
+                  ))}
                 </Box>
               </Stack>
             </Paper>

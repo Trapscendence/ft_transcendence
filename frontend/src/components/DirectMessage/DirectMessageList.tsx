@@ -1,10 +1,18 @@
+import { useQuery } from '@apollo/client';
 import {
   Avatar,
   Badge,
+  Divider,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
+
+import { UserData } from '../../utils/Apollo/User';
+import { GET_USER } from '../../utils/Apollo/UserQuery';
+import { GET_MY_BLACKLIST } from '../../utils/gqls';
+import { GetMyBlacklistResponse } from '../../utils/responseModels';
 
 interface DirectMessageListProps {
   avatar?: string;
@@ -28,7 +36,19 @@ function DirectMessageList({
     setSelectedIndex(index);
     setNewDm(false);
   };
-  //TODO addOffset으로 ID,0 넣어주기
+
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+      variables: { id: currentUserData?.user.id },
+    });
+
+  useEffect(() => {
+    blacklistData?.user.blacklist.forEach((value) => {
+      if (value.id === ID) return <Divider />;
+    });
+  }, [blacklistData]);
+
   return (
     <ListItemButton
       selected={selectedIndex === ID}
