@@ -177,7 +177,7 @@ export class UsersService {
       SET
         nickname = ($1)
       WHERE
-        id = $(2)
+        id = ($2)
       RETURNING *;
     `,
       [nickname, user_id],
