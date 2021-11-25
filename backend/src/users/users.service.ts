@@ -311,15 +311,10 @@ export class UsersService {
         site_role
       FROM
         ${env.database.schema}.user u
-      WHERE
-          id = (
-            SELECT
-              blocked_id
-            FROM
-              ${env.database.schema}.block b
-            WHERE
-              blocker_id = ${id}
-          )
+      INNER JOIN
+        ${env.database.schema}.block b
+      ON
+        u.id = b.blocker_id;
     `);
   }
 
