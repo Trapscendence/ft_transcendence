@@ -54,7 +54,7 @@ function getSession(sid): Promise<any> {
 
             return { req: webSocket.upgradeReq };
           },
-        };
+        },
       },
     }),
     DatabaseModule,
