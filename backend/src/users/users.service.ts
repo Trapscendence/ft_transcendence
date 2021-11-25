@@ -160,7 +160,7 @@ export class UsersService {
   }
 
   async setNickname(user_id: string, nickname: string): Promise<boolean> {
-    const [{ id }] = await this.databaseService.executeQuery(
+    const existence = await this.databaseService.executeQuery(
       `
       SELECT
         id
@@ -171,7 +171,7 @@ export class UsersService {
     `,
       [nickname],
     );
-    if (id) return false;
+    if (!existence.length) return false;
 
     const array = await this.databaseService.executeQuery(
       `
