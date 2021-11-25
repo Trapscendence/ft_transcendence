@@ -6,15 +6,20 @@ import {
 } from '@apollo/client';
 import { useEffect, useState } from 'react';
 
-import { chattingMessagesVar, userIdVar } from '../..';
-import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/gqls';
-import { IChannel, IChannelNotify, IChatting, IUser } from '../../utils/models';
+import { chattingMessagesVar } from '../..';
+import { GET_MY_BLACKLIST, SUBSCRIBE_CHANNEL } from '../../utils/Apollo/gqls';
+import {
+  IChannel,
+  IChannelNotify,
+  IChatting,
+  IUser,
+} from '../../utils/Apollo/models';
 import {
   GetMyBlacklistResponse,
   GetMyChannelResponse,
   SubscribeChannelResponse,
-} from '../../utils/responseModels';
-import { Notify } from '../../utils/schemaEnums';
+} from '../../utils/Apollo/responseModels';
+import { Notify } from '../../utils/Apollo/schemaEnums';
 import ErrorAlert from '../commons/ErrorAlert';
 import ChannelHeader from './ChannelHeader';
 import Chatting from './Chatting';
@@ -38,23 +43,19 @@ export default function Channel({
     owner,
     administrators,
     participants,
-    // bannedUsers, // NOTE: 나중에 Channel 세팅 구현되면, bannedUsers 필요할 것
-    mutedUsers,
+    // banned_users, // NOTE: 나중에 Channel 세팅 구현되면, banned_users 필요할 것
+    muted_users,
   } = channel;
 
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
 
   const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
   const { data: subscribeData, error: subscribeError } =
     useSubscription<SubscribeChannelResponse>(SUBSCRIBE_CHANNEL, {
       variables: { channel_id: id },
     });
-
-  const errorVar = blacklistError || subscribeError;
 
   const displayAlertMsg = (msg: string) => {
     setAlertMsg(msg);
@@ -103,7 +104,13 @@ export default function Channel({
           );
         }
         break;
-      case Notify.KICK: // NOTE: kick은 ban할 때만 사용, kick 성공한 사람만 문구 뜨도록
+      case Notify.KICK:
+        void channelRefetch();
+        displayAlertMsg(
+          `KICK: User '${(participant as IUser).nickname}' is kicked.`
+        );
+        break;
+      case Notify.BAN:
         void channelRefetch();
         displayAlertMsg(
           `BAN: User '${(participant as IUser).nickname}' is banned.`
@@ -111,6 +118,9 @@ export default function Channel({
         break;
       case Notify.ENTER:
         void channelRefetch();
+        displayAlertMsg(
+          `ENTER: User '${(participant as IUser).nickname}' enter.`
+        );
         break;
       case Notify.EDIT:
         void channelRefetch();
@@ -118,18 +128,20 @@ export default function Channel({
     }
   }, [subscribeData]);
 
+  const errorVar = blacklistError || subscribeError;
+
   if (!blacklistData) return <></>;
-  if (errorVar) return <ErrorAlert name="Channel" error={errorVar} />;
 
   return (
     <>
+      {errorVar && <ErrorAlert name="Channel" error={errorVar} />}
       <ChannelHeader {...{ id, title, is_private, owner, administrators }} />
       <ParticipantsList {...{ id, participants }} />
       <Chatting
         {...{
           id,
           alertMsg,
-          mutedUsers,
+          muted_users,
           blacklistData,
         }}
       />

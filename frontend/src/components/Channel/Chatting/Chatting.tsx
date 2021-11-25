@@ -12,23 +12,23 @@ import { useEffect, useRef, useState } from 'react';
 
 import { chattingMessagesVar, userIdVar } from '../../..';
 import { useInput } from '../../../hooks/useInput';
-import { CHAT_MESSAGE } from '../../../utils/gqls';
-import { IUser } from '../../../utils/models';
-import { GetMyBlacklistResponse } from '../../../utils/responseModels';
+import { CHAT_MESSAGE } from '../../../utils/Apollo/gqls';
+import { IUser } from '../../../utils/Apollo/models';
+import { GetMyBlacklistResponse } from '../../../utils/Apollo/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import ChattingMessage from './ChattingMessage';
 
 interface ChattingProps {
   id: string;
   alertMsg: string | null;
-  mutedUsers: IUser[];
+  muted_users: IUser[];
   blacklistData: GetMyBlacklistResponse;
 }
 
 export default function Chatting({
   id,
   alertMsg,
-  mutedUsers,
+  muted_users,
   blacklistData,
 }: ChattingProps): JSX.Element {
   const {
@@ -43,15 +43,16 @@ export default function Chatting({
   const [chatMessage, { error }] = useMutation(CHAT_MESSAGE);
 
   useEffect(() => {
-    if (mutedUsers.find((val) => val.id === userIdVar())) {
+    if (muted_users.find((val) => val.id === userIdVar())) {
       setMuted(true);
     } else {
       setMuted(false);
     }
-  }, [mutedUsers]);
+  }, [muted_users]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView();
   }, [chattingMessages]);
 
   const sendInput = async () => {
@@ -75,70 +76,73 @@ export default function Chatting({
     }
   };
 
-  if (error) return <ErrorAlert name="Chatting" error={error} />;
-
   return (
-    <Card variant="outlined" sx={{ width: '100%', height: '68vh', p: 2 }}>
-      <CardContent sx={{ height: '90%', position: 'relative' }}>
-        {alertMsg && (
-          <Alert
-            severity="info"
+    <>
+      {error && <ErrorAlert name="Chatting" error={error} />}
+      <Card variant="outlined" sx={{ width: '100%', height: '68vh', p: 2 }}>
+        <CardContent sx={{ height: '90%', position: 'relative' }}>
+          {alertMsg && (
+            <Alert
+              severity="info"
+              sx={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translate(-50%, 0)',
+                zIndex: 1,
+              }}
+            >
+              {alertMsg}
+            </Alert>
+          )}
+          <Box
             sx={{
-              position: 'absolute',
-              left: '50%',
-              transform: 'translate(-50%, 0)',
-              zIndex: 1,
+              height: '100%',
+              overflowY: 'auto',
             }}
           >
-            {alertMsg}
-          </Alert>
-        )}
-        <Box
-          sx={{
-            height: '100%',
-            overflowY: 'auto',
-          }}
-        >
-          {chattingMessages.get(id)?.map((val) => {
-            if (blacklist.find((black) => black.id === val.participant.id)) {
-              return (
-                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
-                  Message from a blacklist user.
-                </Alert>
-              );
-            }
+            {chattingMessages.get(id)?.map((val) => {
+              if (blacklist.find((black) => black.id === val.participant.id)) {
+                return (
+                  <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                    Message from a blacklist user.
+                  </Alert>
+                );
+              }
 
-            if (mutedUsers.find((muted) => muted.id === val.participant.id)) {
-              return (
-                <Alert severity="error" sx={{ m: 1 }} key={val.id}>
-                  Message from a muted user.
-                </Alert>
-              );
-            } // TODO: 배열을 순회하므로 조금 비효율적...
+              if (
+                muted_users.find((muted) => muted.id === val.participant.id)
+              ) {
+                return (
+                  <Alert severity="error" sx={{ m: 1 }} key={val.id}>
+                    Message from a muted user.
+                  </Alert>
+                );
+              } // TODO: 배열을 순회하므로 조금 비효율적...
 
-            return (
-              <ChattingMessage key={val.id} IChatting={val} channelId={id} />
-            );
-          })}
-          <div ref={messagesEndRef} />
-        </Box>
-      </CardContent>
-      <CardActions sx={{ width: '100%', height: '10%' }}>
-        <TextField
-          label="message"
-          variant="filled"
-          size="small"
-          sx={{ width: '100%', mr: 2 }}
-          value={input}
-          onChange={onChangeInput}
-          onKeyPress={onKeyPress}
-          disabled={muted}
-        />
-        <Button variant="contained" onClick={sendInput} disabled={muted}>
-          Send
-        </Button>
-      </CardActions>
-    </Card>
+              return (
+                <ChattingMessage key={val.id} IChatting={val} channelId={id} />
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </Box>
+        </CardContent>
+        <CardActions sx={{ width: '100%', height: '10%' }}>
+          <TextField
+            label="message"
+            variant="filled"
+            size="small"
+            sx={{ width: '100%', mr: 2 }}
+            value={input}
+            onChange={onChangeInput}
+            onKeyPress={onKeyPress}
+            disabled={muted}
+          />
+          <Button variant="contained" onClick={sendInput} disabled={muted}>
+            Send
+          </Button>
+        </CardActions>
+      </Card>
+    </>
   );
 }
 

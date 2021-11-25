@@ -9,10 +9,13 @@ export default function LoadingBackdrop({
 }: LoadingBackdropProps): JSX.Element {
   return (
     <Backdrop
-      sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+      sx={{
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+      }}
       open={loading}
     >
-      <CircularProgress color="inherit" />
+      <CircularProgress color="primary" />
     </Backdrop>
   );
 }

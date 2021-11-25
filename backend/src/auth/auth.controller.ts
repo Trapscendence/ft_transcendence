@@ -1,7 +1,7 @@
 import { Controller, UseGuards, Get, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
-import { Public } from './decorator/public.decorator';
+import { Public } from './decorators/public.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
@@ -9,7 +9,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   private readonly cookieOption = {
-    domain: process.env.FRONTEND_HOST,
+    domain: process.env.SERVER_HOST,
     path: '/',
     httpOnly: false,
     secure: false,
@@ -23,7 +23,7 @@ export class AuthController {
 
     res.cookie('access_token', access_token, this.cookieOption);
     res.redirect(
-      `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}/`,
+      `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/`,
     );
   }
 

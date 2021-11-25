@@ -14,9 +14,9 @@ import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
+import { UserID } from './decorators/user-id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
@@ -63,8 +63,16 @@ export class UsersResolver {
   }
 
   /*
-   ** ANCHOR: Social
+   ** ANCHOR: User mutation
    */
+
+  @Mutation((returns) => Boolean, { nullable: true })
+  async changeNickname(
+    @UserID() user_id: string,
+    @Args('new_nickname') new_nickname: string,
+  ): Promise<boolean> {
+    return await this.usersService.setNickname(user_id, new_nickname);
+  }
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
@@ -83,7 +91,7 @@ export class UsersResolver {
   }
 
   @Mutation((returns) => Boolean)
-  async addToBlackLIst(
+  async addToBlackList(
     @UserID() user_id: string,
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {

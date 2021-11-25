@@ -3,19 +3,18 @@ import { Button, Paper, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 
-import { userIdVar } from '../../..';
 import {
   GET_CHANNELS,
   GET_MY_CHANNEL,
   GET_MY_CHANNEL_ROLE,
   LEAVE_CHANNEL,
-} from '../../../utils/gqls';
-import handleError from '../../../utils/handleError';
-import { IUser } from '../../../utils/models';
+} from '../../../utils/Apollo/gqls';
+import { IUser } from '../../../utils/Apollo/models';
 import {
   GetMyChannelRoleResponse,
   LeaveChannelResponse,
-} from '../../../utils/responseModels';
+} from '../../../utils/Apollo/responseModels';
+import handleError from '../../../utils/handleError';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 import ChannelEditModal from './ChannelEditModal';
@@ -38,9 +37,7 @@ export default function ChannelHeader({
   const [open, setOpen] = useState(false);
 
   const { data: channelRoleData, error: channelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
 
   const [leaveChannel, { loading, error: leaveChannelError }] =
     useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
@@ -59,42 +56,44 @@ export default function ChannelHeader({
 
   const errorVar = leaveChannelError || channelRoleError;
 
-  if (errorVar) return <ErrorAlert name="ChannelHeader" error={errorVar} />;
-  if (loading) return <LoadingBackdrop loading={loading} />;
-
   return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 1,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}
-    >
-      <Box>
-        <Typography>{is_private ? 'Private' : 'Public'}</Typography>
-        <Typography>Title: {title}</Typography>
-        <Typography>Owner: {owner.nickname}</Typography>
-        <Typography>
-          Administrators: {administrators.map((val) => val.nickname).join(', ')}
-        </Typography>
-      </Box>
-      <Box>
-        {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
-          <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
-            Edit Channel
+    <>
+      {errorVar && <ErrorAlert name="ChannelHeader" error={errorVar} />}
+      {loading && <LoadingBackdrop loading={loading} />}
+      <Paper
+        variant="outlined"
+        sx={{
+          p: 1,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box>
+          <Typography>{is_private ? 'Private' : 'Public'}</Typography>
+          <Typography>Title: {title}</Typography>
+          <Typography>Owner: {owner.nickname}</Typography>
+          <Typography>
+            Administrators:{' '}
+            {administrators.map((val) => val.nickname).join(', ')}
+          </Typography>
+        </Box>
+        <Box>
+          {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
+            <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+              Edit Channel
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            sx={{ m: 1 }}
+            onClick={() => handleError(leaveChannel)}
+          >
+            Leave Channel
           </Button>
-        )}
-        <Button
-          variant="contained"
-          sx={{ m: 1 }}
-          onClick={() => handleError(leaveChannel)}
-        >
-          Leave Channel
-        </Button>
-      </Box>
-      <ChannelEditModal {...{ open, handleClose, id }} />
-    </Paper>
+        </Box>
+        <ChannelEditModal {...{ open, handleClose, id }} />
+      </Paper>
+    </>
   );
 }

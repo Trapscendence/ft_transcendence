@@ -4,24 +4,23 @@ import { Redirect } from 'react-router';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import { userIdVar } from '.';
+import Admin from './components/Admin';
+import ChannelList from './components/ChannelList';
 import LoadingBackdrop from './components/commons/LoadingBackdrop';
-import AdminPage from './routes/AdminPage';
-import ChannelListPage from './routes/ChannelListPage';
-import HomePage from './routes/HomePage';
-import LoginPage from './routes/LoginPage';
-import MyProfileSetting from './routes/MyProfileSetting';
-import ProfilePage from './routes/ProfilePage';
-import RankPage from './routes/RankPage';
-import UserRankPage from './routes/UserRankPage';
-import { GET_MY_ID } from './utils/gqls';
-import { GetMyIdResponse } from './utils/responseModels';
-import RestrictRoute from './utils/RestrictRoute';
+import RestrictRoute from './components/commons/RestrictRoute';
+import Home from './components/Home';
+import Login from './components/Login';
+import MyProfile from './components/MyProfile';
+import Profile from './components/Profile';
+import Rank from './components/Rank';
+import UserRank from './components/UserRank';
+import { GET_MY_ID } from './utils/Apollo/gqls';
+import { GetMyIdResponse } from './utils/Apollo/responseModels';
 
 function App(): JSX.Element {
   const { loading, data, error } = useQuery<GetMyIdResponse>(GET_MY_ID);
-  console.log(error);
 
-  // if (error) console.error(error);
+  if (error) console.error(error);
   if (loading) return <LoadingBackdrop loading={loading} />;
   if (data) userIdVar(data.user?.id);
 
@@ -33,15 +32,15 @@ function App(): JSX.Element {
         }}
       />
       <Switch>
-        <Route exact path="/login" component={LoginPage} />
+        <Route exact path="/login" component={Login} />
         <Route exact path="/" render={() => <Redirect to="/home" />} />
-        <RestrictRoute exact path="/home" component={HomePage} />
-        <RestrictRoute exact path="/channel" component={ChannelListPage} />
-        <RestrictRoute exact path="/rank" component={RankPage} />
-        <RestrictRoute exact path="/rank/:userid" component={UserRankPage} />
-        <RestrictRoute exact path="/setting" component={MyProfileSetting} />
-        <RestrictRoute exact path="/profile/:userid" component={ProfilePage} />
-        <RestrictRoute exact path="/admin" component={AdminPage} />
+        <RestrictRoute exact path="/home" component={Home} />
+        <RestrictRoute exact path="/channel" component={ChannelList} />
+        <RestrictRoute exact path="/rank" component={Rank} />
+        <RestrictRoute exact path="/rank/:userid" component={UserRank} />
+        <RestrictRoute exact path="/profile/my" component={MyProfile} />
+        <RestrictRoute exact path="/profile/:userid" component={Profile} />
+        <RestrictRoute exact path="/admin" component={Admin} />
       </Switch>
     </BrowserRouter>
   );

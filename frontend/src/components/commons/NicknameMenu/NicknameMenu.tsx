@@ -6,13 +6,13 @@ import {
   ADD_TO_BLACKLIST,
   DELETE_FROM_BLACKLIST,
   GET_MY_BLACKLIST,
-} from '../../../utils/gqls';
-import handleError from '../../../utils/handleError';
+} from '../../../utils/Apollo/gqls';
 import {
   AddToBlackListResponse,
   DeleteFromBlackListResponse,
   GetMyBlacklistResponse,
-} from '../../../utils/responseModels';
+} from '../../../utils/Apollo/responseModels';
+import handleError from '../../../utils/handleError';
 import ErrorAlert from '../ErrorAlert';
 import ChannelNicknameMenu from './ChannelNicknameMenu';
 
@@ -32,9 +32,7 @@ export default function NicknameMenu({
   id,
 }: NicknameMenuProps): JSX.Element {
   const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
-      variables: { id: userIdVar() },
-    });
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
   const [addToBlackList, { error: AddError }] =
     useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {
@@ -50,30 +48,31 @@ export default function NicknameMenu({
 
   const errorVar = blacklistError || AddError || deleteError;
 
-  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
   if (id === userIdVar()) return <></>;
-  if (errorVar) return <ErrorAlert name="NicknameMenu" error={errorVar} />;
 
   return (
-    <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-      <MenuList autoFocusItem={open}>
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>DM</MenuItem>
-        <MenuItem>Observe the match</MenuItem>
-        <MenuItem>Ask a match</MenuItem>
-        {blacklistData &&
-        blacklistData.user &&
-        blacklistData.user.blacklist.find((black) => black.id === id) ? (
-          <MenuItem onClick={() => handleError(deleteFromBlackList)}>
-            Delete from blacklist
-          </MenuItem>
-        ) : (
-          <MenuItem onClick={() => handleError(addToBlackList)}>
-            Add to blacklist
-          </MenuItem>
-        )}
-        {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
-      </MenuList>
-    </Menu>
+    <>
+      {errorVar && <ErrorAlert name="NicknameMenu" error={errorVar} />}
+      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+        <MenuList autoFocusItem={open}>
+          <MenuItem>Profile</MenuItem>
+          <MenuItem>DM</MenuItem>
+          <MenuItem>Observe the match</MenuItem>
+          <MenuItem>Ask a match</MenuItem>
+          {blacklistData &&
+          blacklistData.user &&
+          blacklistData.user.blacklist.find((black) => black.id === id) ? (
+            <MenuItem onClick={() => handleError(deleteFromBlackList)}>
+              Delete from blacklist
+            </MenuItem>
+          ) : (
+            <MenuItem onClick={() => handleError(addToBlackList)}>
+              Add to blacklist
+            </MenuItem>
+          )}
+          {channelId && <ChannelNicknameMenu {...{ channelId, id }} />}
+        </MenuList>
+      </Menu>
+    </>
   );
 }

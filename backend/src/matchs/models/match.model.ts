@@ -3,9 +3,9 @@ import { User } from '../../users/models/user.model';
 
 // TODO
 // enum도 파일 분리해야 할 것 같은데...
-enum MatchType {
-  RANK,
-  CUSTOM,
+export enum MatchType {
+  RANK = 'RANK',
+  CUSTOM = 'CUSTOM',
 }
 
 // TODO

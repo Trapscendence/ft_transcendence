@@ -30,7 +30,7 @@ export class UsersService {
       FROM
         ${schema}.user
       WHERE
-        id = ${id};
+        id = '${id}';
       `);
     if (array.length) return array[0];
     throw new NotFoundException('No such user.');
@@ -159,6 +159,35 @@ export class UsersService {
     return users[0];
   }
 
+  async setNickname(user_id: string, nickname: string): Promise<boolean> {
+    const [{ id }] = await this.databaseService.executeQuery(
+      `
+      SELECT
+        id
+      FROM
+        ${schema}.user
+      WHERE
+        nickname = ($1);
+    `,
+      [nickname],
+    );
+    if (id) return false;
+
+    const array = await this.databaseService.executeQuery(
+      `
+      UPDATE
+        ${schema}.user
+      SET
+        nickname = ($1)
+      WHERE
+        id = $(2)
+      RETURNING *;
+    `,
+      [nickname, user_id],
+    );
+    return array.length ? true : null;
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');
@@ -211,7 +240,7 @@ export class UsersService {
         ${schema}.friend f
           ON
         u.id = f.friend_id
-      WHERE f.my_id = ${id};
+      WHERE f.my_id = '${id}';
     `);
   }
 
@@ -247,7 +276,7 @@ export class UsersService {
       WHERE
         ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
-    `); // NOTE: 수정했습니다.
+    `);
 
     return !!array.length;
   }
@@ -268,7 +297,7 @@ export class UsersService {
       FROM
         ${schema}.user
       WHERE
-        id = ${id}
+        id = '${id}'
       INNER JOIN
         id ON ${schema}.user.id = ${schema}.friend.my_id;
     `);
@@ -318,28 +347,39 @@ export class UsersService {
       INNER JOIN
         ${schema}.channel_user cu
           ON
-            cu.user_id = ${id}
+            cu.user_id = '${id}'
               AND
             cu.channel_id = c.id
     `);
     return array.length ? array[0] : null;
   }
 
-  async getChannelRole(id: string): Promise<UserRole | null> {
-    const select_channel_role: User[] = await this.databaseService
+  async getChannelIdByUserId(id: string): Promise<string | null> {
+    const selectChannelId: { channel_id: string }[] = await this.databaseService
       .executeQuery(`
+      SELECT
+        channel_id
+      FROM
+        ${schema}.channel_user
+      WHERE
+        user_id = '${id}'
+    `);
+    return selectChannelId.length ? selectChannelId[0].channel_id : null;
+  }
+
+  async getChannelRole(id: string): Promise<UserRole | null> {
+    const select_channel_role: { channel_role: UserRole }[] = await this
+      .databaseService.executeQuery(`
       SELECT
         channel_role
       FROM
         ${schema}.channel_user
       WHERE
-        user_id = ${id};
+        user_id = '${id}';
     `);
 
     if (select_channel_role.length === 0) {
-      throw new ConflictException(`This user(id: ${id}) is not in a channel`);
-    } else if (select_channel_role.length !== 1) {
-      throw `FATAL ERROR: User(id: ${id}) belongs to more than one channel`;
+      throw new ConflictException(`This user(id: '${id}') is not in a channel`);
     } else {
       return select_channel_role[0].channel_role;
     }
@@ -352,7 +392,7 @@ export class UsersService {
       FROM
         ${schema}.user
       WHERE
-        id = ${id};
+        id = '${id}';
     `);
 
     if (select_site_role.length === 0) {
