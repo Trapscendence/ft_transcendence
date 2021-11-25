@@ -109,6 +109,19 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./migration/migrations:/migrations
 
+  storage:
+    environment:
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+    build:
+      context: ./storage
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./storage/src:/app/src
+      - storage_data:/app/public
+
   proxy:
     environment:
       - NGINX_HOST=${SERVER_HOST}
@@ -117,6 +130,8 @@ services:
       - BACKEND_PORT=3000
       - FRONTEND_HOST=frontend
       - FRONTEND_PORT=3000
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=3000
     image: nginx:1.21.4-alpine
     networks:
       - default
@@ -131,6 +146,7 @@ services:
 
 volumes:
   db_data:
+  storage_data:
 
 networks:
   default:

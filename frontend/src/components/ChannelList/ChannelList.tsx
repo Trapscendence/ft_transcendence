@@ -1,8 +1,8 @@
 import { useQuery } from '@apollo/client';
 import { Divider } from '@mui/material';
 
-import { GET_MY_CHANNEL } from '../../utils/gqls';
-import { GetMyChannelResponse } from '../../utils/responseModels';
+import { GET_MY_CHANNEL } from '../../utils/Apollo/gqls';
+import { GetMyChannelResponse } from '../../utils/Apollo/responseModels';
 import Channel from '../Channel';
 import ErrorAlert from '../commons/ErrorAlert';
 import LoadingBackdrop from '../commons/LoadingBackdrop';

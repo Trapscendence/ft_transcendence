@@ -1,8 +1,8 @@
 import { useQuery } from '@apollo/client';
 import { Grid } from '@mui/material';
 
-import { GET_CHANNELS } from '../../../utils/gqls';
-import { GetChannelsResponse } from '../../../utils/responseModels';
+import { GET_CHANNELS } from '../../../utils/Apollo/gqls';
+import { GetChannelsResponse } from '../../../utils/Apollo/responseModels';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 import ChannelCard from './ChannelCard';

@@ -1,7 +1,7 @@
 import { List, Paper } from '@mui/material';
 import { Box } from '@mui/system';
 
-import { IUser } from '../../../utils/models';
+import { IUser } from '../../../utils/Apollo/models';
 import UserSummary from '../../commons/UserSummary';
 
 interface ParticipantsListProps {

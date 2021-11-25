@@ -10,8 +10,7 @@ import {
   KICK_USER,
   MUTE_USER,
   RELEGATE_USER_ON_CHANNEL,
-} from '../../../utils/gqls';
-import handleError from '../../../utils/handleError';
+} from '../../../utils/Apollo/gqls';
 import {
   BanUserResponse,
   DelegateUserOnChannelResponse,
@@ -20,7 +19,8 @@ import {
   KickUserResponse,
   MuteUserResponse,
   RelegateUserOnChannelResponse,
-} from '../../../utils/responseModels';
+} from '../../../utils/Apollo/responseModels';
+import handleError from '../../../utils/handleError';
 import ErrorAlert from '../ErrorAlert';
 
 interface ChannelNicknameMenuProps {
