@@ -19,6 +19,7 @@ import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/games/models/match.model';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
@@ -129,11 +130,12 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
   }
-  // @ResolveField('match_history', (returns) => [Match])
-  // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
-  //   const { id } = user;
-  //   return await this.matchService
-  // }
+
+  @ResolveField('match_history', (returns) => [Match])
+  async getMatchHistory(@Parent() user: User, @Args('limit', { type: () => Int}) limit: number, @Args('offset', { type: () => Int})): Promise<Match[]> {
+    const { id } = user;
+    return await this.
+  }
 
   @ResolveField('game', (returns) => Game, { nullable: true })
   async getGame(@Parent() user: User): Promise<Game | null> {

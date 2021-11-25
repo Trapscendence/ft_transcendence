@@ -5,7 +5,6 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
 import { GraphQLModule } from '@nestjs/graphql';
-import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
@@ -24,7 +23,6 @@ import { GamesModule } from './games/games.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {
-
         // NOTE: production에선 grapqh-ws를 켜야함
         // 'graphql-ws': {
         //   onConnect: (ctx: Context<unknown>) => {
@@ -45,7 +43,6 @@ import { GamesModule } from './games/games.module';
     UsersModule,
     MessageModule,
     ChannelsModule,
-    MatchsModule,
     AchivementsModule,
     PubSubModule,
     AuthModule,

@@ -24,13 +24,13 @@ export class Match {
   winner: User;
 
   @Field((type) => Int)
-  winner_point: number;
+  winner_points: number;
 
   @Field((type) => User)
   loser: User;
 
   @Field((type) => Int)
-  loser_point: number;
+  loser_points: number;
 
   @Field((type) => MatchType)
   type: MatchType;

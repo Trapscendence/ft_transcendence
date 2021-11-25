@@ -18,9 +18,9 @@ const START_DELAY = 2000;
 @Injectable()
 export class GamesService {
   constructor(
-    private databaseService: DatabaseService,
     @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
+    private readonly databaseService: DatabaseService,
   ) {
     this.queue = [];
     this.games = new Map<string, Game>();
@@ -309,8 +309,13 @@ export class GamesService {
 
     // TODO: 끝나는 점수도 상수화해야
     if (game.left_score > 2 || game.right_score > 2) {
-      const winner = game.left_score > 2 ? game.left_player : game.right_player;
+      const [winner, loser] =
+        game.left_score > 2
+          ? [game.left_player, game.right_player]
+          : [game.right_player, game.left_player];
+
       this.endGame(game, winner);
+      this.recordMatch(winner.id, loser.id);
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
 
@@ -391,4 +396,28 @@ export class GamesService {
 
     return true;
   } // NOTE: target(right_player)만 join 혹은 notJoin을 한다?
+
+  async recordMatch(winner_id: string, loser_id: string) {
+    this.databaseService.executeQuery(
+      `
+    INSERT INTO ${schema}.match(
+      winner,
+      loser,
+      win_points,
+      lose_points,
+      time_stamp,
+      ladder
+    )
+    VALUES (
+      ($1),
+      ($2),
+      ($3),
+      ($4),
+      ($5),
+      false
+    );
+  `,
+      [winner_id, loser_id, 5, 5, new Date().getTime],
+    );
+  }
 }

@@ -13,12 +13,14 @@ import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/games/models/match.model';
 
 @Injectable()
 export class UsersService {
   constructor(
     private databaseService: DatabaseService,
-    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
+    @Inject(forwardRef(() => GamesService))
+    private readonly gamesService: GamesService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -283,24 +285,31 @@ export class UsersService {
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
+      WITH b as (
+        SELECT
+          blocked_id id
+        FROM
+          ${schema}.block
+        WHERE
+          blocker_id = ${id}
+      )
       SELECT
-        id,
-        nickname,
-        avatar,
-        status_message,
-        rank_score,
-        site_role
+        u.id,
+        u.nickname,
+        u.avatar,
+        u.status_message,
+        u.rank_score,
+        u.site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            u.rank_score DESC
+        ) rank
       FROM
         ${schema}.user u
-      WHERE
-          id = (
-            SELECT
-              blocked_id
-            FROM
-              ${schema}.block b
-            WHERE
-              blocker_id = ${id}
-          )
+      INNER JOIN
+        b
+      ON
+        u.id = b.id;
     `);
   }
 
@@ -387,5 +396,25 @@ export class UsersService {
 
     return ret;
     // return await this.gamesService.getGameByUserId(id);
+  }
+
+  async getMatchHistory(
+    id: string,
+    limit: number,
+    offset: number,
+  ): Promise<Match[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        *
+      FROM
+        ${schema}.match
+      WHERE
+        winner = ${id}
+          OR
+        loser = ${id}
+      ORDER BY
+        time_stamp DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
   }
 }
