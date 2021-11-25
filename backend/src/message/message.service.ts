@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User } from 'src/users/models/user.model';
-import { schema } from 'src/utils/envs';
+import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { DM, Message } from './model/message.model';
 import { PubSub } from 'graphql-subscriptions';
@@ -24,7 +24,7 @@ export class MessageService {
   async setCheckDate(user_id: string, other_id: string): Promise<void> {
     this.databaseService.executeQuery(`
     UPDATE
-      ${schema}.dm
+      ${env.database.schema}.dm
     SET
       check_date = ${new Date().getTime()}
     WHERE
@@ -37,7 +37,7 @@ export class MessageService {
   async getDM(user_id: string, other_id: string): Promise<DM> {
     this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.dm ( sender_id, receiver_id, check_date )
+        ${env.database.schema}.dm ( sender_id, receiver_id, check_date )
       VALUES ( ${user_id}, ${other_id}, 0 )
         ON CONFLICT
           ON CONSTRAINT
@@ -45,7 +45,7 @@ export class MessageService {
       DO NOTHING;
 
       INSERT INTO
-        ${schema}.dm ( sender_id, receiver_id, check_date )
+        ${env.database.schema}.dm ( sender_id, receiver_id, check_date )
       VALUES ( ${other_id}, ${user_id}, 0 )
         ON CONFLICT
           ON CONSTRAINT
@@ -60,7 +60,7 @@ export class MessageService {
         receiver_id AS other_id,
         check_date AS checked_date
       FROM
-        ${schema}.dm
+        ${env.database.schema}.dm
       WHERE
         sender_id = ${user_id}
           AND
@@ -89,12 +89,12 @@ export class MessageService {
                 AS time_stamp,
               true AS checked
             FROM
-              ${schema}.message m,
+              ${env.database.schema}.message m,
               (
                 SELECT
                   d.id
                 FROM
-                  ${schema}.dm d
+                  ${env.database.schema}.dm d
                 WHERE
                   sender_id = ${user_id}
                     AND
@@ -120,13 +120,13 @@ export class MessageService {
               END
                 AS checked
             FROM
-              ${schema}.message m,
+              ${env.database.schema}.message m,
               (
                 SELECT
                   d.id,
                   d.check_date
                 FROM
-                  ${schema}.dm d
+                  ${env.database.schema}.dm d
                 WHERE
                   receiver_id = ${user_id}
                     AND
@@ -190,9 +190,9 @@ export class MessageService {
               true
                 AS checked
             FROM
-              ${schema}.dm d
+              ${env.database.schema}.dm d
             INNER JOIN
-              ${schema}.message m
+              ${env.database.schema}.message m
                 ON
                   m.dm_id = d.id
             WHERE
@@ -214,9 +214,9 @@ export class MessageService {
                   true
               END checked
             FROM
-              ${schema}.dm d
+              ${env.database.schema}.dm d
             INNER JOIN
-              ${schema}.message m
+              ${env.database.schema}.message m
                 ON
                   m.dm_id = d.id
             WHERE
@@ -227,7 +227,7 @@ export class MessageService {
           t.time_stamp DESC
       ) s
       INNER JOIN
-        ${schema}.user u
+        ${env.database.schema}.user u
           ON
             u.id = s.other_id
       ORDER BY
@@ -249,7 +249,7 @@ export class MessageService {
     text = sqlEscaper(text);
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.message AS m(
+        ${env.database.schema}.message AS m(
           dm_id,
           dm_text,
           time_stamp
@@ -262,7 +262,7 @@ export class MessageService {
         SELECT
           d.id id
         FROM
-          ${schema}.dm d
+          ${env.database.schema}.dm d
         WHERE
           d.sender_id = ${user_id}
             AND
