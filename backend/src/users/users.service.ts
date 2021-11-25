@@ -171,7 +171,7 @@ export class UsersService {
     `,
       [nickname],
     );
-    if (!existence.length) return false;
+    if (existence.length) return false;
 
     const array = await this.databaseService.executeQuery(
       `
