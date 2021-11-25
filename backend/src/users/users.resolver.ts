@@ -134,7 +134,7 @@ export class UsersResolver {
   @ResolveField('match_history', (returns) => [Match])
   async getMatchHistory(@Parent() user: User, @Args('limit', { type: () => Int}) limit: number, @Args('offset', { type: () => Int})): Promise<Match[]> {
     const { id } = user;
-    return await this.
+    return await this.usersService.getMatchHistory;
   }
 
   @ResolveField('game', (returns) => Game, { nullable: true })
