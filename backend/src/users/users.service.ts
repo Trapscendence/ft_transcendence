@@ -9,10 +9,15 @@ import { User, UserRole } from './models/user.model';
 import { schema } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
+import { HttpService } from '@nestjs/axios';
+import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly httpService: HttpService,
+  ) {}
 
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
@@ -160,7 +165,7 @@ export class UsersService {
   }
 
   async setNickname(user_id: string, nickname: string): Promise<boolean> {
-    const [{ id }] = await this.databaseService.executeQuery(
+    const user = await this.databaseService.executeQuery(
       `
       SELECT
         id
@@ -171,7 +176,7 @@ export class UsersService {
     `,
       [nickname],
     );
-    if (id) return false;
+    if (user?.[0]?.id) return false;
 
     const array = await this.databaseService.executeQuery(
       `
@@ -180,7 +185,7 @@ export class UsersService {
       SET
         nickname = ($1)
       WHERE
-        id = $(2)
+        id = ($2)
       RETURNING *;
     `,
       [nickname, user_id],
@@ -432,5 +437,69 @@ export class UsersService {
       [role, target],
     );
     return !!result;
+  }
+
+  async getAvatar(user_id: string): Promise<string> {
+    const array = await this.databaseService.executeQuery(`
+      SELECT
+        avatar
+      FROM
+        ${schema}.user
+      WHERE
+        id = ${user_id}
+    `);
+    if (!array.length) return null;
+    const [{ uuid }] = array;
+    if (!uuid) return null;
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .get(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/storage/${uuid}`,
+        )
+        .subscribe({
+          next(axiosResponse: AxiosResponse) {
+            resolve(axiosResponse.data as string);
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
+  }
+
+  async setAvatar(user_id: string, image: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .post(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/upload`,
+          image,
+        )
+        .subscribe({
+          next: async (axiosResponse: AxiosResponse) => {
+            this.databaseService
+              .executeQuery(
+                `
+              UPDATE
+                ${schema}.user
+              SET
+                avatar = ($1)
+              WHERE
+                id = ${user_id}
+              RETURNING *;
+          `,
+                [image],
+              )
+              .then((array) => {
+                if (!array.length) resolve(false);
+                resolve(true);
+              });
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
   }
 }

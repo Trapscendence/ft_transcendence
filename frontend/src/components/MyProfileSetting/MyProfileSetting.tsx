@@ -12,6 +12,16 @@ import { useEffect, useState } from 'react';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import {
+  ADD_TO_BLACKLIST,
+  DELETE_FROM_BLACKLIST,
+  GET_MY_BLACKLIST,
+} from '../../utils/Apollo/gqls';
+import {
+  AddToBlackListResponse,
+  DeleteFromBlackListResponse,
+  GetMyBlacklistResponse,
+} from '../../utils/Apollo/responseModels';
+import {
   User,
   UserData,
   UsersData,
@@ -22,16 +32,6 @@ import {
   GET_USER_BY_NICKNAME,
   GET_USERS,
 } from '../../utils/Apollo/UserQuery';
-import {
-  ADD_TO_BLACKLIST,
-  DELETE_FROM_BLACKLIST,
-  GET_MY_BLACKLIST,
-} from '../../utils/gqls';
-import {
-  AddToBlackListResponse,
-  DeleteFromBlackListResponse,
-  GetMyBlacklistResponse,
-} from '../../utils/responseModels';
 
 export default function MyProfileSetting(): JSX.Element {
   const avartarStyle = {

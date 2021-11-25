@@ -1,4 +1,3 @@
-import { Inject } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import {
   Query,
@@ -10,8 +9,6 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { PubSub } from 'graphql-subscriptions';
-import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
@@ -21,10 +18,7 @@ import { UserID } from './decorators/user-id.decorator';
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(
-    private readonly usersService: UsersService,
-    @Inject(PUB_SUB) private readonly pubSub: PubSub,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   /*
    ** ANCHOR: User
@@ -115,6 +109,14 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
+  @Mutation((returns) => String)
+  setAvatar(
+    @UserID() user_id: string,
+    @Args('file') file: string,
+  ): Promise<boolean> {
+    return this.usersService.setAvatar(user_id, file);
+  }
+
   /*
    ** ANCHOR: ResolveField
    */
@@ -142,6 +144,13 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
   }
+
+  @ResolveField('avatar', (returns) => String, { nullable: true })
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;
