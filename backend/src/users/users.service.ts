@@ -305,19 +305,31 @@ export class UsersService {
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
+      WITH b as (
+        SELECT
+          blocked_id id
+        FROM
+          ${schema}.block
+        WHERE
+          blocker_id = ${id}
+      )
       SELECT
-        id,
-        nickname,
-        avatar,
-        status_message,
-        rank_score,
-        site_role
+        u.id,
+        u.nickname,
+        u.avatar,
+        u.status_message,
+        u.rank_score,
+        u.site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            u.rank_score DESC
+        ) rank
       FROM
         ${schema}.user u
       INNER JOIN
-        ${schema}.block b
+        b
       ON
-        u.id = b.blocker_id;
+        u.id = b.id;
     `);
   }
 
