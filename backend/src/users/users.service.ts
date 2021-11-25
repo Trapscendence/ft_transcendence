@@ -363,4 +363,34 @@ export class UsersService {
       return select_site_role[0].site_role;
     }
   }
+
+  async setSiteRole(
+    setter: string,
+    target: string,
+    role: UserRole,
+  ): Promise<boolean> {
+    const setter_role = await this.getSiteRole(setter);
+    const target_role = await this.getSiteRole(target);
+    if (
+      setter_role === 'USER' ||
+      setter_role === target_role ||
+      (setter_role === 'ADMIN' && target_role === 'OWNER') ||
+      (setter_role !== 'ADMIN' && role === 'OWNER')
+    )
+      return false;
+    const result: any = await this.databaseService.executeQuery(
+      `
+      UPDATE ${schema}.user
+        SET
+        site_role
+          =
+        ($1)
+      WHERE
+        id = ($2)
+      RETURNING *;
+    `,
+      [role, target],
+    );
+    return !!result;
+  }
 }
