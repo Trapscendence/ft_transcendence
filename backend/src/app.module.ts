@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
-import { GraphQLModule } from '@nestjs/graphql';
+import { GqlExecutionContext, GraphQLModule } from '@nestjs/graphql';
 import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
@@ -12,7 +12,21 @@ import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { SessionGuard } from './auth/guards/session.guard';
+import * as cookie from 'cookie';
+import * as cookieParser from 'cookie-parser';
+import { env } from './utils/envs';
+import { sessionStore } from './utils/sessionStore';
+import { WsException } from '@nestjs/websockets';
+
+function getSession(sid): Promise<any> {
+  return new Promise((resolve, reject) => {
+    sessionStore.get(sid, (err, session) => {
+      if (err) reject(err);
+      else if (session) resolve(session);
+    });
+  });
+}
 
 @Module({
   imports: [
@@ -21,17 +35,24 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
       installSubscriptionHandlers: true,
       subscriptions: {
         // NOTE: production에선 grapqh-ws를 켜야함
-        // 'graphql-ws': {
-        //   onConnect: (ctx: Context<unknown>) => {
-        //     console.log(ctx.connectionParams.authrization);
-        //   },
-        // },
+        // 'graphql-ws': true,
         'subscriptions-transport-ws': {
           path: '/subscriptions',
-          onConnect: (connectionParams, webSocket, context) => {
-            if (connectionParams.authorization) {
-              return connectionParams;
-            }
+          onConnect: async (connectionParams, webSocket, context) => {
+            const cookies = cookie.parse(webSocket.upgradeReq.headers.cookie);
+            const sid = cookieParser.signedCookie(
+              cookies[env.session.cookieName],
+              env.session.secret,
+            );
+
+            if (sid === false) throw new WsException('Invalid credentials.');
+            else
+              sessionStore.createSession(
+                webSocket.upgradeReq,
+                await getSession(sid),
+              );
+
+            return { req: webSocket.upgradeReq };
           },
         },
       },
@@ -46,6 +67,6 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }, AppService],
+  providers: [{ provide: APP_GUARD, useClass: SessionGuard }, AppService],
 })
 export class AppModule {}
