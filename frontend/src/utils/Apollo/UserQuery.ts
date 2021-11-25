@@ -5,6 +5,7 @@ export const GET_USERS = gql`
     users(ladder: $ladder, offset: $offset, limit: $limit) {
       id
       nickname
+      rank
     }
   }
 `;
@@ -14,6 +15,12 @@ export const GET_USER = gql`
       id
       nickname
     }
+  }
+`;
+
+export const CHANGE_NICKNAME = gql`
+  mutation changeNickname($new_nickname: String!) {
+    changeNickname(new_nickname: $new_nickname)
   }
 `;
 

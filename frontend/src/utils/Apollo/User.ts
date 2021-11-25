@@ -15,6 +15,10 @@ export interface UsersData {
   users: User[];
 }
 
+export interface CurrentUsersData {
+  user: User[];
+}
+
 export interface UsersDataVars {
   ladder: boolean;
   offset: number;

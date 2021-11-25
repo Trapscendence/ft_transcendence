@@ -134,7 +134,7 @@ export class UsersService {
       SELECT
         id
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = '${nickname}'
       `);
@@ -142,7 +142,7 @@ export class UsersService {
     if (existingUser.length) return null;
     const users = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.user(
+        ${env.database.schema}.user(
           nickname,
           oauth_id,
           oauth_type
@@ -162,7 +162,7 @@ export class UsersService {
       SELECT
         id
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = ($1);
     `,
@@ -173,7 +173,7 @@ export class UsersService {
     const array = await this.databaseService.executeQuery(
       `
       UPDATE
-        ${schema}.user
+        ${env.database.schema}.user
       SET
         nickname = ($1)
       WHERE
@@ -417,7 +417,7 @@ export class UsersService {
       return false;
     const result: any = await this.databaseService.executeQuery(
       `
-      UPDATE ${schema}.user
+      UPDATE ${env.database.schema}.user
         SET
         site_role
           =

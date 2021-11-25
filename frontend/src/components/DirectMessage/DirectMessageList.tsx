@@ -9,10 +9,10 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+import { GET_MY_BLACKLIST } from '../../utils/Apollo/gqls';
+import { GetMyBlacklistResponse } from '../../utils/Apollo/responseModels';
 import { UserData } from '../../utils/Apollo/User';
 import { GET_USER } from '../../utils/Apollo/UserQuery';
-import { GET_MY_BLACKLIST } from '../../utils/gqls';
-import { GetMyBlacklistResponse } from '../../utils/responseModels';
 
 interface DirectMessageListProps {
   avatar?: string;

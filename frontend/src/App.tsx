@@ -38,7 +38,7 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/channel" component={ChannelList} />
         <RestrictRoute exact path="/rank" component={Rank} />
         <RestrictRoute exact path="/rank/:userid" component={UserRank} />
-        <RestrictRoute exact path="/profile/my" component={MyProfile} />
+        <RestrictRoute exact path="/setting" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
         <RestrictRoute exact path="/admin" component={Admin} />
       </Switch>

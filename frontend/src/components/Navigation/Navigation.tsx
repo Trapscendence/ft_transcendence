@@ -67,7 +67,7 @@ function Navigation(): JSX.Element {
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
   useEffect(() => {
-    if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
+    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
   }, [currentUserData]);
 
   const logOut = () => {
