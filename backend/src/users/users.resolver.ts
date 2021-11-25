@@ -10,8 +10,6 @@ import {
   ResolveField,
   Parent,
 } from '@nestjs/graphql';
-import { PubSub } from 'graphql-subscriptions';
-import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
@@ -19,10 +17,7 @@ import { UserID } from './decorators/user-id.decorator';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(
-    private readonly usersService: UsersService,
-    @Inject(PUB_SUB) private readonly pubSub: PubSub,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   /*
    ** ANCHOR: User

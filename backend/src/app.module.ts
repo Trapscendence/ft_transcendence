@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
-import { GqlExecutionContext, GraphQLModule } from '@nestjs/graphql';
+import { GraphQLModule } from '@nestjs/graphql';
 import { MatchsModule } from './matchs/matchs.module';
 import { AchivementsModule } from './achivements/achivements.module';
 import { MessageModule } from './message/message.module';
@@ -12,12 +12,13 @@ import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { SessionGuard } from './auth/guards/session.guard';
+import { LoginGuard } from './auth/guards/login.guard';
 import * as cookie from 'cookie';
 import * as cookieParser from 'cookie-parser';
 import { env } from './utils/envs';
 import { sessionStore } from './utils/sessionStore';
 import { WsException } from '@nestjs/websockets';
+import { TfaGuard } from './auth/guards/tfa.guard';
 
 function getSession(sid): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -56,6 +57,11 @@ function getSession(sid): Promise<any> {
           },
         },
       },
+      playground: {
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
     }),
     DatabaseModule,
     UsersModule,
@@ -67,6 +73,10 @@ function getSession(sid): Promise<any> {
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [{ provide: APP_GUARD, useClass: SessionGuard }, AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: LoginGuard },
+    { provide: APP_GUARD, useClass: TfaGuard },
+    AppService,
+  ],
 })
 export class AppModule {}

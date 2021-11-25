@@ -10,6 +10,7 @@ import LoadingBackdrop from './components/commons/LoadingBackdrop';
 import RestrictRoute from './components/commons/RestrictRoute';
 import Home from './components/Home';
 import Login from './components/Login';
+import LoginTotp from './components/LoginTotp';
 import MyProfile from './components/MyProfile';
 import Profile from './components/Profile';
 import Rank from './components/Rank';
@@ -32,6 +33,7 @@ function App(): JSX.Element {
         }}
       />
       <Switch>
+        <Route exact path="/login/totp" component={LoginTotp} />
         <Route exact path="/login" component={Login} />
         <Route exact path="/" render={() => <Redirect to="/home" />} />
         <RestrictRoute exact path="/home" component={Home} />
