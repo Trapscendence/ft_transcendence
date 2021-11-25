@@ -45,9 +45,12 @@ function DirectMessageList({
 
   useEffect(() => {
     blacklistData?.user.blacklist.forEach((value) => {
-      if (value.id === ID) return <Divider />;
+      if (value.id === ID) setBlackListed(true);
     });
   }, [blacklistData]);
+
+  const [blackListed, setBlackListed] = useState(false);
+  if (blackListed) return <Divider />;
 
   return (
     <ListItemButton

@@ -32,6 +32,12 @@ function getSession(sid): Promise<any> {
 @Module({
   imports: [
     GraphQLModule.forRoot({
+      playground: {
+        subscriptionEndpoint: '/subscriptions',
+        settings: {
+          'request.credentials': 'include',
+        },
+      },
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       installSubscriptionHandlers: true,
       subscriptions: {

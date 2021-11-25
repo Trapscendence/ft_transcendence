@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+
 import { useMutation, useQuery } from '@apollo/client';
 import {
   Avatar,
@@ -80,22 +82,9 @@ export default function MyProfileSetting(): JSX.Element {
   //   else setNicknameButtonActive(false);
   // }, [nicknameinputSpace]);
 
-  const [changeNickname, { error: changeNicknameError }] =
-    useMutation(CHANGE_NICKNAME);
+  const [changeNickname, { data: changeNicknameError }] =
+    useMutation<{ changeNickname: boolean }>(CHANGE_NICKNAME);
 
-  // const handleChangeNickname = (event: React.FormEvent<HTMLButtonElement>) => {
-  //   event.preventDefault();
-  //   setErrorMessage('');
-  //   if (nicknameinputSpace == '')
-  //     setErrorMessage('빈 닉네임을 할 수 없습니다.');
-  //   else if (nicknameUserData?.user != undefined)
-  //     setErrorMessage('이미 존재하는 닉네임입니다.');
-  //   else
-  //     changeNickname({
-  //       variables: { new_nickname: nicknameinputSpace },
-  //     }).catch(() => setErrorMessage('변경 실패!'));
-  //   console.log(nicknameinputSpace);
-  // };
   //----------------------------------------------------------닉네임
 
   const [buttonActive, setButtonActive] = useState(true);
@@ -165,11 +154,16 @@ export default function MyProfileSetting(): JSX.Element {
                       setErrorMessage('빈 닉네임을 할 수 없습니다.');
                     else if (nicknameUserData?.user != undefined)
                       setErrorMessage('이미 존재하는 닉네임입니다.');
-                    else
+                    else {
+                      console.log(nicknameinputSpace);
+
                       changeNickname({
                         variables: { new_nickname: nicknameinputSpace },
                       }).catch(() => setErrorMessage('변경 실패!'));
-                    console.log(nicknameinputSpace);
+                      console.log(changeNicknameError);
+                      if (changeNicknameError?.changeNickname == true)
+                        setErrorMessage('변경 성공!');
+                    }
                   }}
                 >
                   {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}

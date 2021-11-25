@@ -306,7 +306,7 @@ export class UsersService {
         SELECT
           blocked_id id
         FROM
-          ${schema}.block
+          ${env.database.schema}.block
         WHERE
           blocker_id = ${id}
       )
