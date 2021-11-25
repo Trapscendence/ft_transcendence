@@ -5,10 +5,10 @@ import { UserStatus } from 'src/users/models/user.model';
 
 @Injectable()
 export class StatusService {
-  container: Map<string, [UserStatus, Set<WebSocket>]>;
+  private readonly container: Map<string, [UserStatus, Set<string>]>;
 
   constructor(@Inject(PUB_SUB) private readonly pubSub: PubSub) {
-    this.container = new Map<string, [UserStatus, Set<WebSocket>]>();
+    this.container = new Map<string, [UserStatus, Set<string>]>();
   }
 
   setStatus(user_id: string, status: UserStatus): boolean {
@@ -26,23 +26,23 @@ export class StatusService {
     return status;
   }
 
-  newConnection(user_id: string, ws: WebSocket): void {
+  newConnection(user_id: string, sid: string): void {
     if (!this.container.has(user_id)) {
       this.pubSub.publish(`status_of_${user_id}`, {
         statusChange: UserStatus.ONLINE,
       });
-      this.container.set(user_id, [UserStatus.ONLINE, new Set<WebSocket>()]);
+      this.container.set(user_id, [UserStatus.ONLINE, new Set<string>()]);
     }
-    const wsSet = this.container.get(user_id)[1];
-    wsSet.add(ws);
+    const sidSet = this.container.get(user_id)[1];
+    sidSet.add(sid);
   }
 
-  deleteConnection(user_id: string, ws: WebSocket): void {
+  deleteConnection(user_id: string, sid: string): void {
     console.log('delete', user_id);
-    const wsSet = this.container.get(user_id)?.[1];
-    if (!wsSet) return;
-    wsSet.delete(ws);
-    if (!wsSet.size) {
+    const sidSet = this.container.get(user_id)?.[1];
+    if (!sidSet) return;
+    sidSet.delete(sid);
+    if (!sidSet.size) {
       this.container.delete(user_id);
       this.pubSub.publish(`status_of_${user_id}`, {
         statusChange: UserStatus.OFFLINE,

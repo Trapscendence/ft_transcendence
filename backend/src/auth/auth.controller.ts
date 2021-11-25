@@ -57,6 +57,6 @@ export class AuthController {
 
   @Get('test')
   test(@Req() req) {
-    return `Login OK, id: ${req.user.id}`;
+    return `Login OK, id: ${req.session.uid}`;
   }
 }

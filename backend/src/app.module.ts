@@ -18,6 +18,8 @@ import * as cookieParser from 'cookie-parser';
 import { env } from './utils/envs';
 import { sessionStore } from './utils/sessionStore';
 import { WsException } from '@nestjs/websockets';
+import { StatusModule } from './status/status.module';
+import { StatusService } from './status/status.service';
 
 function getSession(sid): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -30,31 +32,62 @@ function getSession(sid): Promise<any> {
 
 @Module({
   imports: [
-    GraphQLModule.forRoot({
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      installSubscriptionHandlers: true,
-      subscriptions: {
-        // NOTE: production에선 grapqh-ws를 켜야함
-        // 'graphql-ws': true,
-        'subscriptions-transport-ws': {
-          path: '/subscriptions',
-          onConnect: async (connectionParams, webSocket, context) => {
-            const cookies = cookie.parse(webSocket.upgradeReq.headers.cookie);
-            const sid = cookieParser.signedCookie(
-              cookies[env.session.cookieName],
-              env.session.secret,
-            );
-
-            if (sid === false) throw new WsException('Invalid credentials.');
-            else
-              sessionStore.createSession(
-                webSocket.upgradeReq,
-                await getSession(sid),
-              );
-
-            return { req: webSocket.upgradeReq };
+    GraphQLModule.forRootAsync({
+      imports: [StatusModule],
+      inject: [StatusService],
+      useFactory: (statusService: StatusService) => {
+        return {
+          autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+          installSubscriptionHandlers: true,
+          subscriptions: {
+            // NOTE: production에선 grapqh-ws를 켜야함
+            // 'graphql-ws': true,
+            'subscriptions-transport-ws': {
+              path: '/subscriptions',
+              onConnect: async (connectionParams, webSocket, context) => {
+                const cookies = cookie.parse(
+                  webSocket.upgradeReq.headers.cookie,
+                );
+                const sid = cookieParser.signedCookie(
+                  cookies[env.session.cookieName],
+                  env.session.secret,
+                );
+                if (sid === false)
+                  throw new WsException('Invalid credentials.');
+                else
+                  sessionStore.createSession(
+                    webSocket.upgradeReq,
+                    await getSession(sid),
+                  );
+                statusService.newConnection(
+                  webSocket.upgradeReq.session.uid,
+                  sid,
+                );
+                return { req: webSocket.upgradeReq };
+              },
+              onDisconnect: (webSocket, context) => {
+                const cookies = cookie.parse(
+                  webSocket.upgradeReq.headers.cookie,
+                );
+                const sid = cookieParser.signedCookie(
+                  cookies[env.session.cookieName],
+                  env.session.secret,
+                );
+                if (sid) return;
+                statusService.deleteConnection(
+                  webSocket.upgradeReq.session.uid,
+                  sid as string,
+                );
+              },
+            },
           },
-        },
+          playground: {
+            subscriptionEndpoint: '/subscriptions',
+            settings: {
+              'request.credentials': 'include',
+            },
+          },
+        };
       },
     }),
     DatabaseModule,
