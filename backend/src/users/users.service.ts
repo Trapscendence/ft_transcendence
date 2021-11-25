@@ -159,6 +159,35 @@ export class UsersService {
     return users[0];
   }
 
+  async setNickname(user_id: string, nickname: string): Promise<boolean> {
+    const [{ id }] = await this.databaseService.executeQuery(
+      `
+      SELECT
+        id
+      FROM
+        ${schema}.user
+      WHERE
+        nickname = ($1);
+    `,
+      [nickname],
+    );
+    if (id) return false;
+
+    const array = await this.databaseService.executeQuery(
+      `
+      UPDATE
+        ${schema}.user
+      SET
+        nickname = ($1)
+      WHERE
+        id = $(2)
+      RETURNING *;
+    `,
+      [nickname, user_id],
+    );
+    return array.length ? true : null;
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');

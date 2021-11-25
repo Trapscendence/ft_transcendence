@@ -63,8 +63,16 @@ export class UsersResolver {
   }
 
   /*
-   ** ANCHOR: Social
+   ** ANCHOR: User mutation
    */
+
+  @Mutation((returns) => Boolean, { nullable: true })
+  async changeNickname(
+    @UserID() user_id: string,
+    @Args('new_nickname') new_nickname: string,
+  ): Promise<boolean> {
+    return await this.usersService.setNickname(user_id, new_nickname);
+  }
 
   @Mutation((returns) => Boolean, { nullable: true })
   async addFriend(
