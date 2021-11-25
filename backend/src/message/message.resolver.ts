@@ -17,7 +17,7 @@ import { MessageService } from './message.service';
 import { DM, Message } from './model/message.model';
 import { PUB_SUB } from '../pubsub.module';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
-import { UserID } from 'src/auth/decorator/user-id.decorator';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => DM)
@@ -71,7 +71,7 @@ export class MessageResolver {
 
   @Query((returns) => [User])
   async dmUsers(
-    @UserID() user_id: any,
+    @UserID() user_id: string,
     @Args('offset', { type: () => Int }) offset: number,
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {

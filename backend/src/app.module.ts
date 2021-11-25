@@ -28,16 +28,13 @@ import { ImageModule } from './image/image.module';
         //   },
         // },
         'subscriptions-transport-ws': {
+          path: '/subscriptions',
           onConnect: (connectionParams, webSocket, context) => {
             if (connectionParams.authorization) {
               return connectionParams;
             }
           },
         },
-      },
-      cors: {
-        origin: `http://${process.env.FRONTEND_HOST}:${process.env.FRONTEND_PORT}`,
-        credentials: true,
       },
     }),
     DatabaseModule,
