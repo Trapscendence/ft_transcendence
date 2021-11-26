@@ -21,6 +21,8 @@ import { env } from './utils/envs';
 import { sessionStore } from './utils/sessionStore';
 import { WsException } from '@nestjs/websockets';
 import { TfaGuard } from './auth/guards/tfa.guard';
+import { StatusModule } from './status/status.module';
+import { StatusService } from './status/status.service';
 
 function getSession(sid): Promise<any> {
   return new Promise((resolve, reject) => {

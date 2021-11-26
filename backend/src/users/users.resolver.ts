@@ -1,5 +1,4 @@
 import { Inject } from '@nestjs/common';
-import { UseGuards } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -9,15 +8,23 @@ import {
   ID,
   ResolveField,
   Parent,
+  Subscription,
 } from '@nestjs/graphql';
 import { Channel } from 'src/channels/models/channel.model';
-import { User, UserRole } from './models/user.model';
+import { UserID } from 'src/users/decorators/user-id.decorator';
+import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
-import { UserID } from './decorators/user-id.decorator';
+import { StatusService } from 'src/status/status.service';
+import { PUB_SUB } from 'src/pubsub.module';
+import { PubSub } from 'graphql-subscriptions';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly statusService: StatusService,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
+  ) {}
 
   /*
    ** ANCHOR: User
@@ -34,6 +41,7 @@ export class UsersResolver {
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
+    console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', user_id);
     if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
@@ -116,6 +124,14 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
+  @Mutation((returns) => Boolean)
+  setStatus(
+    @UserID() user_id: string,
+    @Args('status', { type: () => UserStatus }) status: UserStatus,
+  ): boolean {
+    return this.statusService.setStatus(user_id, status);
+  }
+
   /*
    ** ANCHOR: ResolveField
    */
@@ -143,9 +159,24 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
   }
+
+  @ResolveField('status', (returns) => UserStatus)
+  getStatus(@Parent() user: User): UserStatus {
+    const { id } = user;
+    return this.statusService.getStatus(id);
+  }
   // @ResolveField('match_history', (returns) => [Match])
   // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
   //   const { id } = user;
   //   return await this.matchService
   // }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
+
+  @Subscription((returns) => UserStatus)
+  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
+    return this.pubSub.asyncIterator(`status_of_${user_id}`);
+  }
 }
