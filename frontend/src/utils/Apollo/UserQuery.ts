@@ -30,6 +30,11 @@ export const CREATE_TFA = gql`
   }
 `;
 
+export const DELETE_TFA = gql`
+  mutation deleteTfa {
+    deleteTfa
+  }
+`;
 export const GET_USER_BY_NICKNAME = gql`
   query getUser($nickname: String) {
     user(nickname: $nickname) {

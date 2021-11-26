@@ -83,6 +83,7 @@ function Navigation(): JSX.Element {
         },
       }).catch((e) => console.log('error::', e));
       //then 강제 새로고침 할것
+      history.push('/');
     });
   };
 

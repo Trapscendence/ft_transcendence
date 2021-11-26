@@ -35,6 +35,7 @@ import {
 import {
   CHANGE_NICKNAME,
   CREATE_TFA,
+  DELETE_TFA,
   GET_USER,
   GET_USER_BY_NICKNAME,
   GET_USERS,
@@ -44,9 +45,6 @@ export default function MyProfileSetting(): JSX.Element {
   const avartarStyle = {
     height: '95px',
     width: '95px',
-  };
-  const typoStyle = {
-    margin: '10px',
   };
   const elementStyle = {
     height: '150px',
@@ -112,6 +110,7 @@ export default function MyProfileSetting(): JSX.Element {
   const [createTfa, { data: tfaUri, error: TfaError }] =
     useMutation<{ createTfa: string }>(CREATE_TFA);
   const [imageUrl, setImageUrl] = useState<string>();
+  const [deleteTfa] = useMutation(DELETE_TFA);
 
   useEffect(() => {
     console.log(tfaUri);
@@ -182,12 +181,18 @@ export default function MyProfileSetting(): JSX.Element {
                         variables: { new_nickname: nicknameinputSpace },
                       }).catch(() => setErrorMessage('변경 실패!'));
                       console.log(changeNicknameError);
-                      if (changeNicknameError?.changeNickname == true)
-                        setErrorMessage('변경 성공!');
+
+                      window.location.replace('/setting/');
                     }
                   }}
                 >
                   {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}
+                  <Box>
+                    <Typography>
+                      {currentUser?.nickname}님, 안녕하세요!
+                    </Typography>
+                  </Box>
+
                   <input
                     onChange={onchangeNickname}
                     // defaultValue={currentUser?.nickname}
@@ -209,9 +214,21 @@ export default function MyProfileSetting(): JSX.Element {
             <Paper sx={elementStyle} variant="outlined">
               <Typography variant="body2">
                 2차 인증 <br />
-                <button onClick={() => createTfa()}>활성화하기</button>
-                {imageUrl && <img src={imageUrl} />}
-                {/* <button onClick={() => }>비활성화하기</button> */}
+                {imageUrl && imageUrl != '' ? (
+                  <Stack>
+                    <button
+                      onClick={() => {
+                        deleteTfa();
+                        setImageUrl('');
+                      }}
+                    >
+                      비활성화하기
+                    </button>
+                    <img src={imageUrl} />
+                  </Stack>
+                ) : (
+                  <button onClick={() => createTfa()}>활성화하기</button>
+                )}
               </Typography>
             </Paper>
           </Grid>
