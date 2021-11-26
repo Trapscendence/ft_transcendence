@@ -24,6 +24,12 @@ export const CHANGE_NICKNAME = gql`
   }
 `;
 
+export const CREATE_TFA = gql`
+  mutation createTfa {
+    createTfa
+  }
+`;
+
 export const GET_USER_BY_NICKNAME = gql`
   query getUser($nickname: String) {
     user(nickname: $nickname) {

@@ -12,7 +12,7 @@ import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { SessionGuard } from './auth/guards/session.guard';
+// import { SessionGuard } from './auth/guards/session.guard';
 import { ImageModule } from './image/image.module';
 import { LoginGuard } from './auth/guards/login.guard';
 import * as cookie from 'cookie';
@@ -63,11 +63,6 @@ function getSession(sid): Promise<any> {
 
             return { req: webSocket.upgradeReq };
           },
-        },
-      },
-      playground: {
-        settings: {
-          'request.credentials': 'include',
         },
       },
     }),

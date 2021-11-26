@@ -72,9 +72,9 @@ function Navigation(): JSX.Element {
 
   const logOut = () => {
     return new Promise(() => {
-      const endpoint = `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-        process.env.REACT_APP_BACKEND_PORT ?? ''
-      }/auth/logout`;
+      const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
+        process.env.REACT_APP_SERVER_PORT ?? ''
+      }/api/auth/logout`;
       fetch(endpoint, {
         method: 'GET',
         headers: {
@@ -82,6 +82,7 @@ function Navigation(): JSX.Element {
           Accept: 'application/json',
         },
       }).catch((e) => console.log('error::', e));
+      //then 강제 새로고침 할것
     });
   };
 

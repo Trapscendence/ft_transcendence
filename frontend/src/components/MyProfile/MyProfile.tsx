@@ -1,4 +1,4 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable */
 
 import { useMutation, useQuery } from '@apollo/client';
 import {
@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
+import qrcode from 'qrcode';
 import { useEffect, useState } from 'react';
 
 import UseSearchUser from '../../hooks/useSearchUser';
@@ -33,6 +34,7 @@ import {
 } from '../../utils/Apollo/User';
 import {
   CHANGE_NICKNAME,
+  CREATE_TFA,
   GET_USER,
   GET_USER_BY_NICKNAME,
   GET_USERS,
@@ -101,9 +103,28 @@ export default function MyProfileSetting(): JSX.Element {
       refetchQueries: [GET_MY_BLACKLIST],
     });
 
+  //------------------------------------------------------------블랙리스트
+
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
+
+  const [createTfa, { data: tfaUri, error: TfaError }] =
+    useMutation<{ createTfa: string }>(CREATE_TFA);
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  useEffect(() => {
+    console.log(tfaUri);
+    if (tfaUri?.createTfa != undefined) {
+      qrcode.toDataURL(tfaUri.createTfa, (err, img) => {
+        if (err) {
+          console.log('Error with QR');
+          return;
+        }
+        setImageUrl(img);
+      });
+    }
+  }, [tfaUri]);
 
   return (
     <Box
@@ -187,7 +208,10 @@ export default function MyProfileSetting(): JSX.Element {
           <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
               <Typography variant="body2">
-                2차 인증 <br /> - 구글 인증 : <br /> 사용중 or 활성화하기
+                2차 인증 <br />
+                <button onClick={() => createTfa()}>활성화하기</button>
+                {imageUrl && <img src={imageUrl} />}
+                {/* <button onClick={() => }>비활성화하기</button> */}
               </Typography>
             </Paper>
           </Grid>
