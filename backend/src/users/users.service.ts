@@ -184,6 +184,7 @@ export class UsersService {
     );
     return array.length ? true : null;
   }
+
   async getSecret(user_id: string): Promise<string> {
     const selectQuery = await this.databaseService.executeQuery(`
       SELECT
@@ -196,6 +197,17 @@ export class UsersService {
 
     if (selectQuery.length === 1) return selectQuery[0].tfa_secret;
     else throw new ConflictException(`No user with { user_id: ${user_id} }`);
+  }
+
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const queryResult = await this.databaseService.executeQuery(
+      `UPDATE ${
+        env.database.schema
+      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+    );
+
+    if (queryResult.length === 1) return true;
+    else return false;
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {

@@ -61,6 +61,7 @@ export class AuthController {
         break;
       } catch (err) {}
     }
+    console.log(`New dummy login (id: ${req.session.uid})`);
     res.redirect('/');
   }
 
