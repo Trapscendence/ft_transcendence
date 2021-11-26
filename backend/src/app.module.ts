@@ -90,7 +90,7 @@ function getSession(sid): Promise<any> {
               'request.credentials': 'include',
             },
           },
-        },
+        };
       },
     }),
     DatabaseModule,
