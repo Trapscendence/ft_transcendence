@@ -127,6 +127,17 @@ export class UsersService {
     `);
   }
 
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const queryResult = await this.databaseService.executeQuery(
+      `UPDATE ${
+        env.database.schema
+      }.user SET avatar = NULL WHERE id = ${+user_id}`,
+    );
+
+    if (queryResult.length === 1) return true;
+    else return false;
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');

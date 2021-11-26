@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, InternalServerErrorException } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import {
   Query,
@@ -53,6 +53,15 @@ export class UsersResolver {
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
+  }
+
+  @Mutation((returns) => Boolean)
+  async deleteAvatar(@UserID() user_id: string): Promise<Boolean> {
+    if (await this.usersService.deleteAvatar(user_id)) return true;
+    else
+      throw new InternalServerErrorException(
+        `Error occured during delete avatar (id: ${user_id})`,
+      );
   }
 
   @Mutation((returns) => ID)
