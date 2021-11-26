@@ -127,6 +127,77 @@ export class UsersService {
     `);
   }
 
+  async createUser(nickname: string): Promise<User | null> {
+    // Deprecated
+    nickname = sqlEscaper(nickname);
+    const existingUser = await this.databaseService.executeQuery(`
+      SELECT
+        id
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        nickname = '${nickname}'
+      `);
+
+    if (existingUser.length) return null;
+    const users = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${env.database.schema}.user(
+          nickname,
+          oauth_id,
+          oauth_type
+        )
+      VALUES (
+        '${nickname}',
+        'mock_id', /* 적절한 변환 필요 */
+        'FORTYTWO' )
+      RETURNING *;
+    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
+    return users[0];
+  }
+
+  async setNickname(user_id: string, nickname: string): Promise<boolean> {
+    const existence = await this.databaseService.executeQuery(
+      `
+      SELECT
+        id
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        nickname = ($1);
+    `,
+      [nickname],
+    );
+    if (existence.length) return false;
+
+    const array = await this.databaseService.executeQuery(
+      `
+      UPDATE
+        ${env.database.schema}.user
+      SET
+        nickname = ($1)
+      WHERE
+        id = ($2)
+      RETURNING *;
+    `,
+      [nickname, user_id],
+    );
+    return array.length ? true : null;
+  }
+  async getSecret(user_id: string): Promise<string> {
+    const selectQuery = await this.databaseService.executeQuery(`
+      SELECT
+        tfa_secret
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${+user_id}
+    `);
+
+    if (selectQuery.length === 1) return selectQuery[0].tfa_secret;
+    else throw new ConflictException(`No user with { user_id: ${user_id} }`);
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');
@@ -244,24 +315,31 @@ export class UsersService {
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
+      WITH b as (
+        SELECT
+          blocked_id id
+        FROM
+          ${env.database.schema}.block
+        WHERE
+          blocker_id = ${id}
+      )
       SELECT
-        id,
-        nickname,
-        avatar,
-        status_message,
-        rank_score,
-        site_role
+        u.id,
+        u.nickname,
+        u.avatar,
+        u.status_message,
+        u.rank_score,
+        u.site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            u.rank_score DESC
+        ) rank
       FROM
         ${env.database.schema}.user u
-      WHERE
-          id = (
-            SELECT
-              blocked_id
-            FROM
-              ${env.database.schema}.block b
-            WHERE
-              blocker_id = ${id}
-          )
+      INNER JOIN
+        b
+      ON
+        u.id = b.id;
     `);
   }
 
@@ -341,5 +419,35 @@ export class UsersService {
     } else {
       return select_site_role[0].site_role;
     }
+  }
+
+  async setSiteRole(
+    setter: string,
+    target: string,
+    role: UserRole,
+  ): Promise<boolean> {
+    const setter_role = await this.getSiteRole(setter);
+    const target_role = await this.getSiteRole(target);
+    if (
+      setter_role === 'USER' ||
+      setter_role === target_role ||
+      (setter_role === 'ADMIN' && target_role === 'OWNER') ||
+      (setter_role !== 'ADMIN' && role === 'OWNER')
+    )
+      return false;
+    const result: any = await this.databaseService.executeQuery(
+      `
+      UPDATE ${env.database.schema}.user
+        SET
+        site_role
+          =
+        ($1)
+      WHERE
+        id = ($2)
+      RETURNING *;
+    `,
+      [role, target],
+    );
+    return !!result;
   }
 }

@@ -1,4 +1,8 @@
 export const env = {
+  name: 'TRAPscendence',
+  redirect: {
+    totp: '/login/totp',
+  },
   database: {
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST,

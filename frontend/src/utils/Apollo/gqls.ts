@@ -79,6 +79,7 @@ export const GET_MY_BLACKLIST = gql`
     user {
       blacklist {
         id
+        nickname
       }
     }
   }
