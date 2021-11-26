@@ -14,6 +14,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
+import { Achievement } from 'src/acheivements/models/achievement.model';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
@@ -117,6 +118,14 @@ export class UsersResolver {
     return this.usersService.setAvatar(user_id, file);
   }
 
+  @Mutation((returns) => Boolean)
+  async achieveOne(
+    @UserID() user_id: string,
+    @Args('achievement_id') achievement_id: string,
+  ): Promise<boolean> {
+    return await this.usersService.achieveOne(user_id, achievement_id);
+  }
+
   /*
    ** ANCHOR: ResolveField
    */
@@ -149,6 +158,15 @@ export class UsersResolver {
   async getAvatar(@Parent() user: User): Promise<string> {
     const { id } = user;
     return await this.usersService.getAvatar(id);
+  }
+
+  @ResolveField('achievement', (returns) => [Achievement], { nullable: true })
+  async getAchieved(
+    @Parent() user: User,
+    @Args('user_id', { nullable: true }) user_id: string,
+  ): Promise<Achievement[]> {
+    if (user_id) return await this.usersService.getAchieved(user_id);
+    return await this.usersService.getAchieved(user.id);
   }
 
   // @ResolveField('match_history', (returns) => [Match])

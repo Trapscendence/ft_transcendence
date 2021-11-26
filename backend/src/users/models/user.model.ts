@@ -7,7 +7,7 @@ import {
   registerEnumType,
 } from '@nestjs/graphql';
 import { Channel } from 'src/channels/models/channel.model';
-import { Achivement } from '../../achivements/models/achivement.model';
+import { Achievement } from '../../acheivements/models/achievement.model';
 import { Match } from '../../matchs/models/match.model';
 
 export enum UserStatus {
@@ -67,8 +67,8 @@ export class User {
   @Field((type) => [Match])
   match_history: Match[];
 
-  @Field((type) => [Achivement])
-  achivements: Achivement[];
+  @Field((type) => [Achievement])
+  achievements: Achivement[];
 
   @Field((type) => Channel, { nullable: true })
   channel: Channel;

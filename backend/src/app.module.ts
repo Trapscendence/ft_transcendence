@@ -6,7 +6,7 @@ import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MatchsModule } from './matchs/matchs.module';
-import { AchivementsModule } from './achivements/achivements.module';
+import { AchievementsModule } from './acheivements/acheivements.module';
 import { MessageModule } from './message/message.module';
 import { join } from 'path';
 import { PubSubModule } from './pubsub.module';
@@ -41,7 +41,7 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
     MessageModule,
     ChannelsModule,
     MatchsModule,
-    AchivementsModule,
+    AchievementsModule,
     PubSubModule,
     AuthModule,
   ],

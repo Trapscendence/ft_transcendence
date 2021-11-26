@@ -502,4 +502,56 @@ export class UsersService {
         });
     });
   }
+
+  async getAchieved(user_id: string) {
+    return await this.databaseService.executeQuery(`
+      WITH ad AS (
+        SELECT
+          achievement_id id
+          time_stamp time_stamp
+        FROM
+          ${schema}.achieved
+        WHERE
+          user_id = ${user_id}
+      )
+      SELECT
+        am.id
+        am.name
+        am.icon
+        ad.time_stamp
+      FROM
+        ${schema}.achievement am
+      INNER JOIN
+        ad
+      ON
+        am.id = ad.id
+      ORDER BY
+        am.id ASC;
+    `);
+  }
+
+  async achieveOne(user_id: string, ach_id: string) {
+    const array = await this.databaseService.executeQuery(
+      `
+      INSERT INTO
+        ${schema}.achieved(
+          user_id,
+          achievement_id,
+          time_stamp
+        )
+      VALUES
+        (
+          ($1),
+          ($2),
+          ${new Date().getTime}
+        )
+      ON CONFLICT
+        UNIQUE (user_id, achievement_id)
+      DO NOTHING
+      RETURNING *;
+    `,
+      [user_id, ach_id],
+    );
+    return array.length ? true : false;
+  }
 }
