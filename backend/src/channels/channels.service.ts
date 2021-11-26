@@ -203,7 +203,7 @@ export class ChannelsService {
         )
       VALUES (
         '${title}',
-        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
+        ${password ? `'${await this.hashPassword(password)}'` : 'NULL'}
       )
       RETURNING id;
     `);
