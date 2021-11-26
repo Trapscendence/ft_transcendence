@@ -131,7 +131,7 @@ export class UsersService {
     const queryResult = await this.databaseService.executeQuery(
       `UPDATE ${
         env.database.schema
-      }.user SET avatar = NULL WHERE id = ${+user_id}`,
+      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
     );
 
     if (queryResult.length === 1) return true;

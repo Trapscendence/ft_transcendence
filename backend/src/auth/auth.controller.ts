@@ -34,7 +34,6 @@ export class AuthController {
   async loginForTest(@Req() req: any, @Res() res: Response) {
     while (true) {
       try {
-        console.log('hey~');
         const { id } = await this.usersService.createUserByOAuth(
           'DUMMY',
           `${Math.floor(Math.random() * 100000)}`,
@@ -43,6 +42,7 @@ export class AuthController {
         break;
       } catch (err) {}
     }
+    console.log(`New dummy login (id: ${req.session.uid})`);
     res.redirect('/');
   }
 
