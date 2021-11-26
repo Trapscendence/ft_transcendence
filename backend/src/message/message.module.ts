@@ -7,7 +7,7 @@ import { PubSubModule } from 'src/pubsub.module';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [DatabaseModule, UsersModule, PubSubModule, AuthModule],
+  imports: [DatabaseModule, UsersModule, PubSubModule],
   providers: [MessageService, MessageResolver],
 })
 export class MessageModule {}

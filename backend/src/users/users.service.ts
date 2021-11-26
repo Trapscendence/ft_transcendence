@@ -184,6 +184,19 @@ export class UsersService {
     );
     return array.length ? true : null;
   }
+  async getSecret(user_id: string): Promise<string> {
+    const selectQuery = await this.databaseService.executeQuery(`
+      SELECT
+        tfa_secret
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${+user_id}
+    `);
+
+    if (selectQuery.length === 1) return selectQuery[0].tfa_secret;
+    else throw new ConflictException(`No user with { user_id: ${user_id} }`);
+  }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
