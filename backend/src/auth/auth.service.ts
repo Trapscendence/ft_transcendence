@@ -28,6 +28,17 @@ export class AuthService {
     } else throw new ConflictException(`No user with {id: ${+user_id}}`);
   }
 
+  async expireTfa(user_id: string): Promise<boolean> {
+    const updateQueryResult = await this.databaseService.executeQuery(`
+      UPDATE ${
+        env.database.schema
+      }.user SET tfa_secret = NULL WHERE id = ${+user_id} RETURNING id;
+    `);
+
+    if (updateQueryResult.length === 1) return true;
+    else return false;
+  }
+
   async validateTFA(user_secret: string, user_token: string): Promise<boolean> {
     return authenticator.check(user_token, user_secret);
   }

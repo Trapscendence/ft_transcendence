@@ -11,4 +11,9 @@ export class AuthResolver {
     const tfaUri = this.authService.issueTfaUri(user_id);
     return tfaUri;
   }
+
+  @Mutation((returns) => Boolean)
+  async deleteTfa(@UserID() user_id: string): Promise<boolean> {
+    return await this.authService.expireTfa(user_id);
+  }
 }
