@@ -28,7 +28,7 @@ export class StatusService {
   }
 
   setStatus(userId: string, status: UserStatus): void {
-    if (status === UserStatus.ONLINE || status === UserStatus.OFFLINE)
+    if (status === UserStatus.OFFLINE)
       throw `Invalid usage: Cannot change user(id: ${userId}) status to ${status} with setStatus)`;
     const statusObject = this.statusContainer.get(userId);
     if (!statusObject) throw `The user(id: ${userId}) is offline`;
