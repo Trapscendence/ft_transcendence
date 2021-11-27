@@ -68,7 +68,7 @@ export class User {
   match_history: Match[];
 
   @Field((type) => [Achievement])
-  achievements: Achivement[];
+  achievements: Achievement[];
 
   @Field((type) => Channel, { nullable: true })
   channel: Channel;
