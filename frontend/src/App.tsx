@@ -14,7 +14,6 @@ import LoginTotp from './components/LoginTotp';
 import MyProfile from './components/MyProfile';
 import Profile from './components/Profile';
 import Rank from './components/Rank';
-import UserRank from './components/UserRank';
 import { GET_MY_ID } from './utils/Apollo/gqls';
 import { GetMyIdResponse } from './utils/Apollo/responseModels';
 
@@ -39,7 +38,6 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/home" component={Home} />
         <RestrictRoute exact path="/channel" component={ChannelList} />
         <RestrictRoute exact path="/rank" component={Rank} />
-        <RestrictRoute exact path="/rank/:userid" component={UserRank} />
         <RestrictRoute exact path="/setting" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
         <RestrictRoute exact path="/admin" component={Admin} />

@@ -92,11 +92,6 @@ function getSession(sid): Promise<any> {
           },
         };
       },
-      playground: {
-        settings: {
-          'request.credentials': 'include',
-        },
-      },
     }),
     DatabaseModule,
     UsersModule,

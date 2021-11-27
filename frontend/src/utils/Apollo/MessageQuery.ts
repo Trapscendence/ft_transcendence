@@ -5,6 +5,7 @@ export const GET_DM_USERS = gql`
     dmUsers(offset: $offset, limit: $limit) {
       id
       nickname
+      avatar
     }
   }
 `;

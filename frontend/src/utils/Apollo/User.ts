@@ -1,6 +1,7 @@
 export interface User {
   nickname: string;
   id: string;
+  avatar: string;
 }
 
 export interface NickName {

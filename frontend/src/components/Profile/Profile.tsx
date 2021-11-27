@@ -37,6 +37,7 @@ function Profile(): JSX.Element {
     nickname: string;
     id: string;
     rank: number;
+    avatar: string;
   }
 
   interface UserProfileData {
@@ -46,7 +47,11 @@ function Profile(): JSX.Element {
   const { error, data } = useQuery<UserProfileData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
-  const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const [inputSpace, setInputSpace] = useState<User>({
+    nickname: '',
+    id: '',
+    avatar: '',
+  });
   const [buttonActive, setButtonActive] = useState(true);
   const history = useHistory();
   const handleOnclick = (value: User) => {
@@ -60,6 +65,7 @@ function Profile(): JSX.Element {
     nickname: '',
     id: '',
     rank: 0,
+    avatar: '',
   });
 
   const location = useLocation();
@@ -91,12 +97,16 @@ function Profile(): JSX.Element {
           sx={{ width: '100%', height: '150px' }}
           justifyContent="space-between"
         >
-          {currentUser ? (
+          {currentUser?.avatar ? (
+            <Avatar
+              sx={avartarStyle}
+              src={'/storage/' + currentUser?.avatar}
+            ></Avatar>
+          ) : (
             <Avatar sx={avartarStyle}>
               {currentUser?.nickname[0]?.toUpperCase()}
             </Avatar>
-          ) : (
-            <Skeleton variant="circular" sx={avartarStyle} />
+            // <Skeleton variant="circular" sx={avartarStyle} />
           )}
           <Stack
             id="info-Text-Stack"

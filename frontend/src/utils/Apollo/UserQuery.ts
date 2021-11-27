@@ -6,14 +6,17 @@ export const GET_USERS = gql`
       id
       nickname
       rank
+      avatar
     }
   }
 `;
+
 export const GET_USER = gql`
   query getUser {
     user {
       id
       nickname
+      avatar
     }
   }
 `;
@@ -40,6 +43,7 @@ export const GET_USER_BY_NICKNAME = gql`
     user(nickname: $nickname) {
       id
       nickname
+      avatar
     }
   }
 `;
