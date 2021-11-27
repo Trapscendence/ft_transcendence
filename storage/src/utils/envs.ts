@@ -1,8 +1,4 @@
 export const env = {
-  name: 'TRAPscendence',
-  redirect: {
-    totp: '/login/totp',
-  },
   database: {
     user: process.env.POSTGRES_USER,
     host: process.env.POSTGRES_HOST,
@@ -15,10 +11,5 @@ export const env = {
     secret: process.env.SESSION_SECRET,
     cookieName: 'TRAP_SESSIONID',
     tableName: 'user_session',
-  },
-  fortytwoStrategy: {
-    clientID: process.env.FORTYTWO_APP_ID,
-    clientSecret: process.env.FORTYTWO_APP_SECRET,
-    callbackURL: process.env.FORTYTWO_REDIRECT_URI,
   },
 };

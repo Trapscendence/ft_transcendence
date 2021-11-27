@@ -55,7 +55,7 @@ export class User {
   @Field((type) => UserRole)
   site_role: UserRole;
 
-  @Field()
+  @Field({ nullable: true })
   avatar: string;
 
   @Field((type) => [User], { nullable: true })
