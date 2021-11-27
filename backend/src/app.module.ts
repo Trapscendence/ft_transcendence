@@ -55,10 +55,11 @@ function getSession(sid): Promise<any> {
             return { req: webSocket.upgradeReq };
           },
         },
-        playground: {
-          settings: {
-            'request.credentials': 'include',
-          },
+      },
+      playground: {
+        subscriptionEndpoint: '/subscriptions',
+        settings: {
+          'request.credentials': 'include',
         },
       },
     }),

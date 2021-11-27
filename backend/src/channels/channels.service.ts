@@ -85,6 +85,7 @@ export class ChannelsService {
   async enterChannel(
     user_id: string,
     channel_id: string,
+    password: string,
   ): Promise<Channel | null> {
     const users = await this.databaseService.executeQuery(`
       SELECT
@@ -94,10 +95,27 @@ export class ChannelsService {
       WHERE
         banned_user = ${user_id}
           AND
-        channel_id = ${channel_id};
+        channel_id = ${+channel_id};
     `); // ban 되어있는지 확인
     if (users.length)
       throw new ForbiddenException('The user is banned from channel.');
+
+    const channelPassword = await this.databaseService.executeQuery(`
+      SELECT
+        password
+      FROM
+        ${env.database.schema}.channel
+      WHERE
+        id = ${+channel_id}
+    `);
+    if (
+      channelPassword[0].password &&
+      (await this.hashPassword(password)) !== channelPassword[0].password
+    ) {
+      throw new ConflictException(
+        `Wrong channel password (channel_id: ${channel_id})`,
+      );
+    }
 
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
@@ -203,7 +221,7 @@ export class ChannelsService {
         )
       VALUES (
         '${title}',
-        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
+        ${password ? `'${await this.hashPassword(password)}'` : 'NULL'}
       )
       RETURNING id;
     `);
