@@ -1,5 +1,4 @@
 import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { UseGuards } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -13,7 +12,13 @@ import {
 } from '@nestjs/graphql';
 import { Channel } from 'src/channels/models/channel.model';
 import { UserID } from 'src/users/decorators/user-id.decorator';
-import { User, UserRole, UserStatus } from './models/user.model';
+import {
+  FriendReqRes,
+  FriendRequest,
+  User,
+  UserRole,
+  UserStatus,
+} from './models/user.model';
 import { UsersService } from './users.service';
 import { Achievement } from 'src/acheivements/models/achievement.model';
 import { StatusService } from 'src/status/status.service';
@@ -43,7 +48,6 @@ export class UsersResolver {
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
-    console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', user_id);
     if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
@@ -94,12 +98,44 @@ export class UsersResolver {
     return await this.usersService.setNickname(user_id, new_nickname);
   }
 
-  @Mutation((returns) => Boolean, { nullable: true })
-  async addFriend(
+  @Mutation((returns) => Boolean)
+  async requestFriend(
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
-  ): Promise<boolean> {
+  ) {
+    const request = new FriendRequest();
+    request.id = friend_id;
+    request.ReqRes = FriendReqRes.REQUEST;
+    this.pubSub.publish(`friend_request_of_${friend_id}`, {
+      recieveFriendRequest: request,
+    });
+  }
+
+  @Mutation((returns) => Boolean)
+  async acceptFriend(
+    @UserID() user_id: string,
+    @Args('friend_id', { type: () => ID }) friend_id: string,
+  ) {
+    const request = new FriendRequest();
+    request.id = friend_id;
+    request.ReqRes = FriendReqRes.CONSENT;
+    this.pubSub.publish(`friend_request_of_${friend_id}`, {
+      recieveFriendRequest: request,
+    });
     return this.usersService.addFriend(user_id, friend_id);
+  }
+
+  @Mutation((returns) => Boolean)
+  async rejectFriend(
+    @UserID() user_id: string,
+    @Args('friend_id', { type: () => ID }) friend_id: string,
+  ) {
+    const request = new FriendRequest();
+    request.id = friend_id;
+    request.ReqRes = FriendReqRes.REJECT;
+    this.pubSub.publish(`friend_request_of_${friend_id}`, {
+      recieveFriendRequest: request,
+    });
   }
 
   @Mutation((returns) => Boolean)
@@ -107,6 +143,12 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
+    const request = new FriendRequest();
+    request.id = friend_id;
+    request.ReqRes = FriendReqRes.DELETE;
+    this.pubSub.publish(`friend_request_of_${friend_id}`, {
+      recieveFriendRequest: request,
+    });
     return await this.usersService.deleteFriend(user_id, friend_id);
   }
 
@@ -220,5 +262,10 @@ export class UsersResolver {
   @Subscription((returns) => UserStatus)
   statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`status_of_${user_id}`);
+  }
+
+  @Subscription((returns) => FriendRequest)
+  listenFriend(@UserID() user_id: string) {
+    return this.pubSub.asyncIterator(`friend_request_of_${user_id}`);
   }
 }

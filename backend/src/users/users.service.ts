@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
@@ -473,7 +472,7 @@ export class UsersService {
       SELECT
         avatar
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = ${user_id}
     `);
@@ -510,7 +509,7 @@ export class UsersService {
               .executeQuery(
                 `
               UPDATE
-                ${schema}.user
+                ${env.database.schema}.user
               SET
                 avatar = ($1)
               WHERE
@@ -539,7 +538,7 @@ export class UsersService {
           achievement_id id
           time_stamp time_stamp
         FROM
-          ${schema}.achieved
+          ${env.database.schema}.achieved
         WHERE
           user_id = ${user_id}
       )
@@ -549,7 +548,7 @@ export class UsersService {
         am.icon
         ad.time_stamp
       FROM
-        ${schema}.achievement am
+        ${env.database.schema}.achievement am
       INNER JOIN
         ad
       ON
@@ -563,7 +562,7 @@ export class UsersService {
     const array = await this.databaseService.executeQuery(
       `
       INSERT INTO
-        ${schema}.achieved(
+        ${env.database.schema}.achieved(
           user_id,
           achievement_id,
           time_stamp

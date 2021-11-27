@@ -10,6 +10,13 @@ import { Channel } from 'src/channels/models/channel.model';
 import { Achievement } from '../../acheivements/models/achievement.model';
 import { Match } from '../../matchs/models/match.model';
 
+export enum FriendReqRes {
+  REQUEST = 'REQUEST',
+  CONSENT = 'CONSENT',
+  REJECT = 'REJECT',
+  DELETE = 'DELETE',
+}
+
 export enum UserStatus {
   ONLINE = 'ONLINE',
   IN_RANK_GAME = 'IN_RANK_GAME',
@@ -22,6 +29,10 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   OWNER = 'OWNER',
 }
+
+registerEnumType(FriendReqRes, {
+  name: 'FriendReqRes',
+});
 
 registerEnumType(UserStatus, {
   name: 'UserStatus',
@@ -75,4 +86,13 @@ export class User {
 
   @Field((type) => UserRole, { nullable: true })
   channel_role: UserRole;
+}
+
+@ObjectType()
+export class FriendRequest {
+  @Field()
+  ReqRes: FriendReqRes;
+
+  @Field((type) => ID)
+  id: string;
 }

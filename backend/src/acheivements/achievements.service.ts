@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { schema } from 'src/utils/envs';
+import { env } from 'src/utils/envs';
 
 @Injectable()
 export class AchievementsService {
@@ -10,7 +10,7 @@ export class AchievementsService {
       SELECT
         *
       FROM
-        ${schema}.achievement;
+        ${env.database.schema}.achievement;
     `);
   }
 }
