@@ -90,11 +90,9 @@ services:
 
   backend:
     environment:
-      - POSTGRES_HOST=database
-      - POSTGRES_LOCAL_PORT=5432
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${BACKEND_DB_USER}
-      - POSTGRES_PASSWORD=${BACKEND_DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
       - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
       - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
@@ -113,8 +111,7 @@ services:
       - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./backend/src:/app/src
-      - ./certbot/certs:/certs
+      - ./migration/migrations:/migrations
 
   storage:
     environment:
@@ -132,6 +129,7 @@ services:
     networks:
       - default
     depends_on:
+      # - certbot
       - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
