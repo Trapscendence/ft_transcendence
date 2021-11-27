@@ -42,7 +42,6 @@ export class UsersResolver {
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
-    console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', user_id);
     if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
@@ -139,7 +138,8 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('status', { type: () => UserStatus }) status: UserStatus,
   ): boolean {
-    return this.statusService.setStatus(user_id, status);
+    this.statusService.setStatus(user_id, status);
+    return true;
   }
 
   /*

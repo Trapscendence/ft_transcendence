@@ -61,7 +61,6 @@ export class AuthController {
         break;
       } catch (err) {}
     }
-    console.log(`New dummy login (id: ${req.session.uid})`);
     res.redirect('/');
   }
 
@@ -90,11 +89,9 @@ export class AuthController {
 
   @Get('logout')
   async logout(@Req() req: any, @Res() res: Response) {
-    req.session.destroy((err) => {
-      if (err) throw err;
-    });
     res.cookie[env.session.cookieName] = '';
     res.redirect('/');
+    // Delete session in statusService.deleteConnection that called from onDisconnect()
   }
 
   @Get('test')
