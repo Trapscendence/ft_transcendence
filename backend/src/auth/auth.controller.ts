@@ -88,13 +88,34 @@ export class AuthController {
     res.redirect('/');
   }
 
+  @Post('totp')
+  @PassTfaGuard()
+  async validateTotp(
+    @Req() req: any,
+    @Res() res: Response,
+    @Body('user_token') userToken,
+  ) {
+    if (req.session.tfa_secret) {
+      const passed = await this.authService.validateTFA(
+        req.session.tfa_secret,
+        userToken,
+      );
+      if (passed) delete req.session.tfa_secret;
+      else {
+        req.session.destroy((err) => {
+          if (err) throw err;
+        });
+        res.cookie[env.session.cookieName] = '';
+      }
+    }
+    res.redirect('/');
+  }
+
   @Get('logout')
   async logout(@Req() req: any, @Res() res: Response) {
-    req.session.destroy((err) => {
-      if (err) throw err;
-    });
     res.cookie[env.session.cookieName] = '';
     res.redirect('/');
+    // Delete session in statusService.deleteConnection that called from onDisconnect()
   }
 
   @Get('test')

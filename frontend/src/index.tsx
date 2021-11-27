@@ -35,9 +35,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authorization: cookieParser('access_token')
-        ? `Bearer ${cookieParser('access_token') ?? ''}`
-        : '',
+      credential: 'include',
     },
   },
 });

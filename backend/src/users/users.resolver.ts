@@ -198,7 +198,8 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('status', { type: () => UserStatus }) status: UserStatus,
   ): boolean {
-    return this.statusService.setStatus(user_id, status);
+    this.statusService.setStatus(user_id, status);
+    return true;
   }
 
   /*
