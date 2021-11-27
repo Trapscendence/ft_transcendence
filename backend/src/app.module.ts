@@ -57,7 +57,7 @@ function getSession(sid): Promise<any> {
         },
       },
       playground: {
-        subscriptionEndpoint: '/subscriptionse',
+        subscriptionEndpoint: '/subscriptions',
         settings: {
           'request.credentials': 'include',
         },
