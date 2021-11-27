@@ -1,6 +1,7 @@
 export interface User {
   nickname: string;
   id: string;
+  avatar: string;
 }
 
 export interface NickName {
@@ -13,6 +14,10 @@ export interface UserData {
 
 export interface UsersData {
   users: User[];
+}
+
+export interface CurrentUsersData {
+  user: User[];
 }
 
 export interface UsersDataVars {

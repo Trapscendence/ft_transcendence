@@ -49,6 +49,7 @@ function Navigation(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<User>({
     nickname: '',
     id: '',
+    avatar: '',
   });
   const history = useHistory();
   const location = useLocation();
@@ -67,14 +68,14 @@ function Navigation(): JSX.Element {
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
   useEffect(() => {
-    if (currentUserData?.user.id) setCurrentUser(currentUserData?.user);
+    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
   }, [currentUserData]);
 
   const logOut = () => {
     return new Promise(() => {
-      const endpoint = `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-        process.env.REACT_APP_BACKEND_PORT ?? ''
-      }/auth/logout`;
+      const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
+        process.env.REACT_APP_SERVER_PORT ?? ''
+      }/api/auth/logout`;
       fetch(endpoint, {
         method: 'GET',
         headers: {
@@ -82,6 +83,8 @@ function Navigation(): JSX.Element {
           Accept: 'application/json',
         },
       }).catch((e) => console.log('error::', e));
+      //then 강제 새로고침 할것
+      history.push('/');
     });
   };
 

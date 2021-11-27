@@ -11,15 +11,11 @@ function Login(): JSX.Element {
 
   const [buttonsEnabledState, setButtonsEnabledState] = useState<boolean>(true);
 
-  const onClickLoginButton = (oauthStrategy: 'google' | '42'): void => {
+  const onClickLoginButton = (
+    oauthStrategy: 'google' | '42' | 'dummy'
+  ): void => {
     setButtonsEnabledState(false);
     const loginURI = `/api/auth/login/${oauthStrategy}`;
-    // popupWindow = popupWindowCenter(
-    //   loginURI,
-    //   `Login with ${oauthStrategy}`,
-    //   400,
-    //   800
-    // );
     location.replace(loginURI);
   };
 
@@ -53,6 +49,16 @@ function Login(): JSX.Element {
           sx={{ margin: '5px 0' }}
         >
           Log in with Google
+        </Button>
+
+        <Button
+          variant="contained"
+          color="inherit"
+          disabled={!buttonsEnabledState}
+          onClick={() => onClickLoginButton('dummy')}
+          sx={{ margin: '5px 0' }}
+        >
+          Dummy login for test
         </Button>
       </Box>
     </Box>

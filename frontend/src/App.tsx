@@ -10,10 +10,10 @@ import LoadingBackdrop from './components/commons/LoadingBackdrop';
 import RestrictRoute from './components/commons/RestrictRoute';
 import Home from './components/Home';
 import Login from './components/Login';
+import LoginTotp from './components/LoginTotp';
 import MyProfile from './components/MyProfile';
 import Profile from './components/Profile';
 import Rank from './components/Rank';
-import UserRank from './components/UserRank';
 import { GET_MY_ID } from './utils/Apollo/gqls';
 import { GetMyIdResponse } from './utils/Apollo/responseModels';
 
@@ -32,13 +32,13 @@ function App(): JSX.Element {
         }}
       />
       <Switch>
+        <Route exact path="/login/totp" component={LoginTotp} />
         <Route exact path="/login" component={Login} />
         <Route exact path="/" render={() => <Redirect to="/home" />} />
         <RestrictRoute exact path="/home" component={Home} />
         <RestrictRoute exact path="/channel" component={ChannelList} />
         <RestrictRoute exact path="/rank" component={Rank} />
-        <RestrictRoute exact path="/rank/:userid" component={UserRank} />
-        <RestrictRoute exact path="/profile/my" component={MyProfile} />
+        <RestrictRoute exact path="/setting" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
         <RestrictRoute exact path="/admin" component={Admin} />
       </Switch>
