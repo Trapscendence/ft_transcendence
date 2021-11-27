@@ -23,6 +23,12 @@ export const SEND_MESSAGE = gql`
   }
 `;
 
+export const UPDATE_CHECK_DATE = gql`
+  mutation updateCheckdate {
+    updateCheckdate
+  }
+`;
+
 export const GET_DM = gql`
   query DM($other_id: ID!, $offset: Int!, $limit: Int!) {
     DM(other_id: $other_id) {
