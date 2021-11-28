@@ -488,7 +488,7 @@ export class UsersService {
       SELECT
         *
       FROM
-        ${schema}.match
+        ${env.database.schema}.match
       WHERE
         winner = ${id}
           OR

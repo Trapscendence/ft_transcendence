@@ -13,12 +13,12 @@ import { useHistory, useLocation } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import {
+  MatchData,
+  MatchDataVars,
   User,
-  UserData,
-  UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import { GET_USER, GET_USERS } from '../../utils/Apollo/UserQuery';
+import { GET_MATCH_BY_NICKNAME, GET_USERS } from '../../utils/Apollo/UserQuery';
 
 function Profile(): JSX.Element {
   const avartarStyle = {
@@ -79,6 +79,20 @@ function Profile(): JSX.Element {
     if (data?.users[urlInputId - 1]) setCurrentUser(data.users[urlInputId - 1]);
     else setCurrentUser(undefined);
   }, [urlInputId, data]);
+  //matchHistory
+  const { data: matchData } = useQuery<MatchData, MatchDataVars>(
+    GET_MATCH_BY_NICKNAME,
+    {
+      variables: {
+        nickname: currentUser?.nickname ?? '',
+        offset: 0,
+        limit: 5,
+      },
+    }
+  );
+  console.log(matchData);
+
+  //---------------------------------------------------
 
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
 
@@ -161,7 +175,18 @@ function Profile(): JSX.Element {
         <Typography variant="h6" style={typoStyle}>
           전적
         </Typography>
-        <Paper style={paperStyle}></Paper>
+        <Paper style={paperStyle}>
+          {matchData?.user.Match.map((match) => (
+            <Stack>
+              <Typography>
+                승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
+              </Typography>
+              <Typography>
+                {match.winner_points} : {match.loser_points}
+              </Typography>
+            </Stack>
+          ))}
+        </Paper>
         <Typography variant="h6" style={typoStyle}>
           업적
         </Typography>

@@ -4,7 +4,6 @@ import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
-import { schema } from 'src/utils/envs';
 import {
   CanvasNotifyType,
   Game,
@@ -12,6 +11,7 @@ import {
   GameType,
   GameNotifyType,
 } from './models/game.model';
+import { env } from 'src/utils/envs';
 
 const START_DELAY = 2000;
 
@@ -400,7 +400,7 @@ export class GamesService {
   async recordMatch(winner_id: string, loser_id: string) {
     this.databaseService.executeQuery(
       `
-    INSERT INTO ${schema}.match(
+    INSERT INTO ${env.database.schema}.match(
       winner,
       loser,
       win_points,
