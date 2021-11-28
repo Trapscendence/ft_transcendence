@@ -17,9 +17,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
-import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
+import { GamesService } from 'src/games/games.service';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
@@ -27,7 +27,7 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     // private readonly gamesService: GamesService,
-    // @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
+    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -101,6 +101,15 @@ export class UsersResolver {
     @Args('black_id', { type: () => ID }) black_id: string,
   ): Promise<boolean> {
     return await this.usersService.deleteFromBlackList(user_id, black_id);
+  }
+
+  // NOTE for test
+  @Mutation((returns) => Boolean)
+  async insertMatchResult(
+    @Args('winner_id', { type: () => ID }) winner_id: string,
+    @Args('loser_id', { type: () => ID }) loser_id: string,
+  ) {
+    this.gamesService.recordMatch(winner_id, loser_id);
   }
 
   /*
