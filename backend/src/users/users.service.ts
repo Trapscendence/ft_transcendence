@@ -2,11 +2,12 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { User, UserRole } from './models/user.model';
-import { schema } from 'src/utils/envs';
+import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 import { HttpService } from '@nestjs/axios';
@@ -33,7 +34,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}';
       `);
@@ -56,7 +57,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = '${nickname}';
     `);
@@ -64,51 +65,47 @@ export class UsersService {
     throw new NotFoundException('No such user.');
   }
 
-  async getOrCreateUserByOAuth(
-    oauth_id: string,
+  async getUserByOAuth(
     oauth_type: string,
-  ): Promise<User | null> {
+    oauth_id: string,
+  ): Promise<{ id: string; tfa_secret: string } | null> {
     const selectQueryResult = await this.databaseService.executeQuery(`
       SELECT
         id,
         tfa_secret
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         oauth_id = '${oauth_id}'
       AND
         oauth_type = '${oauth_type}';
-          `);
+    `);
 
-    if (selectQueryResult.length === 1) {
-      return selectQueryResult[0];
-    } else if (selectQueryResult.length === 0) {
-      const insertQueryResult = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.user(
-        nickname,
-        oauth_id,
-        oauth_type
-      ) VALUES (
-        '${oauth_type}-${oauth_id}',
-        '${oauth_id}',
-        '${oauth_type}'
-      ) RETURNING id, tfa_secret;
-      `);
+    if (selectQueryResult.length === 1) return selectQueryResult[0];
+    else if (selectQueryResult.length === 0) return null;
+  }
 
-      if (insertQueryResult.length === 1) {
-        return insertQueryResult[0];
-      } else {
-        console.error(
-          `Failed to create user by (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}')`,
-        );
-        throw new BadRequestException('Failed to create oauth user');
-      }
-    } else {
-      console.error(
-        `Wrong user's oauth data (oauth_type = '${oauth_type}', oauth_id = '${oauth_id}'): makes ${selectQueryResult.length} query results`,
+  async createUserByOAuth(
+    oauth_type: string,
+    oauth_id: string,
+  ): Promise<{ id: string; tfa_secret: string }> {
+    const insertQueryResult = await this.databaseService.executeQuery(`
+    INSERT INTO ${env.database.schema}.user(
+      nickname,
+      oauth_id,
+      oauth_type
+    ) VALUES (
+      '${oauth_type}-${oauth_id}',
+      '${oauth_id}',
+      '${oauth_type}'
+    ) RETURNING id, tfa_secret;
+    `);
+
+    if (insertQueryResult.length === 1) return insertQueryResult[0];
+    else
+      throw new ConflictException(
+        `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
       );
-      throw new BadRequestException('wrong data from oauth');
-    }
   }
 
   async getUsers(
@@ -129,7 +126,7 @@ export class UsersService {
             rank_score DESC
         ) rank
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
@@ -142,7 +139,7 @@ export class UsersService {
       SELECT
         id
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = '${nickname}'
       `);
@@ -150,7 +147,7 @@ export class UsersService {
     if (existingUser.length) return null;
     const users = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.user(
+        ${env.database.schema}.user(
           nickname,
           oauth_id,
           oauth_type
@@ -170,7 +167,7 @@ export class UsersService {
       SELECT
         id
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         nickname = ($1);
     `,
@@ -181,7 +178,7 @@ export class UsersService {
     const array = await this.databaseService.executeQuery(
       `
       UPDATE
-        ${schema}.user
+        ${env.database.schema}.user
       SET
         nickname = ($1)
       WHERE
@@ -193,19 +190,44 @@ export class UsersService {
     return array.length ? true : null;
   }
 
+  async getSecret(user_id: string): Promise<string> {
+    const selectQuery = await this.databaseService.executeQuery(`
+      SELECT
+        tfa_secret
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${+user_id}
+    `);
+
+    if (selectQuery.length === 1) return selectQuery[0].tfa_secret;
+    else throw new ConflictException(`No user with { user_id: ${user_id} }`);
+  }
+
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const queryResult = await this.databaseService.executeQuery(
+      `UPDATE ${
+        env.database.schema
+      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+    );
+
+    if (queryResult.length === 1) return true;
+    else return false;
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.friend( my_id, friend_id )
+      INSERT INTO ${env.database.schema}.friend( my_id, friend_id )
       VALUES
         (
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${friend_id} )
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} ),
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${friend_id} )
         ),
         (
-          ( SELECT id from ${schema}.user WHERE id = ${friend_id} ),
-          ( SELECT id from ${schema}.user WHERE id = ${user_id} )
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${friend_id} ),
+          ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} )
         )
       ON CONFLICT
         ON CONSTRAINT friend_pk
@@ -220,7 +242,7 @@ export class UsersService {
       throw new BadRequestException('One cannot have themself as a friend');
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.friend f
+        ${env.database.schema}.friend f
       WHERE
         ( f.my_id = ${user_id} AND f.friend_id = ${friend_id} )
         OR
@@ -240,9 +262,9 @@ export class UsersService {
         rank_score,
         site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       INNER JOIN
-        ${schema}.friend f
+        ${env.database.schema}.friend f
           ON
         u.id = f.friend_id
       WHERE f.my_id = '${id}';
@@ -253,11 +275,11 @@ export class UsersService {
     if (user_id === black_id)
       throw new BadRequestException('One cannot block themself');
     const array: Array<User> = await this.databaseService.executeQuery(`
-      INSERT INTO ${schema}.block( blocker_id, blocked_id )
+      INSERT INTO ${env.database.schema}.block( blocker_id, blocked_id )
       VALUES
       (
-        ( SELECT id from ${schema}.user WHERE id = ${user_id} ),
-        ( SELECT id from ${schema}.user WHERE id = ${black_id} )
+        ( SELECT id from ${env.database.schema}.user WHERE id = ${user_id} ),
+        ( SELECT id from ${env.database.schema}.user WHERE id = ${black_id} )
       )
       ON CONFLICT
         ON CONSTRAINT block_pk
@@ -277,7 +299,7 @@ export class UsersService {
 
     const array: Array<User> = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.block b
+        ${env.database.schema}.block b
       WHERE
         ( b.blocker_id = ${user_id} AND b.blocked_id = ${black_id} )
       RETURNING *;
@@ -300,11 +322,11 @@ export class UsersService {
         rank_score,
         site_role
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}'
       INNER JOIN
-        id ON ${schema}.user.id = ${schema}.friend.my_id;
+        id ON ${env.database.schema}.user.id = ${env.database.schema}.friend.my_id;
     `);
   }
 
@@ -314,7 +336,7 @@ export class UsersService {
         SELECT
           blocked_id id
         FROM
-          ${schema}.block
+          ${env.database.schema}.block
         WHERE
           blocker_id = ${id}
       )
@@ -330,7 +352,7 @@ export class UsersService {
             u.rank_score DESC
         ) rank
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       INNER JOIN
         b
       ON
@@ -355,9 +377,9 @@ export class UsersService {
         END
           AS is_private
       FROM
-        ${schema}.channel c
+        ${env.database.schema}.channel c
       INNER JOIN
-        ${schema}.channel_user cu
+        ${env.database.schema}.channel_user cu
           ON
             cu.user_id = '${id}'
               AND
@@ -372,7 +394,7 @@ export class UsersService {
       SELECT
         channel_id
       FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         user_id = '${id}'
     `);
@@ -385,7 +407,7 @@ export class UsersService {
       SELECT
         channel_role
       FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         user_id = '${id}';
     `);
@@ -402,7 +424,7 @@ export class UsersService {
       SELECT
         site_role
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = '${id}';
     `);
@@ -432,7 +454,7 @@ export class UsersService {
       return false;
     const result: any = await this.databaseService.executeQuery(
       `
-      UPDATE ${schema}.user
+      UPDATE ${env.database.schema}.user
         SET
         site_role
           =
