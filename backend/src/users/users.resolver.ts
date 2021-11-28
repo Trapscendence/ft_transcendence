@@ -1,5 +1,4 @@
 import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { UseGuards } from '@nestjs/common';
 import {
   Query,
   Args,
@@ -193,12 +192,8 @@ export class UsersResolver {
     return await this.usersService.getAvatar(id);
   }
 
-  @ResolveField('achievement', (returns) => [Achievement], { nullable: true })
-  async getAchieved(
-    @Parent() user: User,
-    @Args('user_id', { nullable: true }) user_id: string,
-  ): Promise<Achievement[]> {
-    if (user_id) return await this.usersService.getAchieved(user_id);
+  @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
+  async getAchieved(@Parent() user: User): Promise<Achievement[]> {
     return await this.usersService.getAchieved(user.id);
   }
 

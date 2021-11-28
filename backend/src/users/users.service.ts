@@ -473,7 +473,7 @@ export class UsersService {
       SELECT
         avatar
       FROM
-        ${schema}.user
+        ${env.database.schema}.user
       WHERE
         id = ${user_id}
     `);
@@ -510,7 +510,7 @@ export class UsersService {
               .executeQuery(
                 `
               UPDATE
-                ${schema}.user
+                ${env.database.schema}.user
               SET
                 avatar = ($1)
               WHERE
@@ -536,20 +536,20 @@ export class UsersService {
     return await this.databaseService.executeQuery(`
       WITH ad AS (
         SELECT
-          achievement_id id
+          achievement_id id,
           time_stamp time_stamp
         FROM
-          ${schema}.achieved
+          ${env.database.schema}.achieved
         WHERE
           user_id = ${user_id}
       )
       SELECT
-        am.id
-        am.name
-        am.icon
+        am.id,
+        am.name,
+        am.icon,
         ad.time_stamp
       FROM
-        ${schema}.achievement am
+        ${env.database.schema}.achievement am
       INNER JOIN
         ad
       ON
@@ -563,7 +563,7 @@ export class UsersService {
     const array = await this.databaseService.executeQuery(
       `
       INSERT INTO
-        ${schema}.achieved(
+        ${env.database.schema}.achieved(
           user_id,
           achievement_id,
           time_stamp
@@ -572,10 +572,11 @@ export class UsersService {
         (
           ($1),
           ($2),
-          ${new Date().getTime}
+          ${new Date().getTime()}
         )
       ON CONFLICT
-        UNIQUE (user_id, achievement_id)
+        ON CONSTRAINT
+          user_id_achievement_id_unique
       DO NOTHING
       RETURNING *;
     `,

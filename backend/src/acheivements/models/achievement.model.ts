@@ -6,10 +6,7 @@ export class Achievement {
   id: string;
 
   @Field()
-  title: string;
-
-  @Field()
-  content: string;
+  name: string;
 
   @Field((type) => Int)
   date: number;
