@@ -1,5 +1,8 @@
-import { Inject, InternalServerErrorException } from '@nestjs/common';
-import { UseGuards } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Query,
   Args,
@@ -18,12 +21,17 @@ import { UsersService } from './users.service';
 import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/games/models/match.model';
+import { GamesService } from 'src/games/games.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
+    // private readonly gamesService: GamesService,
+    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -141,6 +149,14 @@ export class UsersResolver {
     this.statusService.setStatus(user_id, status);
     return true;
   }
+  // NOTE for test
+  @Mutation((returns) => Boolean)
+  async insertMatchResult(
+    @Args('winner_id', { type: () => ID }) winner_id: string,
+    @Args('loser_id', { type: () => ID }) loser_id: string,
+  ) {
+    this.gamesService.recordMatch(winner_id, loser_id);
+  }
 
   /*
    ** ANCHOR: ResolveField
@@ -175,12 +191,6 @@ export class UsersResolver {
     const { id } = user;
     return this.statusService.getStatus(id);
   }
-  // @ResolveField('match_history', (returns) => [Match])
-  // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
-  //   const { id } = user;
-  //   return await this.matchService
-  // }
-
   /*
    ** ANCHOR: User Subscription
    */
@@ -188,5 +198,21 @@ export class UsersResolver {
   @Subscription((returns) => UserStatus)
   statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`status_of_${user_id}`);
+  }
+
+  @ResolveField('match_history', (returns) => [Match])
+  async getMatchHistory(
+    @Parent() user: User,
+    @Args('limit', { type: () => Int }) limit: number,
+    @Args('offset', { type: () => Int }) offset: number,
+  ): Promise<Match[]> {
+    const { id } = user;
+    return await this.usersService.getMatchHistory(id, limit, offset);
+  }
+
+  @ResolveField('game', (returns) => Game, { nullable: true })
+  async getGame(@Parent() user: User): Promise<Game | null> {
+    const { id } = user;
+    return await this.usersService.getGameByUserId(id);
   }
 }

@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -10,10 +12,17 @@ import { User, UserRole } from './models/user.model';
 import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
+import { GamesService } from 'src/games/games.service';
+import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/games/models/match.model';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    @Inject(forwardRef(() => GamesService))
+    private readonly gamesService: GamesService,
+  ) {}
 
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
@@ -461,5 +470,32 @@ export class UsersService {
       [role, target],
     );
     return !!result;
+  }
+
+  async getGameByUserId(id: string): Promise<Game> {
+    const ret = await this.gamesService.getGameByUserId(id.toString());
+
+    return ret;
+    // return await this.gamesService.getGameByUserId(id);
+  }
+
+  async getMatchHistory(
+    id: string,
+    limit: number,
+    offset: number,
+  ): Promise<Match[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        *
+      FROM
+        ${schema}.match
+      WHERE
+        winner = ${id}
+          OR
+        loser = ${id}
+      ORDER BY
+        time_stamp DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
   }
 }

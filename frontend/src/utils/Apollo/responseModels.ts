@@ -1,5 +1,5 @@
 import { IChannel, IChannelListItem, IChannelNotify } from './models';
-import { UserRole } from './schemaEnums';
+import { RegisterNotifyType, UserRole } from './schemaEnums';
 
 export interface SubscribeChannelResponse {
   subscribeChannel: IChannelNotify;
@@ -79,4 +79,13 @@ export interface DelegateUserOnChannelResponse {
 
 export interface RelegateUserOnChannelResponse {
   relegateUserOnChannel: boolean;
+}
+
+export interface SubscribeRegisterResponse {
+  // subscribeMatch: { id: string };
+  subscribeRegister: {
+    type: RegisterNotifyType;
+    game_id: string;
+    custom_host_nickname?: string;
+  };
 }

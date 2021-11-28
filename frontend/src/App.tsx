@@ -8,6 +8,8 @@ import Admin from './components/Admin';
 import ChannelList from './components/ChannelList';
 import LoadingBackdrop from './components/commons/LoadingBackdrop';
 import RestrictRoute from './components/commons/RestrictRoute';
+import Game from './components/Game';
+import ObserveGame from './components/Game/ObserveGame';
 import Home from './components/Home';
 import Login from './components/Login';
 import LoginTotp from './components/LoginTotp';
@@ -41,6 +43,8 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/setting" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
         <RestrictRoute exact path="/admin" component={Admin} />
+        <Route exact path="/game" component={Game} />
+        <Route exact path="/observe" component={ObserveGame} />
       </Switch>
     </BrowserRouter>
   );

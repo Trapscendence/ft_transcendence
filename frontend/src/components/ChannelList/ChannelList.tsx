@@ -13,13 +13,14 @@ export default function ChannelList(): JSX.Element {
   const { data, loading, error, refetch } =
     useQuery<GetMyChannelResponse>(GET_MY_CHANNEL);
 
+  if (loading) return <LoadingBackdrop loading={loading} />;
+
   if (data?.user?.channel)
     return <Channel channel={data.user.channel} channelRefetch={refetch} />;
 
   return (
     <>
       {error && <ErrorAlert name="ChannelList" error={error} />}
-      {loading && <LoadingBackdrop loading={loading} />}
       <ChannelListHeader />
       <Divider sx={{ my: 2, mx: -3 }} />
       <ChannelListContents />
