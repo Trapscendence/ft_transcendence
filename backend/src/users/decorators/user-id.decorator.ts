@@ -14,7 +14,6 @@ export const UserID = createParamDecorator(
     } else if (context.getType<GqlContextType>() === 'graphql') {
       uid = GqlExecutionContext.create(context).getContext().req.session.uid;
     }
-
     if (uid === undefined) throw new UnauthorizedException();
     else return uid;
   },

@@ -14,12 +14,17 @@ import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/matchs/match.model';
+import { HttpService } from '@nestjs/axios';
+import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 
 @Injectable()
 export class UsersService {
   constructor(
     private databaseService: DatabaseService,
-    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
+    @Inject(forwardRef(() => GamesService))
+    private readonly gamesService: GamesService,
+    private readonly httpService: HttpService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -132,6 +137,89 @@ export class UsersService {
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
+  }
+
+  async createUser(nickname: string): Promise<User | null> {
+    // Deprecated
+    nickname = sqlEscaper(nickname);
+    const existingUser = await this.databaseService.executeQuery(`
+      SELECT
+        id
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        nickname = '${nickname}'
+      `);
+
+    if (existingUser.length) return null;
+    const users = await this.databaseService.executeQuery(`
+      INSERT INTO
+        ${env.database.schema}.user(
+          nickname,
+          oauth_id,
+          oauth_type
+        )
+      VALUES (
+        '${nickname}',
+        'mock_id', /* 적절한 변환 필요 */
+        'FORTYTWO' )
+      RETURNING *;
+    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
+    return users[0];
+  }
+
+  async setNickname(user_id: string, nickname: string): Promise<boolean> {
+    const existence = await this.databaseService.executeQuery(
+      `
+      SELECT
+        id
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        nickname = ($1);
+    `,
+      [nickname],
+    );
+    if (existence.length) return false;
+
+    const array = await this.databaseService.executeQuery(
+      `
+      UPDATE
+        ${env.database.schema}.user
+      SET
+        nickname = ($1)
+      WHERE
+        id = ($2)
+      RETURNING *;
+    `,
+      [nickname, user_id],
+    );
+    return array.length ? true : null;
+  }
+
+  async getSecret(user_id: string): Promise<string> {
+    const selectQuery = await this.databaseService.executeQuery(`
+      SELECT
+        tfa_secret
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${+user_id}
+    `);
+
+    if (selectQuery.length === 1) return selectQuery[0].tfa_secret;
+    else throw new ConflictException(`No user with { user_id: ${user_id} }`);
+  }
+
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const queryResult = await this.databaseService.executeQuery(
+      `UPDATE ${
+        env.database.schema
+      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+    );
+
+    if (queryResult.length === 1) return true;
+    else return false;
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
@@ -251,24 +339,31 @@ export class UsersService {
 
   async getBlackList(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
+      WITH b as (
+        SELECT
+          blocked_id id
+        FROM
+          ${env.database.schema}.block
+        WHERE
+          blocker_id = ${id}
+      )
       SELECT
-        id,
-        nickname,
-        avatar,
-        status_message,
-        rank_score,
-        site_role
+        u.id,
+        u.nickname,
+        u.avatar,
+        u.status_message,
+        u.rank_score,
+        u.site_role,
+        DENSE_RANK() OVER (
+          ORDER BY
+            u.rank_score DESC
+        ) rank
       FROM
         ${env.database.schema}.user u
-      WHERE
-          id = (
-            SELECT
-              blocked_id
-            FROM
-              ${env.database.schema}.block b
-            WHERE
-              blocker_id = ${id}
-          )
+      INNER JOIN
+        b
+      ON
+        u.id = b.id;
     `);
   }
 
@@ -350,10 +445,177 @@ export class UsersService {
     }
   }
 
+  async setSiteRole(
+    setter: string,
+    target: string,
+    role: UserRole,
+  ): Promise<boolean> {
+    const setter_role = await this.getSiteRole(setter);
+    const target_role = await this.getSiteRole(target);
+    if (
+      setter_role === 'USER' ||
+      setter_role === target_role ||
+      (setter_role === 'ADMIN' && target_role === 'OWNER') ||
+      (setter_role !== 'ADMIN' && role === 'OWNER')
+    )
+      return false;
+    const result: any = await this.databaseService.executeQuery(
+      `
+      UPDATE ${env.database.schema}.user
+        SET
+        site_role
+          =
+        ($1)
+      WHERE
+        id = ($2)
+      RETURNING *;
+    `,
+      [role, target],
+    );
+    return !!result;
+  }
+
   async getGameByUserId(id: string): Promise<Game> {
     const ret = await this.gamesService.getGameByUserId(id.toString());
 
     return ret;
     // return await this.gamesService.getGameByUserId(id);
+  }
+
+  async getMatchHistory(
+    id: string,
+    limit: number,
+    offset: number,
+  ): Promise<Match[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        *
+      FROM
+        ${env.database.schema}.match
+      WHERE
+        winner = ${id}
+          OR
+        loser = ${id}
+      ORDER BY
+        time_stamp DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+  }
+
+  async getAvatar(user_id: string): Promise<string> {
+    const array = await this.databaseService.executeQuery(`
+      SELECT
+        avatar
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${user_id}
+    `);
+    if (!array.length) return null;
+    const [{ uuid }] = array;
+    if (!uuid) return null;
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .get(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/storage/${uuid}`,
+        )
+        .subscribe({
+          next(axiosResponse: AxiosResponse) {
+            resolve(axiosResponse.data as string);
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
+  }
+
+  async setAvatar(user_id: string, image: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .post(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/upload`,
+          image,
+        )
+        .subscribe({
+          next: async (axiosResponse: AxiosResponse) => {
+            this.databaseService
+              .executeQuery(
+                `
+              UPDATE
+                ${env.database.schema}.user
+              SET
+                avatar = ($1)
+              WHERE
+                id = ${user_id}
+              RETURNING *;
+          `,
+                [image],
+              )
+              .then((array) => {
+                if (!array.length) resolve(false);
+                resolve(true);
+              });
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
+  }
+
+  async getAchieved(user_id: string) {
+    return await this.databaseService.executeQuery(`
+      WITH ad AS (
+        SELECT
+          achievement_id id,
+          time_stamp time_stamp
+        FROM
+          ${env.database.schema}.achieved
+        WHERE
+          user_id = ${user_id}
+      )
+      SELECT
+        am.id,
+        am.name,
+        am.icon,
+        ad.time_stamp
+      FROM
+        ${env.database.schema}.achievement am
+      INNER JOIN
+        ad
+      ON
+        am.id = ad.id
+      ORDER BY
+        am.id ASC;
+    `);
+  }
+
+  async achieveOne(user_id: string, ach_id: string) {
+    const array = await this.databaseService.executeQuery(
+      `
+      INSERT INTO
+        ${env.database.schema}.achieved(
+          user_id,
+          achievement_id,
+          time_stamp
+        )
+      VALUES
+        (
+          ($1),
+          ($2),
+          ${new Date().getTime()}
+        )
+      ON CONFLICT
+        ON CONSTRAINT
+          user_id_achievement_id_unique
+      DO NOTHING
+      RETURNING *;
+    `,
+      [user_id, ach_id],
+    );
+    return array.length ? true : false;
   }
 }

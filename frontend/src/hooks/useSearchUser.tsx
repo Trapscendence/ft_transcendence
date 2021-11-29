@@ -5,8 +5,18 @@ import { createFilterOptions } from '@mui/material/Autocomplete';
 import { NickName, User, UserData, UsersData } from '../utils/Apollo/User';
 import { GET_USER_BY_NICKNAME } from '../utils/Apollo/UserQuery';
 
+interface UserProfile {
+  nickname: string;
+  id: string;
+  rank: number;
+}
+
+interface UserProfileData {
+  users: UserProfile[];
+}
+
 interface UseSearchUserProps {
-  users: UsersData | undefined;
+  users: UsersData | UserProfileData | undefined;
   setButtonActive: React.Dispatch<React.SetStateAction<boolean>>;
   setInputSpace: React.Dispatch<React.SetStateAction<User>>;
 }
@@ -55,6 +65,7 @@ export default function UseSearchUser({
           size="small"
           fullWidth
         />
+        //TODO 자기자신일경우 button 비활성-
       )}
       filterOptions={filterOptions}
       onInputChange={(event, value) =>

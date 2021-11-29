@@ -10,7 +10,7 @@ export interface LeaveChannelResponse {
 }
 
 export interface GetMyBlacklistResponse {
-  user: { blacklist: { id: string }[] };
+  user: { blacklist: { id: string; nickname: string }[] };
 }
 
 export interface AddChannelResponse {
