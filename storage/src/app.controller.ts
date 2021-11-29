@@ -1,6 +1,8 @@
 import {
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Res,
   Session,
@@ -34,5 +36,11 @@ export class AppController {
     if (await this.appService.setUserProfileUrl(session.uid, file.filename))
       res.status(201).end();
     else res.status(500).end();
+  }
+
+  @Delete('/delete/:filename')
+  async deleteFile(@Param('filename') filename: string, @Res() res: Response) {
+    if (this.appService.deleteFile(filename)) res.status(204).end();
+    else res.status(404).end();
   }
 }
