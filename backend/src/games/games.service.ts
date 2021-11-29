@@ -315,7 +315,7 @@ export class GamesService {
           : [game.right_player, game.left_player];
 
       this.endGame(game, winner);
-      this.recordMatch(winner.id, loser.id);
+      this.recordMatch(winner.id, loser.id, false); // 일단 false
       return true;
     } // NOTE: 일단은 3점 얻으면 승리
 
@@ -397,8 +397,10 @@ export class GamesService {
     return true;
   } // NOTE: target(right_player)만 join 혹은 notJoin을 한다?
 
-  async recordMatch(winner_id: string, loser_id: string) {
-    this.databaseService.executeQuery(
+  async recordMatch(winner_id: string, loser_id: string, ladder: boolean) {
+    const points = ladder ? 5 : 0;
+
+    const matchResult = await this.databaseService.executeQuery(
       `
     INSERT INTO ${env.database.schema}.match(
       winner,
@@ -414,10 +416,32 @@ export class GamesService {
       ($3),
       ($4),
       ($5),
-      false
+      ($6)
     );
+    returning *;
   `,
-      [winner_id, loser_id, 5, 5, new Date().getTime],
+      [winner_id, loser_id, points, points, new Date().getTime, ladder],
     );
+    if (!matchResult.length) return false;
+    if (points) {
+      this.databaseService.executeQuery(
+        `
+        UPDATE
+          ${env.database.schema}.user
+        SET
+          rank_score = rank_score + 5
+        WHERE
+          id = ($1);
+        UPDATE
+          ${env.database.schema}.user
+        SET
+          rank_score = rank_score - 5
+        WHERE
+          id = ($2);
+      `,
+        [winner_id, loser_id],
+      );
+    }
+    return true;
   }
 }

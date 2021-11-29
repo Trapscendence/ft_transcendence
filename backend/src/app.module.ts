@@ -16,7 +16,6 @@ import { TfaGuard } from './auth/guards/tfa.guard';
 import { StatusModule } from './status/status.module';
 import { StatusService } from './status/status.service';
 import { graphqlFactory } from './utils/factories/graphql.factory';
-import { MatchsModule } from './matchs/matchs.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { MatchsModule } from './matchs/matchs.module';
     MessageModule,
     ChannelsModule,
     GamesModule,
-    MatchsModule,
     AchievementsModule,
     PubSubModule,
     AuthModule,

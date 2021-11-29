@@ -171,8 +171,9 @@ export class UsersResolver {
   async insertMatchResult(
     @Args('winner_id', { type: () => ID }) winner_id: string,
     @Args('loser_id', { type: () => ID }) loser_id: string,
-  ) {
-    this.gamesService.recordMatch(winner_id, loser_id);
+    @Args('ladder') ladder: boolean,
+  ): Promise<boolean> {
+    return await this.gamesService.recordMatch(winner_id, loser_id, ladder);
   }
 
   /*
@@ -219,14 +220,6 @@ export class UsersResolver {
     const { id } = user;
     return this.statusService.getStatus(id);
   }
-  /*
-   ** ANCHOR: User Subscription
-   */
-
-  @Subscription((returns) => UserStatus)
-  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
-    return this.pubSub.asyncIterator(`status_of_${user_id}`);
-  }
 
   @ResolveField('match_history', (returns) => [Match])
   async getMatchHistory(
@@ -242,5 +235,14 @@ export class UsersResolver {
   async getGame(@Parent() user: User): Promise<Game | null> {
     const { id } = user;
     return await this.usersService.getGameByUserId(id);
+  }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
+
+  @Subscription((returns) => UserStatus)
+  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
+    return this.pubSub.asyncIterator(`status_of_${user_id}`);
   }
 }
