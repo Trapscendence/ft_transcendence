@@ -90,9 +90,11 @@ services:
 
   backend:
     environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_HOST=database
+      - POSTGRES_LOCAL_PORT=5432
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
       - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
       - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
@@ -111,7 +113,7 @@ services:
       - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ./migration/migrations:/migrations
+      - ./backend/src:/app/src
 
   storage:
     environment:

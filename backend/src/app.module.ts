@@ -11,7 +11,6 @@ import { MessageModule } from './message/message.module';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { ImageModule } from './image/image.module';
 import { LoginGuard } from './auth/guards/login.guard';
 import { TfaGuard } from './auth/guards/tfa.guard';
 import { StatusModule } from './status/status.module';
