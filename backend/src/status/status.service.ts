@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { GamesService } from 'src/games/games.service';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserStatus } from 'src/users/models/user.model';
@@ -19,6 +20,7 @@ export class StatusService {
   constructor(
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
     private readonly databaseService: DatabaseService,
+    private readonly gamesService: GamesService,
   ) {
     this.statusContainer = new Map<
       string,
@@ -57,6 +59,7 @@ export class StatusService {
     if (!userId) return;
     const statusObject = this.statusContainer.get(userId);
 
+    this.gamesService.surrenderGameWithUserId(user_id);
     this.databaseService.executeQuery(
       `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}';`,
     );
