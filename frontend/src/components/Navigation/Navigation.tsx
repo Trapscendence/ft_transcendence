@@ -6,13 +6,11 @@ import {
   Home,
   MoreHoriz,
   SettingsApplicationsSharp,
-  VideogameAsset,
 } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
   Box,
   Button,
-  CircularProgress,
   Divider,
   Drawer,
   List,
@@ -27,49 +25,51 @@ import { useHistory, useLocation } from 'react-router';
 
 import { User, UserData } from '../../utils/Apollo/User';
 import { GET_USER } from '../../utils/Apollo/UserQuery';
+import Matching from './Matching';
+
+interface Itabs {
+  [index: string]: number;
+  '/home': number;
+  '/profile/': number;
+  '/rank': number;
+  '/channel': number;
+}
+
+const tabs: Itabs = {
+  '/home': 0,
+  '/profile/': 1,
+  '/rank': 2,
+  '/channel': 3,
+}; // NOTE: 새로고침시 현재 주소에 따라 탭 선택을 활성화하기위해 사용
 
 function Navigation(): JSX.Element {
-  interface Itabs {
-    [index: string]: number;
-    '/home': number;
-    '/profile/': number;
-    '/rank': number;
-    '/channel': number;
-  }
-
-  const tabs: Itabs = {
-    '/home': 0,
-    '/profile/': 1,
-    '/rank': 2,
-    '/channel': 3,
-  };
+  const history = useHistory();
+  const location = useLocation();
 
   const [tabValue, setTabValue] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User>({
     nickname: '',
     id: '',
     avatar: '',
   });
-  const history = useHistory();
-  const location = useLocation();
+  const [open, setOpen] = React.useState(false);
+
+  //TODO useQuery로 내 id 가져오기
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
   useEffect(() => {
     setTabValue(tabs[location.pathname] ?? 0);
   }, []);
+
+  useEffect(() => {
+    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
+  }, [currentUserData]);
 
   const handleChange = (e: React.SyntheticEvent, newValue: number) => {
     const path: string | null = e.currentTarget.getAttribute('aria-label');
     history.push(path as string);
     setTabValue(newValue);
   };
-
-  //TODO useQuery로 내 id 가져오기
-  const { data: currentUserData } = useQuery<UserData>(GET_USER);
-
-  useEffect(() => {
-    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
-  }, [currentUserData]);
 
   const logOut = () => {
     return new Promise(() => {
@@ -88,16 +88,13 @@ function Navigation(): JSX.Element {
     });
   };
 
-  const onClickPlay = () => {
-    setLoading((value) => !value); // NOTE: loading을 사용하는 toggle... 더 나은 상태 작성법이 있나?
-  };
-  const [open, setOpen] = React.useState(false);
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
     console.log(open);
   };
+
   return (
-    <Box>
+    <>
       <Box
         py={1}
         sx={{
@@ -114,13 +111,7 @@ function Navigation(): JSX.Element {
         }}
       >
         <Box>
-          <Tabs
-            value={tabValue}
-            onChange={handleChange}
-            orientation="vertical"
-            // textColor="secondary"
-            // indicatorColor="secondary"
-          >
+          <Tabs value={tabValue} onChange={handleChange} orientation="vertical">
             <Tab aria-label="/home" icon={<Home />} />
             <Tab
               aria-label={'/profile/' + currentUser.id}
@@ -131,45 +122,15 @@ function Navigation(): JSX.Element {
             <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
           </Tabs>
           <Divider />
-          <Box
-            onClick={onClickPlay}
-            sx={{ position: 'relative', cursor: 'pointer' }}
-          >
-            <Tab
-              icon={<VideogameAsset />}
-              // disabled={loading}
-              sx={{ color: loading ? 'text.disabled' : '' }}
-            />
-            {loading && (
-              <CircularProgress
-                // color="secondary"
-                size={35}
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  marginTop: '-17px',
-                  marginLeft: '-17px',
-                  zIndex: 1,
-                }}
-              />
-            )}
-          </Box>
+          <Matching />
         </Box>
         <Stack>
-          <Tabs
-            // onChange={handleChange}
-            orientation="vertical"
-            textColor="secondary"
-            indicatorColor="secondary"
-          >
-            <Tab
-              aria-label="auth/logout"
-              icon={<LogoutIcon />}
-              onClick={logOut}
-            />
-            <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
-          </Tabs>
+          <Tab
+            aria-label="auth/logout"
+            icon={<LogoutIcon />}
+            onClick={logOut}
+          />
+          <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
         </Stack>
 
         <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
@@ -227,7 +188,7 @@ function Navigation(): JSX.Element {
           </Stack>
         </Drawer>
       </Box>
-    </Box>
+    </>
   );
 }
 
