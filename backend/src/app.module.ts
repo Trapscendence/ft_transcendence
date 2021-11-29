@@ -5,7 +5,8 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { ChannelsModule } from './channels/channels.module';
 import { GraphQLModule } from '@nestjs/graphql';
-import { AchivementsModule } from './achivements/achivements.module';
+import { MatchsModule } from './matchs/matchs.module';
+import { AchievementsModule } from './acheivements/acheivements.module';
 import { MessageModule } from './message/message.module';
 import { PubSubModule } from './pubsub.module';
 import { AuthModule } from './auth/auth.module';
@@ -28,10 +29,11 @@ import { graphqlFactory } from './utils/factories/graphql.factory';
     UsersModule,
     MessageModule,
     ChannelsModule,
-    AchivementsModule,
+    GamesModule,
+    MatchsModule,
+    AchievementsModule,
     PubSubModule,
     AuthModule,
-    GamesModule,
   ],
   controllers: [AppController],
   providers: [

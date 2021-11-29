@@ -18,6 +18,7 @@ import { Channel } from 'src/channels/models/channel.model';
 import { UserID } from 'src/users/decorators/user-id.decorator';
 import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
+import { Achievement } from 'src/acheivements/models/achievement.model';
 import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
@@ -141,6 +142,22 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
+  @Mutation((returns) => String)
+  setAvatar(
+    @UserID() user_id: string,
+    @Args('file') file: string,
+  ): Promise<boolean> {
+    return this.usersService.setAvatar(user_id, file);
+  }
+
+  @Mutation((returns) => Boolean)
+  async achieveOne(
+    @UserID() user_id: string,
+    @Args('achievement_id') achievement_id: string,
+  ): Promise<boolean> {
+    return await this.usersService.achieveOne(user_id, achievement_id);
+  }
+
   @Mutation((returns) => Boolean)
   setStatus(
     @UserID() user_id: string,
@@ -184,6 +201,17 @@ export class UsersResolver {
   async getChannelRole(@Parent() user: User): Promise<UserRole | null> {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
+  }
+
+  @ResolveField('avatar', (returns) => String, { nullable: true })
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
+  @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
+  async getAchieved(@Parent() user: User): Promise<Achievement[]> {
+    return await this.usersService.getAchieved(user.id);
   }
 
   @ResolveField('status', (returns) => UserStatus)
