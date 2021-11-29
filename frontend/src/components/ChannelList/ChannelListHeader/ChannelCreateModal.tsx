@@ -7,6 +7,7 @@ import {
   Modal,
   TextField,
 } from '@mui/material';
+import { useState } from 'react';
 
 import { useInput } from '../../../hooks/useInput';
 import { ADD_CHANNEL, GET_MY_CHANNEL } from '../../../utils/Apollo/gqls';
@@ -26,6 +27,7 @@ export default function ChannelCreateModal({
 }: ChannelCreateModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
+  const [titleError, setTitleError] = useState(false);
 
   const [addChannelFunc, { loading, error }] = useMutation<AddChannelResponse>(
     ADD_CHANNEL,
@@ -36,6 +38,12 @@ export default function ChannelCreateModal({
   );
 
   const onClickBtn = async (): Promise<void> => {
+    if (!title.length) {
+      // displayAlertMsg('Please enter the title.');
+      setTitleError(true);
+      return;
+    }
+
     await handleError(addChannelFunc);
     handleClose();
     setTitle('');
@@ -72,6 +80,8 @@ export default function ChannelCreateModal({
               size="small"
               margin="dense"
               sx={{ width: '100%' }}
+              error={titleError}
+              helperText={titleError ? 'Title must be entered.' : null}
               value={title}
               onChange={onChangeTitle}
             />
