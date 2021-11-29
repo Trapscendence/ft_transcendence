@@ -6,9 +6,10 @@ import { AuthService } from './auth.service';
 import { FTStrategy } from './strategies/ft.strategy';
 import { AuthResolver } from './auth.resolver';
 import { DatabaseModule } from 'src/database/database.module';
+import { StatusModule } from 'src/status/status.module';
 
 @Module({
-  imports: [UsersModule, DatabaseModule, PassportModule],
+  imports: [UsersModule, DatabaseModule, PassportModule, StatusModule],
   controllers: [AuthController],
   providers: [AuthService, FTStrategy, AuthResolver],
 })
