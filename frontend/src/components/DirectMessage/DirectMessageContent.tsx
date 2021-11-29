@@ -1,6 +1,11 @@
 /* eslint-disable */
 
-import { useLazyQuery, useQuery, useSubscription } from '@apollo/client';
+import {
+  useMutation,
+  useLazyQuery,
+  useQuery,
+  useSubscription,
+} from '@apollo/client';
 // import LoadingButton from '@mui/lab/LoadingButton';
 import { Box, Button, Divider, Stack, Typography } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,7 +16,11 @@ import {
   Message,
   ReceiveMessageData,
 } from '../../utils/Apollo/Message';
-import { GET_DM, RECEIVE_MESSAGE } from '../../utils/Apollo/MessageQuery';
+import {
+  GET_DM,
+  RECEIVE_MESSAGE,
+  UPDATE_CHECK_DATE,
+} from '../../utils/Apollo/MessageQuery';
 import DMContentBox from './DmContentBox';
 import SendNewMessage from './SendNewMessage';
 
@@ -51,9 +60,16 @@ DirectMessageContentProps): JSX.Element {
     console.log(offset, limit);
   };
   //ANCHOR latestDM 가져오기 -------------------------------------
+  const [updateCheckdate] =
+    useMutation<{ other_id: string }>(UPDATE_CHECK_DATE);
 
   useEffect(() => {
     if (data?.DM?.messages) {
+      updateCheckdate({
+        variables: {
+          other_id: other_id,
+        },
+      });
       subscribeToMore({
         document: RECEIVE_MESSAGE,
         variables: {

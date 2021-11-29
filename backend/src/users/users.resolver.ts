@@ -1,4 +1,8 @@
-import { Inject } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   Query,
   Args,
@@ -14,15 +18,21 @@ import { Channel } from 'src/channels/models/channel.model';
 import { UserID } from 'src/users/decorators/user-id.decorator';
 import { User, UserRole, UserStatus } from './models/user.model';
 import { UsersService } from './users.service';
+import { Achievement } from 'src/acheivements/models/achievement.model';
 import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
+import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/matchs/match.model';
+import { GamesService } from 'src/games/games.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
+    // private readonly gamesService: GamesService,
+    @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
@@ -41,7 +51,6 @@ export class UsersResolver {
     @Args('id', { type: () => ID, nullable: true }) id?: string,
     @Args('nickname', { nullable: true }) nickname?: string,
   ): Promise<User | null> {
-    console.log(';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', user_id);
     if (id && nickname)
       throw new Error('You must put exactly one parameter to the query.');
     if (id) return await this.usersService.getUserById(id);
@@ -56,6 +65,15 @@ export class UsersResolver {
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
+  }
+
+  @Mutation((returns) => Boolean)
+  async deleteAvatar(@UserID() user_id: string): Promise<Boolean> {
+    if (await this.usersService.deleteAvatar(user_id)) return true;
+    else
+      throw new InternalServerErrorException(
+        `Error occured during delete avatar (id: ${user_id})`,
+      );
   }
 
   @Mutation((returns) => ID)
@@ -124,12 +142,37 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
+  @Mutation((returns) => String)
+  setAvatar(
+    @UserID() user_id: string,
+    @Args('file') file: string,
+  ): Promise<boolean> {
+    return this.usersService.setAvatar(user_id, file);
+  }
+
+  @Mutation((returns) => Boolean)
+  async achieveOne(
+    @UserID() user_id: string,
+    @Args('achievement_id') achievement_id: string,
+  ): Promise<boolean> {
+    return await this.usersService.achieveOne(user_id, achievement_id);
+  }
+
   @Mutation((returns) => Boolean)
   setStatus(
     @UserID() user_id: string,
     @Args('status', { type: () => UserStatus }) status: UserStatus,
   ): boolean {
-    return this.statusService.setStatus(user_id, status);
+    this.statusService.setStatus(user_id, status);
+    return true;
+  }
+  // NOTE for test
+  @Mutation((returns) => Boolean)
+  async insertMatchResult(
+    @Args('winner_id', { type: () => ID }) winner_id: string,
+    @Args('loser_id', { type: () => ID }) loser_id: string,
+  ) {
+    this.gamesService.recordMatch(winner_id, loser_id);
   }
 
   /*
@@ -160,17 +203,22 @@ export class UsersResolver {
     return await this.usersService.getChannelRole(id);
   }
 
+  @ResolveField('avatar', (returns) => String, { nullable: true })
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
+  @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
+  async getAchieved(@Parent() user: User): Promise<Achievement[]> {
+    return await this.usersService.getAchieved(user.id);
+  }
+
   @ResolveField('status', (returns) => UserStatus)
   getStatus(@Parent() user: User): UserStatus {
     const { id } = user;
     return this.statusService.getStatus(id);
   }
-  // @ResolveField('match_history', (returns) => [Match])
-  // async getMatchHistory(@Parent() user: User): Promise<Match[]> {
-  //   const { id } = user;
-  //   return await this.matchService
-  // }
-
   /*
    ** ANCHOR: User Subscription
    */
@@ -178,5 +226,21 @@ export class UsersResolver {
   @Subscription((returns) => UserStatus)
   statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
     return this.pubSub.asyncIterator(`status_of_${user_id}`);
+  }
+
+  @ResolveField('match_history', (returns) => [Match])
+  async getMatchHistory(
+    @Parent() user: User,
+    @Args('limit', { type: () => Int }) limit: number,
+    @Args('offset', { type: () => Int }) offset: number,
+  ): Promise<Match[]> {
+    const { id } = user;
+    return await this.usersService.getMatchHistory(id, limit, offset);
+  }
+
+  @ResolveField('game', (returns) => Game, { nullable: true })
+  async getGame(@Parent() user: User): Promise<Game | null> {
+    const { id } = user;
+    return await this.usersService.getGameByUserId(id);
   }
 }

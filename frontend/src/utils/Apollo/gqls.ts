@@ -278,3 +278,13 @@ export const SUBSCRIBE_CHANNEL = gql`
     }
   }
 `;
+
+export const SUBSCRIBE_REGISTER = gql`
+  subscription SubscribeRegister {
+    subscribeRegister {
+      type
+      game_id
+      custom_host_nickname
+    }
+  }
+`;
