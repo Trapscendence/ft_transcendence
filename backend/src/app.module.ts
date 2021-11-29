@@ -70,6 +70,7 @@ function getSession(sid): Promise<any> {
     AchivementsModule,
     PubSubModule,
     AuthModule,
+    GamesModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: SessionGuard }, AppService],
