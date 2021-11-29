@@ -22,7 +22,7 @@ export interface Match {
 }
 
 export interface MatchData {
-  user: { id: string; nickname: string; Match: Match[] };
+  user: { id: string; nickname: string; match_history: Match[] };
 }
 export interface UsersData {
   users: User[];

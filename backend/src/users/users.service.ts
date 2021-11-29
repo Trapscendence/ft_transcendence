@@ -14,7 +14,7 @@ import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/games/models/match.model';
+import { Match } from 'src/matchs/match.model';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 

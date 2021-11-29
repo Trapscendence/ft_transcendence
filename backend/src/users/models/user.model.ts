@@ -8,7 +8,7 @@ import {
 } from '@nestjs/graphql';
 import { Channel } from 'src/channels/models/channel.model';
 import { Achievement } from '../../acheivements/models/achievement.model';
-import { Match } from '../../matchs/models/match.model';
+import { Match } from '../../matchs/match.model';
 
 export enum UserStatus {
   ONLINE = 'ONLINE',

@@ -54,7 +54,17 @@ export const GET_MATCH_BY_NICKNAME = gql`
     user(nickname: $nickname) {
       id
       nickname
-      match_history(offset: $offset, limit: $limit)
+      match_history(offset: $offset, limit: $limit) {
+
+      winner {
+        nickname
+      }
+      winner_points
+      loser {
+        nickname
+      }
+      loser_points
+      }
     }
   }
 `;

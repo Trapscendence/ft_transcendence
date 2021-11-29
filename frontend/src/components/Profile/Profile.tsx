@@ -90,10 +90,10 @@ function Profile(): JSX.Element {
       },
     }
   );
-  console.log(matchData);
 
   //---------------------------------------------------
 
+  console.log(matchData?.user)
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
 
   return (
@@ -176,7 +176,7 @@ function Profile(): JSX.Element {
           전적
         </Typography>
         <Paper style={paperStyle}>
-          {matchData?.user.Match.map((match) => (
+          {matchData?.user?.match_history?.map((match) => (
             <Stack>
               <Typography>
                 승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
