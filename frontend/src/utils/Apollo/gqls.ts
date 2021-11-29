@@ -42,8 +42,8 @@ export const GET_MY_CHANNEL = gql`
         participants {
           id
           nickname
-          # avatar
-          # status
+          avatar
+          status
         }
         banned_users {
           id
