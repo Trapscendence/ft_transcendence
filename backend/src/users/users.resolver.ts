@@ -13,14 +13,12 @@ import {
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { Channel } from 'src/channels/models/channel.model';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
 import { User, UserRole } from './models/user.model';
 import { UsersService } from './users.service';
 import { UserID } from './decorators/user-id.decorator';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
 
-@UseGuards(JwtAuthGuard)
 @Resolver((of) => User)
 export class UsersResolver {
   constructor(
@@ -61,9 +59,17 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
-  @Mutation((returns) => User, { nullable: true })
-  async createUser(@Args('nickname') nickname: string): Promise<User | null> {
-    return await this.usersService.createUser(nickname);
+  @Mutation((returns) => ID)
+  async createDummyUser(): Promise<string> {
+    while (true) {
+      try {
+        const { id } = await this.usersService.createUserByOAuth(
+          'DUMMY',
+          `${Math.floor(Math.random() * 100000)}`,
+        );
+        return id;
+      } catch (err) {}
+    }
   }
 
   /*

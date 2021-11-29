@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
-import { JwtDTO } from 'src/auth/dto/jwt.dto';
 import { UserRole } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { CHANNEL_ROLES_KEY } from '../decorators/channel-roles.decorator';
@@ -13,7 +12,9 @@ export class ChannelRoleGuard implements CanActivate {
     private readonly reflector: Reflector,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  async canActivate(
+    context: ExecutionContext & { req: any },
+  ): Promise<boolean> {
     const requiredRoles: UserRole[] = this.reflector.get<UserRole[]>(
       CHANNEL_ROLES_KEY,
       context.getHandler(),
@@ -23,20 +24,22 @@ export class ChannelRoleGuard implements CanActivate {
       return true;
     }
 
-    let user: JwtDTO;
+    let session: { uid: string };
 
     if (context.getType() === 'http') {
-      user = context.switchToHttp().getRequest().user;
+      session = context.switchToHttp().getRequest().session;
     } else if (context.getType<GqlContextType>() === 'graphql') {
-      user = GqlExecutionContext.create(context).getContext().req.user;
+      session = GqlExecutionContext.create(context).getContext().req.session;
     } else {
       throw `Unexpected context type: ${context.getType()}`;
     }
 
     const userChannelRole: UserRole = await this.usersService.getChannelRole(
-      user.id,
+      session.uid,
     );
-    const userSiteRole: UserRole = await this.usersService.getSiteRole(user.id);
+    const userSiteRole: UserRole = await this.usersService.getSiteRole(
+      session.uid,
+    );
 
     if (userSiteRole === UserRole.OWNER || userSiteRole === UserRole.ADMIN) {
       return true;

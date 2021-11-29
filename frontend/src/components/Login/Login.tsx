@@ -11,26 +11,12 @@ function Login(): JSX.Element {
 
   const [buttonsEnabledState, setButtonsEnabledState] = useState<boolean>(true);
 
-  const onClickLoginButton = (oauthStrategy: 'google' | '42'): void => {
-    if (
-      process.env.REACT_APP_BACKEND_HOST &&
-      process.env.REACT_APP_BACKEND_PORT
-    ) {
-      setButtonsEnabledState(false);
-
-      const loginURI = `http://${process.env.REACT_APP_BACKEND_HOST}:${process.env.REACT_APP_BACKEND_PORT}/auth/login/${oauthStrategy}`;
-      // popupWindow = popupWindowCenter(
-      //   loginURI,
-      //   `Login with ${oauthStrategy}`,
-      //   400,
-      //   800
-      // );
-      location.replace(loginURI);
-    } else {
-      throw `Undefined environment variables: ${
-        process.env.REACT_APP_BACKEND_HOST ? '' : 'REACT_APP_BACKEND_HOST'
-      } ${process.env.REACT_APP_BACKEND_PORT ? '' : 'REACT_APP_BACKEND_PORT'}`;
-    }
+  const onClickLoginButton = (
+    oauthStrategy: 'google' | '42' | 'dummy'
+  ): void => {
+    setButtonsEnabledState(false);
+    const loginURI = `/api/auth/login/${oauthStrategy}`;
+    location.replace(loginURI);
   };
 
   if (userId) return <Redirect to="/" />;
@@ -63,6 +49,16 @@ function Login(): JSX.Element {
           sx={{ margin: '5px 0' }}
         >
           Log in with Google
+        </Button>
+
+        <Button
+          variant="contained"
+          color="inherit"
+          disabled={!buttonsEnabledState}
+          onClick={() => onClickLoginButton('dummy')}
+          sx={{ margin: '5px 0' }}
+        >
+          Dummy login for test
         </Button>
       </Box>
     </Box>

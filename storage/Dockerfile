@@ -1,4 +1,4 @@
-FROM node:17-alpine3.12
+FROM node:16-alpine3.12
 
 WORKDIR /app
 
@@ -10,5 +10,5 @@ RUN npm i
 
 COPY . ./
 
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["npm"]
 CMD ["run", "start:dev"]
