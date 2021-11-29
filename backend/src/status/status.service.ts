@@ -42,8 +42,13 @@ export class StatusService {
     return this.statusContainer.get(userId)?.status ?? UserStatus.OFFLINE;
   }
 
-  newConnection(webSocketKey: string, userId: string, sid: string): void {
-    if (this.statusContainer.has(userId)) this.deleteConnection(webSocketKey);
+  async newConnection(
+    webSocketKey: string,
+    userId: string,
+    sid: string,
+  ): Promise<void> {
+    if (this.statusContainer.has(userId))
+      await this.deleteConnection(webSocketKey, userId);
     this.pubSub.publish(`status_of_${userId}`, {
       statusChange: UserStatus.ONLINE,
     });
@@ -54,14 +59,15 @@ export class StatusService {
     this.webSocketKeyContainer.set(webSocketKey, { userId });
   }
 
-  deleteConnection(webSocketKey: string): void {
-    const userId = this.webSocketKeyContainer.get(webSocketKey)?.userId;
+  async deleteConnection(webSocketKey: string, userId: string): Promise<void> {
+    if (!userId) userId = this.webSocketKeyContainer.get(webSocketKey)?.userId;
     if (!userId) return;
     const statusObject = this.statusContainer.get(userId);
+    if (!statusObject) return;
 
     this.gamesService.surrenderGameWithUserId(userId);
-    this.databaseService.executeQuery(
-      `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}';`,
+    await this.databaseService.executeQuery(
+      `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}' RETURNING sid;`,
     );
     this.webSocketKeyContainer.delete(webSocketKey);
     this.statusContainer.delete(userId);
