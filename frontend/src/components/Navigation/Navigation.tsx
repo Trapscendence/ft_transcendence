@@ -27,6 +27,7 @@ import { useHistory, useLocation } from 'react-router';
 
 import { User, UserData } from '../../utils/Apollo/User';
 import { GET_USER } from '../../utils/Apollo/UserQuery';
+import Matching from './Matching';
 
 function Navigation(): JSX.Element {
   interface Itabs {
@@ -88,14 +89,12 @@ function Navigation(): JSX.Element {
     });
   };
 
-  const onClickPlay = () => {
-    setLoading((value) => !value); // NOTE: loading을 사용하는 toggle... 더 나은 상태 작성법이 있나?
-  };
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
     console.log(open);
   };
+
   return (
     <Box>
       <Box
@@ -131,29 +130,8 @@ function Navigation(): JSX.Element {
             <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
           </Tabs>
           <Divider />
-          <Box
-            onClick={onClickPlay}
-            sx={{ position: 'relative', cursor: 'pointer' }}
-          >
-            <Tab
-              icon={<VideogameAsset />}
-              // disabled={loading}
-              sx={{ color: loading ? 'text.disabled' : '' }}
-            />
-            {loading && (
-              <CircularProgress
-                // color="secondary"
-                size={35}
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  marginTop: '-17px',
-                  marginLeft: '-17px',
-                  zIndex: 1,
-                }}
-              />
-            )}
+          <Box>
+            <Matching />
           </Box>
         </Box>
         <Stack>
