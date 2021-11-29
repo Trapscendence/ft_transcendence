@@ -147,6 +147,7 @@ export default function DirectMessage(): JSX.Element {
                 <Box onClick={executeScroll} key={user.id}>
                   <DirectMessageList
                     {...{ selectedIndex, setSelectedIndex, setNewDm }}
+                    avatar={user.avatar}
                     nickname={user.nickname}
                     ID={user.id}
                   />

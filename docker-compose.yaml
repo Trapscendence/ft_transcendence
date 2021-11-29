@@ -16,6 +16,66 @@ services:
   #     - ./certbot/certs:/etc/letsencrypt
   #     - ./certbot/log:/var/log/letsencrypt
 
+  database:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+      DB_NAME: ${DB_NAME}
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+      args:
+        SERVER_HOST: ${SERVER_HOST}
+        SERVER_PORT: ${SERVER_PORT}
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_SCHEMA: ${DB_SCHEMA}
+        BACKEND_DB_USER: ${BACKEND_DB_USER}
+        BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
+        STORAGE_DB_USER: ${STORAGE_DB_USER}
+        STORAGE_DB_PASSWORD: ${STORAGE_DB_PASSWORD}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - default
+    ports:
+      - "5432:5432"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - db_data:/var/lib/postgresql/data
+
+  migration:
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - BACKEND_DB_USER=${BACKEND_DB_USER}
+      - BACKEND_DB_PASSWORD=${BACKEND_DB_PASSWORD}
+      - STORAGE_DB_USER=${STORAGE_DB_USER}
+      - STORAGE_DB_PASSWORD=${STORAGE_DB_PASSWORD}
+    build:
+      context: ./migration
+    networks:
+      - default
+    depends_on:
+      - database
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./migration/migrations:/migrations
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    networks:
+      - default
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+
   frontend:
     environment:
       - REACT_APP_SERVER_HOST=${SERVER_HOST}
@@ -27,30 +87,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./frontend/src:/app/src
-
-  database:
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: /var/lib/postgresql/data
-      DB_NAME: ${DB_NAME}
-    build:
-      context: ./database
-      dockerfile: Dockerfile
-      args:
-        DB_NAME: ${DB_NAME}
-        DB_USER: ${DB_USER}
-        DB_PASSWORD: ${DB_PASSWORD}
-        DB_SCHEMA: ${DB_SCHEMA}
-        BACKEND_DB_USER: ${BACKEND_DB_USER}
-        BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    networks:
-      - default
-    ports:
-      - "5432:5432"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - db_data:/var/lib/postgresql/data
 
   backend:
     environment:
@@ -68,46 +104,39 @@ services:
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
       - SERVER_HOST=${SERVER_HOST}
       - SERVER_PORT=${SERVER_PORT}
-      - JWT_SECRET=${JWT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
     build: ./backend
     networks:
       - default
-    # depends_on:
-    #   - certbot
+    depends_on:
+      # - certbot
+      - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./backend/src:/app/src
       - ./certbot/certs:/certs
 
-  pgadmin:
-    image: dpage/pgadmin4
+  storage:
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root
-    networks:
-      - default
-    ports:
-      - "5050:80"
-    depends_on:
-      - database
-
-  migration:
-    environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+      - POSTGRES_HOST=database
+      - POSTGRES_LOCAL_PORT=5432
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${STORAGE_DB_USER}
+      - POSTGRES_PASSWORD=${STORAGE_DB_PASSWORD}
       - DB_SCHEMA=${DB_SCHEMA}
-      - BACKEND_DB_USER=${BACKEND_DB_USER}
-      - BACKEND_DB_PASSWORD=${BACKEND_DB_PASSWORD}
+      - SESSION_SECRET=${SESSION_SECRET}
     build:
-      context: ./migration
+      context: ./storage
     networks:
       - default
     depends_on:
       - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      # - ./migration/migrations:/mitrations
+      - ./storage/src:/app/src
+      - storage_data:/app/public
 
   proxy:
     environment:
@@ -117,6 +146,8 @@ services:
       - BACKEND_PORT=3000
       - FRONTEND_HOST=frontend
       - FRONTEND_PORT=3000
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=3000
     image: nginx:1.21.4-alpine
     networks:
       - default
@@ -131,6 +162,7 @@ services:
 
 volumes:
   db_data:
+  storage_data:
 
 networks:
   default:

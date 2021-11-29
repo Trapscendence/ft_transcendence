@@ -1,57 +1,72 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { GamesService } from 'src/games/games.service';
+import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserStatus } from 'src/users/models/user.model';
+import { env } from 'src/utils/envs';
 
 @Injectable()
 export class StatusService {
-  container: Map<string, [UserStatus, Set<WebSocket>]>;
+  // User ID -> sid, status
+  private readonly statusContainer: Map<
+    string,
+    { sid: string; status: UserStatus }
+  >;
+
+  // Websocket Key -> User ID
+  private readonly webSocketKeyContainer: Map<string, { userId: string }>;
 
   constructor(
-    private readonly gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
+    private readonly databaseService: DatabaseService,
+    private readonly gamesService: GamesService,
   ) {
-    this.container = new Map<string, [UserStatus, Set<WebSocket>]>();
+    this.statusContainer = new Map<
+      string,
+      { sid: string; status: UserStatus }
+    >();
+    this.webSocketKeyContainer = new Map<string, { userId: string }>();
   }
 
-  setStatus(user_id: string, status: UserStatus): boolean {
-    if (status === UserStatus.OFFLINE) return false;
-    this.pubSub.publish(`status_of_${user_id}`, { statusChange: status });
-    const beforeSet = this.container.get(user_id);
-    if (!beforeSet) return false;
-    beforeSet[0] = status;
-    return true;
+  setStatus(userId: string, status: UserStatus): void {
+    if (status === UserStatus.OFFLINE)
+      throw `Invalid usage: Cannot change user(id: ${userId}) status to ${status} with setStatus)`;
+    const statusObject = this.statusContainer.get(userId);
+    if (!statusObject) throw `The user(id: ${userId}) is offline`;
+    else statusObject.status = status;
+    this.pubSub.publish(`status_of_${userId}`, { statusChange: status });
   }
 
-  getStatus(user_id: string): UserStatus {
-    const status = this.container.get(user_id)?.[0];
-    if (!status) return UserStatus.OFFLINE;
-    return status;
+  getStatus(userId: string): UserStatus {
+    return this.statusContainer.get(userId)?.status ?? UserStatus.OFFLINE;
   }
 
-  newConnection(user_id: string, ws: WebSocket): void {
-    if (!this.container.has(user_id)) {
-      this.pubSub.publish(`status_of_${user_id}`, {
-        statusChange: UserStatus.ONLINE,
-      });
-      this.container.set(user_id, [UserStatus.ONLINE, new Set<WebSocket>()]);
-    }
-    const wsSet = this.container.get(user_id)[1];
-    wsSet.add(ws);
+  newConnection(webSocketKey: string, userId: string, sid: string): void {
+    if (this.statusContainer.has(userId)) this.deleteConnection(webSocketKey);
+    this.pubSub.publish(`status_of_${userId}`, {
+      statusChange: UserStatus.ONLINE,
+    });
+    this.statusContainer.set(userId, {
+      sid,
+      status: UserStatus.ONLINE,
+    });
+    this.webSocketKeyContainer.set(webSocketKey, { userId });
   }
 
-  deleteConnection(user_id: string, ws: WebSocket): void {
-    console.log('delete', user_id);
-    const wsSet = this.container.get(user_id)?.[1];
-    if (!wsSet) return;
-    wsSet.delete(ws);
-    if (!wsSet.size) {
-      this.gamesService.surrenderGameWithUserId(user_id);
-      this.container.delete(user_id);
-      this.pubSub.publish(`status_of_${user_id}`, {
-        statusChange: UserStatus.OFFLINE,
-      });
-    }
+  deleteConnection(webSocketKey: string): void {
+    const userId = this.webSocketKeyContainer.get(webSocketKey)?.userId;
+    if (!userId) return;
+    const statusObject = this.statusContainer.get(userId);
+
+    this.gamesService.surrenderGameWithUserId(user_id);
+    this.databaseService.executeQuery(
+      `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}';`,
+    );
+    this.webSocketKeyContainer.delete(webSocketKey);
+    this.statusContainer.delete(userId);
+    this.pubSub.publish(`status_of_${userId}`, {
+      statusChange: UserStatus.OFFLINE,
+    });
   }
 }

@@ -7,14 +7,14 @@ import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 
 export const UserID = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
-    let id;
+    let uid: string;
+
     if (context.getType() === 'http') {
-      id = context.switchToHttp().getRequest().user.id;
+      uid = context.switchToHttp().getRequest().session.uid;
     } else if (context.getType<GqlContextType>() === 'graphql') {
-      id = GqlExecutionContext.create(context).getContext().req.user.id;
+      uid = GqlExecutionContext.create(context).getContext().req.session.uid;
     }
-    if (id === undefined)
-      throw new UnauthorizedException('User id is undefined.');
-    return '' + id;
+    if (uid === undefined) throw new UnauthorizedException();
+    else return uid;
   },
 );
