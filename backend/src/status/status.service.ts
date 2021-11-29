@@ -59,7 +59,7 @@ export class StatusService {
     if (!userId) return;
     const statusObject = this.statusContainer.get(userId);
 
-    this.gamesService.surrenderGameWithUserId(user_id);
+    this.gamesService.surrenderGameWithUserId(userId);
     this.databaseService.executeQuery(
       `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}';`,
     );
