@@ -79,6 +79,7 @@ export const GET_MY_BLACKLIST = gql`
     user {
       blacklist {
         id
+        nickname
       }
     }
   }
@@ -274,6 +275,16 @@ export const SUBSCRIBE_CHANNEL = gql`
       }
       text
       check
+    }
+  }
+`;
+
+export const SUBSCRIBE_REGISTER = gql`
+  subscription SubscribeRegister {
+    subscribeRegister {
+      type
+      game_id
+      custom_host_nickname
     }
   }
 `;

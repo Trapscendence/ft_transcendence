@@ -81,3 +81,27 @@ export enum Notify {
 }
 // NOTE: GraphQL의 enum은 문자형 enum이라 위와 같이 정의해야 한다.
 // 사용은 Notify.CHAT과 같이 한다.
+
+export enum RegisterNotifyType {
+  MATCHED = 'MATCHED',
+  ASKED = 'ASKED',
+  JOIN = 'JOIN',
+  BOOM = 'BOOM',
+}
+
+export enum GameType {
+  RANK = 'RANK',
+  CUSTOM = 'CUSTOM',
+}
+
+export enum CanvasNotifyType {
+  BALL = 'BALL',
+  PADDLE = 'PADDLE',
+  START = 'START',
+}
+
+export enum GameNotifyType {
+  OBSERVER = 'OBSERVER',
+  WINLOSE = 'WINLOSE',
+  END = 'END',
+}

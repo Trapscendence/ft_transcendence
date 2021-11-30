@@ -9,7 +9,7 @@ import {
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UsersService } from 'src/users/users.service';
-import { schema } from 'src/utils/envs';
+import { env } from 'src/utils/envs';
 import { Notify, Channel } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
 import { MutedUsers } from './classes/mutedusers.class';
@@ -49,7 +49,7 @@ export class ChannelsService {
         END
           AS is_private
       FROM
-        ${schema}.channel c
+        ${env.database.schema}.channel c
       WHERE
         c.id = ${channel_id};
     `);
@@ -72,7 +72,7 @@ export class ChannelsService {
             true
         END
           AS is_private
-        FROM ${schema}.channel
+        FROM ${env.database.schema}.channel
       OFFSET ${offset} ROWS
       LIMIT ${limit ? limit : 'ALL'};
     `);
@@ -90,7 +90,7 @@ export class ChannelsService {
       SELECT
         banned_user
       FROM
-        ${schema}.channel_ban
+        ${env.database.schema}.channel_ban
       WHERE
         banned_user = ${user_id}
           AND
@@ -101,7 +101,7 @@ export class ChannelsService {
 
     const channels = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.channel_user(
+        ${env.database.schema}.channel_user(
           user_id,
           channel_id,
           channel_role
@@ -111,7 +111,7 @@ export class ChannelsService {
           SELECT
             id
           FROM
-            ${schema}.user
+            ${env.database.schema}.user
           WHERE
             id = ${user_id}
         ),
@@ -119,7 +119,7 @@ export class ChannelsService {
           SELECT
             id
           FROM
-            ${schema}.channel
+            ${env.database.schema}.channel
           WHERE
             id = ${channel_id}
         ),
@@ -146,7 +146,7 @@ export class ChannelsService {
   async leaveChannel(user_id: string): Promise<boolean> {
     const myChannel = await this.databaseService.executeQuery(`
     DELETE FROM
-    ${schema}.channel_user
+    ${env.database.schema}.channel_user
     WHERE
     user_id = ${user_id}
     RETURNING channel_id, channel_role
@@ -178,7 +178,7 @@ export class ChannelsService {
         user_id,
         channel_role
       FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         channel_id = ${channel_id}
       ORDER BY
@@ -197,7 +197,7 @@ export class ChannelsService {
   async addChannel(title: string, password: string): Promise<string> {
     const insertChannel: { id }[] = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.channel(
+        ${env.database.schema}.channel(
           title,
           password
         )
@@ -226,7 +226,7 @@ export class ChannelsService {
   ): Promise<Channel> {
     const array = await this.databaseService.executeQuery(`
       UPDATE
-        ${schema}.channel
+        ${env.database.schema}.channel
       SET (
         title,
         password
@@ -259,14 +259,14 @@ export class ChannelsService {
         del1
           AS (
             DELETE FROM
-              ${schema}.channel_ban cb
+              ${env.database.schema}.channel_ban cb
             WHERE
               cb.channel_id
                 IN (
                   SELECT
                     c.id id
                   FROM
-                    ${schema}.channel c
+                    ${env.database.schema}.channel c
                   WHERE
                     c.id = ${channel_id}
                 )
@@ -276,20 +276,20 @@ export class ChannelsService {
           del2
             AS (
               DELETE FROM
-                ${schema}.channel_user cu
+                ${env.database.schema}.channel_user cu
               WHERE
                 cu.channel_id
                 IN (
                   SELECT
                     c.id id
                   FROM
-                    ${schema}.channel c
+                    ${env.database.schema}.channel c
                   WHERE
                     c.id = ${channel_id}
                 )
             )
       DELETE FROM
-        ${schema}.channel c
+        ${env.database.schema}.channel c
       WHERE
         c.id = ${channel_id}
       RETURNING
@@ -366,7 +366,7 @@ export class ChannelsService {
   async kickUser(channel_id: string, user_id: string): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       WHERE
         channel_id = ${channel_id}
           AND
@@ -427,7 +427,7 @@ export class ChannelsService {
     const updateChannel: { channel_id: string }[] = await this.databaseService
       .executeQuery(`
       UPDATE
-        ${schema}.channel_user
+        ${env.database.schema}.channel_user
       SET
         channel_role = '${role}'
       WHERE
@@ -467,9 +467,9 @@ export class ChannelsService {
         u.rank_score rank_score,
         u.site_role site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       INNER JOIN
-        ${schema}.channel_user cu
+        ${env.database.schema}.channel_user cu
           ON
             u.id = cu.user_id
       WHERE
@@ -492,9 +492,9 @@ export class ChannelsService {
       u.rank_score,
       u.site_role
     FROM
-      ${schema}.user u
+      ${env.database.schema}.user u
     INNER JOIN
-      ${schema}.channel_user cu
+      ${env.database.schema}.channel_user cu
         ON
           u.id = cu.user_id
     WHERE
@@ -514,9 +514,9 @@ export class ChannelsService {
         u.rank_score,
         u.site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       INNER JOIN
-        ${schema}.channel_user cu
+        ${env.database.schema}.channel_user cu
           ON
             u.id = cu.user_id
       WHERE
@@ -536,14 +536,14 @@ export class ChannelsService {
         u.rank_score rank_score,
         u.site_role site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
         WHERE
           u.id
         IN (
           SELECT
             cb.banned_user
           FROM
-            ${schema}.channel_ban cb
+            ${env.database.schema}.channel_ban cb
           WHERE
             cb.channel_id = ${channel_id}
         );
@@ -561,7 +561,7 @@ export class ChannelsService {
         u.rank_score rank_score,
         u.site_role site_role
       FROM
-        ${schema}.user u
+        ${env.database.schema}.user u
       WHERE
         id = ANY ($1);
         `,
@@ -587,7 +587,7 @@ export class ChannelsService {
 
     const array = await this.databaseService.executeQuery(`
       INSERT INTO
-        ${schema}.channel_ban(
+        ${env.database.schema}.channel_ban(
           channel_id,
           banned_user
         )
@@ -623,7 +623,7 @@ export class ChannelsService {
   ): Promise<boolean> {
     const array = await this.databaseService.executeQuery(`
       DELETE FROM
-        ${schema}.channel_ban cb
+        ${env.database.schema}.channel_ban cb
       WHERE
         cb.channel_id = ${channel_id}
           AND

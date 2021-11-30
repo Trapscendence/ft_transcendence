@@ -29,22 +29,20 @@ const cookieParser = (name: string): string | undefined => {
 };
 
 const wsLink = new WebSocketLink({
-  uri: `ws://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-    process.env.REACT_APP_BACKEND_PORT ?? ''
-  }/graphql`,
+  uri: `ws://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
+    process.env.REACT_APP_SERVER_PORT ?? '3000'
+  }/subscriptions`,
   options: {
     reconnect: true,
     connectionParams: {
-      authorization: cookieParser('access_token')
-        ? `Bearer ${cookieParser('access_token') ?? ''}`
-        : '',
+      credential: 'include',
     },
   },
 });
 
 const httpLink = createHttpLink({
-  uri: `http://${process.env.REACT_APP_BACKEND_HOST ?? ''}:${
-    process.env.REACT_APP_BACKEND_PORT ?? ''
+  uri: `http://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
+    process.env.REACT_APP_SERVER_PORT ?? '3000'
   }/graphql`,
   credentials: 'include',
 });
@@ -80,7 +78,12 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     graphQLErrors.forEach(({ message, locations, path }) =>
       console.log(
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+          locations,
+          null,
+          4
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        )}, Path: ${path}`
       )
     );
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

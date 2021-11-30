@@ -1,10 +1,18 @@
+import { useQuery } from '@apollo/client';
 import {
   Avatar,
   Badge,
+  Divider,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
+
+import { GET_MY_BLACKLIST } from '../../utils/Apollo/gqls';
+import { GetMyBlacklistResponse } from '../../utils/Apollo/responseModels';
+import { UserData } from '../../utils/Apollo/User';
+import { GET_USER } from '../../utils/Apollo/UserQuery';
 
 interface DirectMessageListProps {
   avatar?: string;
@@ -28,7 +36,22 @@ function DirectMessageList({
     setSelectedIndex(index);
     setNewDm(false);
   };
-  //TODO addOffset으로 ID,0 넣어주기
+
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  const { data: blacklistData, error: blacklistError } =
+    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+      variables: { id: currentUserData?.user.id },
+    });
+
+  useEffect(() => {
+    blacklistData?.user.blacklist.forEach((value) => {
+      if (value.id === ID) setBlackListed(true);
+    });
+  }, [blacklistData]);
+
+  const [blackListed, setBlackListed] = useState(false);
+  if (blackListed) return <Divider />;
+  console.log(avatar);
   return (
     <ListItemButton
       selected={selectedIndex === ID}
@@ -37,7 +60,7 @@ function DirectMessageList({
       <ListItemAvatar>
         <Badge variant="dot" overlap="circular" color="success">
           {avatar ? (
-            <Avatar src={avatar} />
+            <Avatar src={'/storage/' + avatar} />
           ) : (
             <Avatar>{nickname[0].toUpperCase()}</Avatar>
           )}

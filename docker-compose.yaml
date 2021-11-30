@@ -3,7 +3,7 @@ version: "3"
 services:
   # certbot:
   #   environment:
-  #     BACKEND_HOST: ${BACKEND_HOST}
+  #     SERVER_HOST: ${SERVER_HOST}
   #   build:
   #     context: ./certbot
   #   networks:
@@ -16,20 +16,6 @@ services:
   #     - ./certbot/certs:/etc/letsencrypt
   #     - ./certbot/log:/var/log/letsencrypt
 
-  frontend:
-    environment:
-      REACT_APP_BACKEND_HOST: ${BACKEND_HOST}
-      REACT_APP_BACKEND_PORT: ${BACKEND_PORT}
-    build:
-      context: ./frontend
-    networks:
-      - default
-    ports:
-      - "${FRONTEND_PORT}:3000"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ./frontend/src:/app/src
-
   database:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -39,12 +25,16 @@ services:
       context: ./database
       dockerfile: Dockerfile
       args:
+        SERVER_HOST: ${SERVER_HOST}
+        SERVER_PORT: ${SERVER_PORT}
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
         DB_SCHEMA: ${DB_SCHEMA}
         BACKEND_DB_USER: ${BACKEND_DB_USER}
         BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
+        STORAGE_DB_USER: ${STORAGE_DB_USER}
+        STORAGE_DB_PASSWORD: ${STORAGE_DB_PASSWORD}
         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     networks:
       - default
@@ -53,6 +43,50 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - db_data:/var/lib/postgresql/data
+
+  migration:
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - BACKEND_DB_USER=${BACKEND_DB_USER}
+      - BACKEND_DB_PASSWORD=${BACKEND_DB_PASSWORD}
+      - STORAGE_DB_USER=${STORAGE_DB_USER}
+      - STORAGE_DB_PASSWORD=${STORAGE_DB_PASSWORD}
+    build:
+      context: ./migration
+    networks:
+      - default
+    depends_on:
+      - database
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./migration/migrations:/migrations
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    networks:
+      - default
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+
+  frontend:
+    environment:
+      - REACT_APP_SERVER_HOST=${SERVER_HOST}
+      - REACT_APP_SERVER_PORT=${SERVER_PORT}
+    build:
+      context: ./frontend
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./frontend/src:/app/src
 
   backend:
     environment:
@@ -68,60 +102,67 @@ services:
       - GOOGLE_APP_ID=${GOOGLE_APP_ID}
       - GOOGLE_APP_SECRET=${GOOGLE_APP_SECRET}
       - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
-      - FRONTEND_HOST=${FRONTEND_HOST}
-      - FRONTEND_PORT=${FRONTEND_PORT}
-      - BACKEND_HOST=${BACKEND_HOST}
-      - BACKEND_PORT=${BACKEND_PORT}
-      - JWT_SECRET=${JWT_SECRET}
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
     build: ./backend
     networks:
       - default
-    ports:
-      - "${BACKEND_PORT}:3000"
+    depends_on:
+      # - certbot
+      - database
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./backend/src:/app/src
       - ./certbot/certs:/certs
-    # depends_on:
-    #   - certbot
 
-  pgadmin:
-    image: dpage/pgadmin4
+  storage:
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: root # TODO 아니면 이것도 env에?
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+      - POSTGRES_HOST=database
+      - POSTGRES_LOCAL_PORT=5432
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${STORAGE_DB_USER}
+      - POSTGRES_PASSWORD=${STORAGE_DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - SESSION_SECRET=${SESSION_SECRET}
+    build:
+      context: ./storage
+    networks:
+      - default
+    depends_on:
+      - database
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./storage/src:/app/src
+      - storage_data:/app/public
+
+  proxy:
+    environment:
+      - NGINX_HOST=${SERVER_HOST}
+      - NGINX_PORT=80
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=3000
+      - FRONTEND_HOST=frontend
+      - FRONTEND_PORT=3000
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=3000
+    image: nginx:1.21.4-alpine
     networks:
       - default
     ports:
-      - "5050:80"
+      - "${SERVER_PORT}:80"
     depends_on:
-      - database
-
-  migration:
-    environment:
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - BACKEND_DB_USER=${BACKEND_DB_USER}
-      - BACKEND_DB_PASSWORD=${BACKEND_DB_PASSWORD}
+      - frontend
+      - backend
     volumes:
-      - ./migration/migrations:/migrations
-    build:
-      context: ./migration
-    networks:
-      - default
-    depends_on:
-      - database
-    # volumes:
-    #   - ./migration/migrations:/mitrations
+      - /etc/localtime:/etc/localtime:ro
+      - ./proxy/default.conf:/etc/nginx/templates/default.conf.template:ro
 
 volumes:
   db_data:
-
-# networks:
-#   internal:
-#     driver: local
+  storage_data:
 
 networks:
   default:
