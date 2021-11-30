@@ -40,17 +40,12 @@ export class AuthController {
   @PassTfaGuard()
   @PassLoginGuard()
   async loginWithFortyTwo(@Req() req: any, @Res() res: Response) {
-    const my_status = await this.statusService.getStatus(req.user.id);
-    if (my_status !== UserStatus.OFFLINE) {
-      req.session.destroy();
-      throw new ConflictException(
-        `The user(id: ${req.user.id}) is already logged in.`,
-      );
-    }
-
-    const tfa_secret = await this.usersService.getSecret(req.user.id);
-
+    console.log(this.statusService.getStatus(req.user.id));
+    if (this.statusService.getStatus(req.user.id) !== UserStatus.OFFLINE)
+      await this.statusService.deleteConnection(req.user.id);
+    this.statusService.newConnection(req.user.id, req.session.id);
     req.session.uid = req.user.id;
+    const tfa_secret = await this.usersService.getSecret(req.user.id);
     if (tfa_secret) {
       req.session.tfa_secret = tfa_secret;
       res.redirect(env.redirect.totp);
@@ -102,7 +97,7 @@ export class AuthController {
 
   @Get('logout')
   async logout(@UserID() userId, @Req() req: any, @Res() res: Response) {
-    await this.statusService.deleteConnection(undefined, userId);
+    await this.statusService.deleteConnection(userId);
     req.session.destroy();
     res.clearCookie(env.session.cookieName);
     res.redirect('/');
