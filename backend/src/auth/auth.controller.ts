@@ -40,7 +40,6 @@ export class AuthController {
   @PassTfaGuard()
   @PassLoginGuard()
   async loginWithFortyTwo(@Req() req: any, @Res() res: Response) {
-    console.log(this.statusService.getStatus(req.user.id));
     if (this.statusService.getStatus(req.user.id) !== UserStatus.OFFLINE)
       await this.statusService.deleteConnection(req.user.id);
     this.statusService.newConnection(req.user.id, req.session.id);
