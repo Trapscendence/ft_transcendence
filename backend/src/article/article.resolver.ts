@@ -1,5 +1,6 @@
 import {
   Args,
+  ID,
   Int,
   Mutation,
   Parent,
@@ -7,6 +8,7 @@ import {
   ResolveField,
   Resolver,
 } from '@nestjs/graphql';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { ArticleService } from './article.service';
@@ -29,7 +31,7 @@ export class NoticeResolver {
 
   @Mutation((returns) => Boolean)
   async writeNotice(
-    @Args('user_id', { type: () => Int }) user_id: string,
+    @UserID() user_id: string,
     @Args('title') title: string,
     @Args('contents') contents: string,
   ): Promise<boolean> {
@@ -39,6 +41,30 @@ export class NoticeResolver {
       contents,
       UseFor.NOTICE,
     );
+  }
+
+  @Mutation((returns) => Boolean)
+  async editNotice(
+    @UserID() user_id: string,
+    @Args('time_stamp') time_stamp: string,
+    @Args('title', { nullable: true }) title: string,
+    @Args('contents', { nullable: true }) contents: string,
+  ) {
+    this.articleService.editArticle(
+      user_id,
+      time_stamp,
+      title,
+      contents,
+      UseFor.NOTICE,
+    );
+  }
+
+  @Mutation((returns) => Boolean)
+  async deleteNotice(
+    @UserID() user_id: string,
+    @Args('time_stamp') time_stamp: string,
+  ) {
+    this.articleService.deleteArticle(user_id, time_stamp, UseFor.NOTICE);
   }
 
   @ResolveField('writer', (returns) => User)
@@ -65,7 +91,7 @@ export class PatchNoteResolver {
 
   @Mutation((returns) => Boolean)
   async writePatchNote(
-    @Args('user_id', { type: () => Int }) user_id: string,
+    @UserID() user_id: string,
     @Args('title') title: string,
     @Args('contents') contents: string,
   ): Promise<boolean> {
@@ -75,6 +101,30 @@ export class PatchNoteResolver {
       contents,
       UseFor.PATCH,
     );
+  }
+
+  @Mutation((returns) => Boolean)
+  async editPatchNote(
+    @UserID() user_id: string,
+    @Args('time_stamp') time_stamp: string,
+    @Args('title', { nullable: true }) title: string,
+    @Args('contents', { nullable: true }) contents: string,
+  ) {
+    this.articleService.editArticle(
+      user_id,
+      time_stamp,
+      title,
+      contents,
+      UseFor.PATCH,
+    );
+  }
+
+  @Mutation((returns) => Boolean)
+  async deleteNotice(
+    @UserID() user_id: string,
+    @Args('time_stamp') time_stamp: string,
+  ) {
+    this.articleService.deleteArticle(user_id, time_stamp, UseFor.PATCH);
   }
 
   @ResolveField('writer', (returns) => User)

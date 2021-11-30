@@ -6,7 +6,7 @@ export enum UseFor {
   PATCH = 'PATCH',
 }
 
-@Directive('@key(fields: time_stamp")')
+@Directive('@key(fields: "time_stamp")')
 @ObjectType()
 export class Notice {
   @Field((type) => ID)
@@ -19,13 +19,13 @@ export class Notice {
   title: string;
 
   @Field({ nullable: true })
-  content: string;
+  contents: string;
 
   @Field()
   time_stamp: string;
 }
 
-@Directive('@key(fields: time_stamp")')
+@Directive('@key(fields: "time_stamp")')
 @ObjectType()
 export class PatchNote {
   @Field((type) => ID)
