@@ -6,13 +6,11 @@ import {
   Home,
   MoreHoriz,
   SettingsApplicationsSharp,
-  VideogameAsset,
 } from '@mui/icons-material';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {
   Box,
   Button,
-  CircularProgress,
   Divider,
   Drawer,
   List,
@@ -21,54 +19,56 @@ import {
   Tab,
   Tabs,
 } from '@mui/material';
-import ListItemText from '@mui/material/ListItemText';
 import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { User, UserData } from '../../utils/Apollo/User';
 import { GET_USER } from '../../utils/Apollo/UserQuery';
+import Matching from './Matching';
+
+interface Itabs {
+  [index: string]: number;
+  '/home': number;
+  '/profile/': number;
+  '/rank': number;
+  '/channel': number;
+}
+
+const tabs: Itabs = {
+  '/home': 0,
+  '/profile/': 1,
+  '/rank': 2,
+  '/channel': 3,
+}; // NOTE: 새로고침시 현재 주소에 따라 탭 선택을 활성화하기위해 사용
 
 function Navigation(): JSX.Element {
-  interface Itabs {
-    [index: string]: number;
-    '/home': number;
-    '/profile/': number;
-    '/rank': number;
-    '/channel': number;
-  }
-
-  const tabs: Itabs = {
-    '/home': 0,
-    '/profile/': 1,
-    '/rank': 2,
-    '/channel': 3,
-  };
+  const history = useHistory();
+  const location = useLocation();
 
   const [tabValue, setTabValue] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState<User>({
     nickname: '',
     id: '',
+    avatar: '',
   });
-  const history = useHistory();
-  const location = useLocation();
+  const [open, setOpen] = React.useState(false);
+
+  //TODO useQuery로 내 id 가져오기
+  const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
   useEffect(() => {
     setTabValue(tabs[location.pathname] ?? 0);
   }, []);
+
+  useEffect(() => {
+    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
+  }, [currentUserData]);
 
   const handleChange = (e: React.SyntheticEvent, newValue: number) => {
     const path: string | null = e.currentTarget.getAttribute('aria-label');
     history.push(path as string);
     setTabValue(newValue);
   };
-
-  //TODO useQuery로 내 id 가져오기
-  const { data: currentUserData } = useQuery<UserData>(GET_USER);
-
-  useEffect(() => {
-    if (currentUserData?.user?.id) setCurrentUser(currentUserData?.user);
-  }, [currentUserData]);
 
   const logOut = () => {
     return new Promise(() => {
@@ -87,16 +87,13 @@ function Navigation(): JSX.Element {
     });
   };
 
-  const onClickPlay = () => {
-    setLoading((value) => !value); // NOTE: loading을 사용하는 toggle... 더 나은 상태 작성법이 있나?
-  };
-  const [open, setOpen] = React.useState(false);
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
     console.log(open);
   };
+
   return (
-    <Box>
+    <>
       <Box
         py={1}
         sx={{
@@ -113,13 +110,7 @@ function Navigation(): JSX.Element {
         }}
       >
         <Box>
-          <Tabs
-            value={tabValue}
-            onChange={handleChange}
-            orientation="vertical"
-            // textColor="secondary"
-            // indicatorColor="secondary"
-          >
+          <Tabs value={tabValue} onChange={handleChange} orientation="vertical">
             <Tab aria-label="/home" icon={<Home />} />
             <Tab
               aria-label={'/profile/' + currentUser.id}
@@ -130,53 +121,20 @@ function Navigation(): JSX.Element {
             <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
           </Tabs>
           <Divider />
-          <Box
-            onClick={onClickPlay}
-            sx={{ position: 'relative', cursor: 'pointer' }}
-          >
-            <Tab
-              icon={<VideogameAsset />}
-              // disabled={loading}
-              sx={{ color: loading ? 'text.disabled' : '' }}
-            />
-            {loading && (
-              <CircularProgress
-                // color="secondary"
-                size={35}
-                sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  marginTop: '-17px',
-                  marginLeft: '-17px',
-                  zIndex: 1,
-                }}
-              />
-            )}
-          </Box>
+          <Matching />
         </Box>
         <Stack>
-          <Tabs
-            // onChange={handleChange}
-            orientation="vertical"
-            textColor="secondary"
-            indicatorColor="secondary"
-          >
-            <Tab
-              aria-label="auth/logout"
-              icon={<LogoutIcon />}
-              onClick={logOut}
-            />
-            <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
-          </Tabs>
+          <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
+          <Tab
+            aria-label="auth/logout"
+            icon={<LogoutIcon />}
+            onClick={logOut}
+          />
         </Stack>
 
         <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
           <Stack
-            sx={{
-              height: '100vh',
-              backgroundColor: '#F0F0F0',
-            }}
+            sx={{ height: '100vh' }}
             direction="column"
             justifyContent="space-between"
           >
@@ -184,19 +142,9 @@ function Navigation(): JSX.Element {
               {['공지사항', '패치노트', '게임규칙', '멋진그림', '크레딧'].map(
                 (text, index) => (
                   <ListItem button={false} key={index}>
-                    <Button
-                      color="secondary"
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: '#708090',
-                        width: '170px',
-                        padding: '5px',
-                        margin: '1px',
-                      }}
-                    >
-                      <ListItemText primary={text} />
+                    <Button variant="contained" sx={{ width: '170px' }}>
+                      {text}
+                      {/* // NOTE: ListItemText와 그냥 text를 넣는 것의 차이가 디자인말고 있을까? 디자인은 취향 차이인듯. */}
                     </Button>
                   </ListItem>
                 )
@@ -207,18 +155,11 @@ function Navigation(): JSX.Element {
               {['유저목록', '게임목록', '채널목록'].map((text, index) => (
                 <ListItem key={index}>
                   <Button
+                    variant="contained"
                     color="secondary"
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      backgroundColor: '#708090',
-                      width: '170px',
-                      padding: '5px',
-                      margin: '1px',
-                    }}
+                    sx={{ width: '170px' }}
                   >
-                    <ListItemText primary={text} />
+                    {text}
                   </Button>
                 </ListItem>
               ))}
@@ -226,7 +167,7 @@ function Navigation(): JSX.Element {
           </Stack>
         </Drawer>
       </Box>
-    </Box>
+    </>
   );
 }
 

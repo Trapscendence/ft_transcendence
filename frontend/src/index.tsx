@@ -35,9 +35,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authorization: cookieParser('access_token')
-        ? `Bearer ${cookieParser('access_token') ?? ''}`
-        : '',
+      credential: 'include',
     },
   },
 });
@@ -80,7 +78,12 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     graphQLErrors.forEach(({ message, locations, path }) =>
       console.log(
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+          locations,
+          null,
+          4
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        )}, Path: ${path}`
       )
     );
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

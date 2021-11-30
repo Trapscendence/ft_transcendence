@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -11,10 +13,20 @@ import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
 import axios from 'axios';
+import { GamesService } from 'src/games/games.service';
+import { Game } from 'src/games/models/game.model';
+import { Match } from 'src/matchs/match.model';
+import { HttpService } from '@nestjs/axios';
+import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    @Inject(forwardRef(() => GamesService))
+    private readonly gamesService: GamesService,
+    private readonly httpService: HttpService,
+  ) {}
 
   async getUserById(id: string): Promise<User | null> {
     const array = await this.databaseService.executeQuery(`
@@ -471,5 +483,149 @@ export class UsersService {
       [role, target],
     );
     return !!result;
+  }
+
+  async getGameByUserId(id: string): Promise<Game> {
+    const ret = await this.gamesService.getGameByUserId(id.toString());
+
+    return ret;
+    // return await this.gamesService.getGameByUserId(id);
+  }
+
+  async getMatchHistory(
+    id: string,
+    limit: number,
+    offset: number,
+  ): Promise<Match[]> {
+    return await this.databaseService.executeQuery(`
+      SELECT
+        *
+      FROM
+        ${env.database.schema}.match
+      WHERE
+        winner = ${id}
+          OR
+        loser = ${id}
+      ORDER BY
+        time_stamp DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `);
+  }
+
+  async getAvatar(user_id: string): Promise<string> {
+    const array = await this.databaseService.executeQuery(`
+      SELECT
+        avatar
+      FROM
+        ${env.database.schema}.user
+      WHERE
+        id = ${user_id}
+    `);
+    if (!array.length) return null;
+    const [{ uuid }] = array;
+    if (!uuid) return null;
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .get(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/storage/${uuid}`,
+        )
+        .subscribe({
+          next(axiosResponse: AxiosResponse) {
+            resolve(axiosResponse.data as string);
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
+  }
+
+  async setAvatar(user_id: string, image: string): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      this.httpService
+        .post(
+          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/upload`,
+          image,
+        )
+        .subscribe({
+          next: async (axiosResponse: AxiosResponse) => {
+            this.databaseService
+              .executeQuery(
+                `
+              UPDATE
+                ${env.database.schema}.user
+              SET
+                avatar = ($1)
+              WHERE
+                id = ${user_id}
+              RETURNING *;
+          `,
+                [image],
+              )
+              .then((array) => {
+                if (!array.length) resolve(false);
+                resolve(true);
+              });
+          },
+          error(error) {
+            reject(error);
+          },
+          complete() {},
+        });
+    });
+  }
+
+  async getAchieved(user_id: string) {
+    return await this.databaseService.executeQuery(`
+      WITH ad AS (
+        SELECT
+          achievement_id id,
+          time_stamp time_stamp
+        FROM
+          ${env.database.schema}.achieved
+        WHERE
+          user_id = ${user_id}
+      )
+      SELECT
+        am.id,
+        am.name,
+        am.icon,
+        ad.time_stamp
+      FROM
+        ${env.database.schema}.achievement am
+      INNER JOIN
+        ad
+      ON
+        am.id = ad.id
+      ORDER BY
+        am.id ASC;
+    `);
+  }
+
+  async achieveOne(user_id: string, ach_id: string) {
+    const array = await this.databaseService.executeQuery(
+      `
+      INSERT INTO
+        ${env.database.schema}.achieved(
+          user_id,
+          achievement_id,
+          time_stamp
+        )
+      VALUES
+        (
+          ($1),
+          ($2),
+          ${new Date().getTime()}
+        )
+      ON CONFLICT
+        ON CONSTRAINT
+          user_id_achievement_id_unique
+      DO NOTHING
+      RETURNING *;
+    `,
+      [user_id, ach_id],
+    );
+    return array.length ? true : false;
   }
 }

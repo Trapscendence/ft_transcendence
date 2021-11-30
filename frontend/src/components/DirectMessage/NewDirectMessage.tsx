@@ -35,7 +35,11 @@ function NewDirectMessage({
   });
 
   const [buttonActive, setButtonActive] = useState(true);
-  const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const [inputSpace, setInputSpace] = useState<User>({
+    nickname: '',
+    id: '',
+    avatar: '',
+  });
 
   const handleOnclick = (value: User) => {
     //TODO value.id를 selectedIndex에 집어넣기 (없을경우 생성하도록 하시오.)

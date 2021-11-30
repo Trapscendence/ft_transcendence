@@ -32,6 +32,7 @@ import {
   UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
+import axios from 'axios';
 import {
   CHANGE_NICKNAME,
   CREATE_TFA,
@@ -58,6 +59,7 @@ export default function MyProfileSetting(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
     id: '',
+    avatar: '',
   });
   useEffect(() => {
     if (currentUserData?.user) setCurrentUser(currentUserData?.user);
@@ -88,7 +90,11 @@ export default function MyProfileSetting(): JSX.Element {
   //----------------------------------------------------------닉네임
 
   const [buttonActive, setButtonActive] = useState(true);
-  const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const [inputSpace, setInputSpace] = useState<User>({
+    nickname: '',
+    id: '',
+    avatar: '',
+  });
 
   const [addToBlackList, { error: AddError }] =
     useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {
@@ -125,6 +131,34 @@ export default function MyProfileSetting(): JSX.Element {
     }
   }, [tfaUri]);
 
+  //-----------------------------------------------tfa
+  // const PictureHandler = () => {
+
+  //   axios
+  //     .post(endpoint, 'file')
+  //     .then((response) => this.setState({ articleId: response.data.id }));
+  // };
+  const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+
+    if (e.target.files) {
+      const uploadFile = e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
+      //     process.env.REACT_APP_SERVER_PORT ?? ''
+      //   }/upload/profile`;
+      await axios({
+        method: 'post',
+        url: '/upload/profile',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then(() => window.location.replace('/setting/'));
+    }
+  };
+  //----------------------------------------------------picture
   return (
     <Box
       sx={{
@@ -154,11 +188,28 @@ export default function MyProfileSetting(): JSX.Element {
           <Grid item xs={6}>
             <Paper sx={elementStyle} variant="outlined">
               <Stack spacing={1} alignItems="center">
-                <Avatar sx={avartarStyle}>
-                  {currentUser?.nickname[0]?.toUpperCase()}
-                </Avatar>
+                {currentUser?.avatar ? (
+                  <Avatar
+                    sx={avartarStyle}
+                    src={'/storage/' + currentUser?.avatar}
+                  ></Avatar>
+                ) : (
+                  <Avatar sx={avartarStyle}>
+                    {currentUser?.nickname[0]?.toUpperCase()}
+                  </Avatar>
+                  // <Skeleton variant="circular" sx={avartarStyle} />
+                )}
                 <Box />
-                <button> 프로필 사진 변경</button>
+                {/* <button> 프로필 사진 변경</button> */}
+                <form>
+                  <label htmlFor="profile-upload" />
+                  <input
+                    type="file"
+                    id="profile-upload"
+                    accept="image/*"
+                    onChange={onChangeImg}
+                  />
+                </form>
               </Stack>
             </Paper>
           </Grid>
