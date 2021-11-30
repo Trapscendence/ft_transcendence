@@ -7,49 +7,77 @@ import {
   Modal,
   TextField,
 } from '@mui/material';
+import { useState } from 'react';
 
 import { useInput } from '../../../hooks/useInput';
-import { EDIT_CHANNEL } from '../../../utils/Apollo/gqls';
-import { EditChannelResponse } from '../../../utils/Apollo/responseModels';
+import {
+  ADD_CHANNEL,
+  EDIT_CHANNEL,
+  GET_MY_CHANNEL,
+} from '../../../utils/Apollo/gqls';
+import {
+  AddChannelResponse,
+  EditChannelResponse,
+} from '../../../utils/Apollo/responseModels';
 import handleError from '../../../utils/handleError';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
 
-interface ChannelEditModalProps {
+interface ChannelCreateModalProps {
   open: boolean;
-  handleClose: () => void;
-  id: string;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isAddChannel: boolean;
 }
 
-export default function ChannelEditModal({
+export default function ChannelManageModal({
   open,
-  handleClose,
-  id,
-}: ChannelEditModalProps): JSX.Element {
+  setOpen,
+  isAddChannel,
+}: ChannelCreateModalProps): JSX.Element {
   const [title, setTitle, onChangeTitle] = useInput('');
   const [password, setPassword, onChangePassword] = useInput('');
+  const [titleError, setTitleError] = useState(false);
 
-  const [editChannel, { loading, error }] = useMutation<EditChannelResponse>(
-    EDIT_CHANNEL,
+  const [addChannelFunc, { loading, error }] = useMutation<AddChannelResponse>(
+    ADD_CHANNEL,
     {
-      variables: { title, password: password === '' ? null : password },
+      variables: { title, password },
+      refetchQueries: [GET_MY_CHANNEL],
     }
   );
 
+  const [editChannel, { loading: editLoading, error: editError }] =
+    useMutation<EditChannelResponse>(EDIT_CHANNEL, {
+      variables: { title, password: password === '' ? null : password },
+    });
+
+  const btnFunction = isAddChannel ? addChannelFunc : editChannel;
+  const btnText = isAddChannel ? 'make channel' : 'edit channel';
+
   const onClickBtn = async (): Promise<void> => {
-    await handleError(editChannel);
-    handleClose();
+    if (!title.length) {
+      // displayAlertMsg('Please enter the title.');
+      setTitleError(true);
+      return;
+    }
+
+    await handleError(btnFunction);
+    setOpen(false);
     setTitle('');
     setPassword('');
   };
 
   return (
     <>
-      {error && <ErrorAlert name="ChannelEditModal" error={error} />}
+      {error && <ErrorAlert name="ChannelCreateModal" error={error} />}
       {loading && <LoadingBackdrop loading={loading} />}
       <Modal
         open={open}
-        onClose={handleClose}
+        onClose={() => {
+          setOpen(false);
+          setTitle('');
+          setPassword('');
+        }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
@@ -73,6 +101,8 @@ export default function ChannelEditModal({
               size="small"
               margin="dense"
               sx={{ width: '100%' }}
+              error={titleError}
+              helperText={titleError ? 'Title must be entered.' : null}
               value={title}
               onChange={onChangeTitle}
             />
@@ -89,7 +119,7 @@ export default function ChannelEditModal({
           </CardContent>
           <CardActions>
             <Button variant="contained" onClick={onClickBtn}>
-              Edit Channel
+              {btnText}
             </Button>
           </CardActions>
         </Card>
