@@ -172,6 +172,7 @@ export class UsersResolver {
     @Args('loser_id', { type: () => ID }) loser_id: string,
   ) {
     this.gamesService.recordMatch(winner_id, loser_id);
+    return true;
   }
 
   /*

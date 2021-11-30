@@ -87,6 +87,7 @@ function Navigation(): JSX.Element {
     });
   };
 
+  const [open, setOpen] = React.useState(false);
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
     console.log(open);
@@ -121,7 +122,9 @@ function Navigation(): JSX.Element {
             <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
           </Tabs>
           <Divider />
-          <Matching />
+          <Box>
+            <Matching />
+          </Box>
         </Box>
         <Stack>
           <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
