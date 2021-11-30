@@ -49,6 +49,7 @@ function Navigation(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<User>({
     nickname: '',
     id: '',
+    avatar: '',
   });
   const history = useHistory();
   const location = useLocation();

@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { User } from '../../users/models/user.model';
+import { User } from '../users/models/user.model';
 
 // TODO
 // enum도 파일 분리해야 할 것 같은데...
@@ -24,13 +24,13 @@ export class Match {
   winner: User;
 
   @Field((type) => Int)
-  winner_point: number;
+  winner_points: number;
 
   @Field((type) => User)
   loser: User;
 
   @Field((type) => Int)
-  loser_point: number;
+  loser_points: number;
 
   @Field((type) => MatchType)
   type: MatchType;

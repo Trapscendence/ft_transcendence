@@ -45,9 +45,18 @@ export default function RankPage(): JSX.Element {
               direction={{ xs: 'column', sm: 'row' }}
             >
               <h4>{index + 1} </h4>
-              <Avatar sx={avartarStyle}>
-                {user?.nickname[0]?.toUpperCase()}
-              </Avatar>
+              {user?.avatar ? (
+                <Avatar
+                  sx={avartarStyle}
+                  src={'/storage/' + user?.avatar}
+                ></Avatar>
+              ) : (
+                <Avatar sx={avartarStyle}>
+                  {user?.nickname[0]?.toUpperCase()}
+                </Avatar>
+                // <Skeleton variant="circular" sx={avartarStyle} />
+              )}
+
               <Typography>{user.nickname}</Typography>
             </Stack>
           </Box>

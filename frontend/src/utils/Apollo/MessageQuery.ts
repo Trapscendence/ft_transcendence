@@ -5,6 +5,7 @@ export const GET_DM_USERS = gql`
     dmUsers(offset: $offset, limit: $limit) {
       id
       nickname
+      avatar
     }
   }
 `;
@@ -19,6 +20,12 @@ export const SEND_MESSAGE = gql`
       checked
       time_stamp
     }
+  }
+`;
+
+export const UPDATE_CHECK_DATE = gql`
+  mutation updateCheckdate {
+    updateCheckdate
   }
 `;
 

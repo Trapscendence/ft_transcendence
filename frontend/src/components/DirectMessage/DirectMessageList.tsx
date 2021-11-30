@@ -51,7 +51,7 @@ function DirectMessageList({
 
   const [blackListed, setBlackListed] = useState(false);
   if (blackListed) return <Divider />;
-
+  console.log(avatar);
   return (
     <ListItemButton
       selected={selectedIndex === ID}
@@ -60,7 +60,7 @@ function DirectMessageList({
       <ListItemAvatar>
         <Badge variant="dot" overlap="circular" color="success">
           {avatar ? (
-            <Avatar src={avatar} />
+            <Avatar src={'/storage/' + avatar} />
           ) : (
             <Avatar>{nickname[0].toUpperCase()}</Avatar>
           )}

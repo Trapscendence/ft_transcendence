@@ -13,12 +13,12 @@ import { useHistory, useLocation } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import {
+  MatchData,
+  MatchDataVars,
   User,
-  UserData,
-  UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import { GET_USER, GET_USERS } from '../../utils/Apollo/UserQuery';
+import { GET_MATCH_BY_NICKNAME, GET_USERS } from '../../utils/Apollo/UserQuery';
 
 function Profile(): JSX.Element {
   const avartarStyle = {
@@ -37,6 +37,7 @@ function Profile(): JSX.Element {
     nickname: string;
     id: string;
     rank: number;
+    avatar: string;
   }
 
   interface UserProfileData {
@@ -46,7 +47,11 @@ function Profile(): JSX.Element {
   const { error, data } = useQuery<UserProfileData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
   });
-  const [inputSpace, setInputSpace] = useState<User>({ nickname: '', id: '' });
+  const [inputSpace, setInputSpace] = useState<User>({
+    nickname: '',
+    id: '',
+    avatar: '',
+  });
   const [buttonActive, setButtonActive] = useState(true);
   const history = useHistory();
   const handleOnclick = (value: User) => {
@@ -60,6 +65,7 @@ function Profile(): JSX.Element {
     nickname: '',
     id: '',
     rank: 0,
+    avatar: '',
   });
 
   const location = useLocation();
@@ -73,7 +79,21 @@ function Profile(): JSX.Element {
     if (data?.users[urlInputId - 1]) setCurrentUser(data.users[urlInputId - 1]);
     else setCurrentUser(undefined);
   }, [urlInputId, data]);
+  //matchHistory
+  const { data: matchData } = useQuery<MatchData, MatchDataVars>(
+    GET_MATCH_BY_NICKNAME,
+    {
+      variables: {
+        nickname: currentUser?.nickname ?? '',
+        offset: 0,
+        limit: 5,
+      },
+    }
+  );
 
+  //---------------------------------------------------
+
+  console.log(matchData?.user)
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
 
   return (
@@ -91,12 +111,16 @@ function Profile(): JSX.Element {
           sx={{ width: '100%', height: '150px' }}
           justifyContent="space-between"
         >
-          {currentUser ? (
+          {currentUser?.avatar ? (
+            <Avatar
+              sx={avartarStyle}
+              src={'/storage/' + currentUser?.avatar}
+            ></Avatar>
+          ) : (
             <Avatar sx={avartarStyle}>
               {currentUser?.nickname[0]?.toUpperCase()}
             </Avatar>
-          ) : (
-            <Skeleton variant="circular" sx={avartarStyle} />
+            // <Skeleton variant="circular" sx={avartarStyle} />
           )}
           <Stack
             id="info-Text-Stack"
@@ -151,7 +175,18 @@ function Profile(): JSX.Element {
         <Typography variant="h6" style={typoStyle}>
           전적
         </Typography>
-        <Paper style={paperStyle}></Paper>
+        <Paper style={paperStyle}>
+          {matchData?.user?.match_history?.map((match) => (
+            <Stack>
+              <Typography>
+                승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
+              </Typography>
+              <Typography>
+                {match.winner_points} : {match.loser_points}
+              </Typography>
+            </Stack>
+          ))}
+        </Paper>
         <Typography variant="h6" style={typoStyle}>
           업적
         </Typography>

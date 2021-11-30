@@ -7,6 +7,7 @@ import {
   Body,
   Post,
   Query,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -15,11 +16,15 @@ import { env } from 'src/utils/envs';
 import { UsersService } from 'src/users/users.service';
 import { PassTfaGuard } from './decorators/pass-tfa-guard.decorator';
 import { PassLoginGuard } from './decorators/pass-login-guard.decorator';
+import { StatusService } from 'src/status/status.service';
+import { UserStatus } from 'src/users/models/user.model';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly statusService: StatusService,
     private readonly usersService: UsersService, // FIXME: remove this
   ) {}
 
@@ -35,6 +40,14 @@ export class AuthController {
   @PassTfaGuard()
   @PassLoginGuard()
   async loginWithFortyTwo(@Req() req: any, @Res() res: Response) {
+    const my_status = await this.statusService.getStatus(req.user.id);
+    if (my_status !== UserStatus.OFFLINE) {
+      req.session.destroy();
+      throw new ConflictException(
+        `The user(id: ${req.user.id}) is already logged in.`,
+      );
+    }
+
     const tfa_secret = await this.usersService.getSecret(req.user.id);
 
     req.session.uid = req.user.id;
@@ -88,11 +101,10 @@ export class AuthController {
   }
 
   @Get('logout')
-  async logout(@Req() req: any, @Res() res: Response) {
-    req.session.destroy((err) => {
-      if (err) throw err;
-    });
-    res.cookie[env.session.cookieName] = '';
+  async logout(@UserID() userId, @Req() req: any, @Res() res: Response) {
+    await this.statusService.deleteConnection(undefined, userId);
+    req.session.destroy();
+    res.clearCookie(env.session.cookieName);
     res.redirect('/');
   }
 
