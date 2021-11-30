@@ -103,12 +103,14 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ) {
-    const request = new FriendRequest();
-    request.id = friend_id;
-    request.ReqRes = FriendReqRes.REQUEST;
+    const request: FriendRequest = {
+      id: user_id,
+      ReqRes: FriendReqRes.REQUEST,
+    };
     this.pubSub.publish(`friend_request_of_${friend_id}`, {
-      recieveFriendRequest: request,
+      listenFriend: request,
     });
+    return true;
   }
 
   @Mutation((returns) => Boolean)
@@ -116,11 +118,12 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ) {
-    const request = new FriendRequest();
-    request.id = friend_id;
-    request.ReqRes = FriendReqRes.CONSENT;
+    const request: FriendRequest = {
+      id: user_id,
+      ReqRes: FriendReqRes.CONSENT,
+    };
     this.pubSub.publish(`friend_request_of_${friend_id}`, {
-      recieveFriendRequest: request,
+      listenFriend: request,
     });
     return this.usersService.addFriend(user_id, friend_id);
   }
@@ -130,11 +133,12 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ) {
-    const request = new FriendRequest();
-    request.id = friend_id;
-    request.ReqRes = FriendReqRes.REJECT;
+    const request: FriendRequest = {
+      id: user_id,
+      ReqRes: FriendReqRes.REJECT,
+    };
     this.pubSub.publish(`friend_request_of_${friend_id}`, {
-      recieveFriendRequest: request,
+      listenFriend: request,
     });
   }
 
@@ -143,11 +147,12 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('friend_id', { type: () => ID }) friend_id: string,
   ): Promise<boolean> {
-    const request = new FriendRequest();
-    request.id = friend_id;
-    request.ReqRes = FriendReqRes.DELETE;
+    const request: FriendRequest = {
+      id: user_id,
+      ReqRes: FriendReqRes.DELETE,
+    };
     this.pubSub.publish(`friend_request_of_${friend_id}`, {
-      recieveFriendRequest: request,
+      listenFriend: request,
     });
     return await this.usersService.deleteFriend(user_id, friend_id);
   }

@@ -90,7 +90,7 @@ export class User {
 
 @ObjectType()
 export class FriendRequest {
-  @Field()
+  @Field((type) => FriendReqRes)
   ReqRes: FriendReqRes;
 
   @Field((type) => ID)
