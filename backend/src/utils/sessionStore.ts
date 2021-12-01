@@ -7,4 +7,5 @@ export const sessionStore = new (pgSession(session))({
   pool: databasePoolFactory(),
   tableName: env.session.tableName,
   schemaName: env.database.schema,
+  ttl: 30 * 60, // 30 mins
 });

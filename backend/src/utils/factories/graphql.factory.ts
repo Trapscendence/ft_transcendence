@@ -43,18 +43,7 @@ export function graphqlFactory(statusService: StatusService) {
               webSocket.upgradeReq,
               await getSession(sid),
             );
-          statusService.newConnection(
-            webSocket.upgradeReq.headers['sec-websocket-key'],
-            webSocket.upgradeReq.session.uid,
-            sid,
-          );
           return { req: webSocket.upgradeReq };
-        },
-        onDisconnect: async (webSocket, context) => {
-          await statusService.deleteConnection(
-            webSocket.upgradeReq.headers['sec-websocket-key'],
-            undefined,
-          );
         },
       },
     },
