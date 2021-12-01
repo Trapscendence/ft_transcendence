@@ -22,7 +22,12 @@ export interface Match {
 }
 
 export interface MatchData {
-  user: { id: string; nickname: string; match_history: Match[] };
+  user: {
+    id: string;
+    nickname: string;
+    match_history: Match[];
+    achievements: string[];
+  };
 }
 export interface UsersData {
   users: User[];
@@ -42,4 +47,15 @@ export interface MatchDataVars {
   nickname: string;
   offset: number;
   limit: number;
+}
+
+export interface UserProfile {
+  nickname: string;
+  id: string;
+  rank: number;
+  avatar: string;
+}
+
+export interface UserProfileData {
+  users: UserProfile[];
 }

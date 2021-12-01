@@ -108,7 +108,10 @@ export class UsersService {
     ) RETURNING id, tfa_secret;
     `);
 
-    if (insertQueryResult.length === 1) return insertQueryResult[0];
+    if (insertQueryResult.length === 1){
+      this.achieveOne(oauth_id, "1");
+      return insertQueryResult[0];
+    } 
     else
       throw new ConflictException(
         `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
