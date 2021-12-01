@@ -1,10 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { unlinkSync } from 'fs';
+import { join } from 'path';
 import { DatabaseService } from './database/database.service';
 import { env } from './utils/envs';
 
 @Injectable()
 export class AppService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly logger: Logger;
+
+  constructor(private readonly databaseService: DatabaseService) {
+    this.logger = new Logger('FileSystem');
+  }
 
   getHello(): string {
     return 'Hello World!';
@@ -19,5 +25,18 @@ export class AppService {
 
     if (queryResult.length === 1) return true;
     else return false;
+  }
+
+  deleteFile(filename: string): boolean {
+    const filepath = join(__dirname, '..', 'public', filename);
+
+    try {
+      unlinkSync(filepath);
+      this.logger.verbose(`DELETE ${filepath}`);
+      return true;
+    } catch (error) {
+      this.logger.error(`Error occured during delete file: ${filepath}`);
+      return false;
+    }
   }
 }
