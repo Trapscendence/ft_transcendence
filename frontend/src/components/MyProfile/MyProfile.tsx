@@ -10,6 +10,7 @@ import {
   Paper,
   Stack,
   Typography,
+  TextField,
 } from '@mui/material';
 import qrcode from 'qrcode';
 import { useEffect, useState } from 'react';
@@ -48,13 +49,19 @@ export default function MyProfileSetting(): JSX.Element {
     width: '95px',
   };
   const elementStyle = {
-    height: '150px',
+    // height: '150px',
+    minHeight: '150px',
 
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
   };
 
+  const buttonStyle = {
+    // boxShadow: 0,
+    margin: '5px',
+    height: '30px',
+  };
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
@@ -167,13 +174,12 @@ export default function MyProfileSetting(): JSX.Element {
         alignItems: 'center',
       }}
     >
-      <Paper
-        elevation={3}
+      <Box
         sx={{
           height: '70%',
           width: '90%',
-          padding: '5% 15%',
-          margin: '5%',
+          padding: '0% 15%',
+          margin: '0%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'space-between',
@@ -186,7 +192,7 @@ export default function MyProfileSetting(): JSX.Element {
           columnSpacing={{ md: 1 }}
         >
           <Grid item xs={6}>
-            <Paper sx={elementStyle} variant="outlined">
+            <Paper sx={elementStyle}>
               <Stack spacing={1} alignItems="center">
                 {currentUser?.avatar ? (
                   <Avatar
@@ -202,20 +208,29 @@ export default function MyProfileSetting(): JSX.Element {
                 <Box />
                 {/* <button> 프로필 사진 변경</button> */}
                 <form>
-                  <label htmlFor="profile-upload" />
-                  <input
-                    type="file"
-                    id="profile-upload"
-                    accept="image/*"
-                    onChange={onChangeImg}
-                  />
+                  <label htmlFor="profile-upload">
+                    <input
+                      type="file"
+                      id="profile-upload"
+                      accept="image/*"
+                      onChange={onChangeImg}
+                      style={{ display: 'none' }}
+                    />
+                    <Button
+                      sx={buttonStyle}
+                      variant="contained"
+                      component="span"
+                    >
+                      Upload
+                    </Button>
+                  </label>
                 </form>
               </Stack>
             </Paper>
           </Grid>
 
           <Grid item xs={6}>
-            <Paper sx={elementStyle} variant="outlined">
+            <Paper sx={elementStyle}>
               <Stack>
                 <form
                   onSubmit={(event) => {
@@ -248,13 +263,15 @@ export default function MyProfileSetting(): JSX.Element {
                     onChange={onchangeNickname}
                     // defaultValue={currentUser?.nickname}
                   ></input>
-                  <button
+                  <Button
+                    variant="contained"
                     type="submit"
                     // disabled={nicknameButtonActive}
                     // onClick={handleChangeNickname}
+                    sx={buttonStyle}
                   >
                     닉네임 변경
-                  </button>
+                  </Button>
                 </form>
                 {errorMessage ? errorMessage : ''}
               </Stack>
@@ -262,30 +279,38 @@ export default function MyProfileSetting(): JSX.Element {
           </Grid>
 
           <Grid item xs={12}>
-            <Paper sx={elementStyle} variant="outlined">
+            <Paper sx={elementStyle}>
               <Typography variant="body2">
                 2차 인증 <br />
                 {imageUrl && imageUrl != '' ? (
                   <Stack>
-                    <button
+                    <Button
+                      sx={buttonStyle}
+                      variant="contained"
                       onClick={() => {
                         deleteTfa();
                         setImageUrl('');
                       }}
                     >
                       비활성화하기
-                    </button>
+                    </Button>
                     <img src={imageUrl} />
                   </Stack>
                 ) : (
-                  <button onClick={() => createTfa()}>활성화하기</button>
+                  <Button
+                    variant="contained"
+                    sx={buttonStyle}
+                    onClick={() => createTfa()}
+                  >
+                    활성화하기
+                  </Button>
                 )}
               </Typography>
             </Paper>
           </Grid>
 
           <Grid item xs={12}>
-            <Paper sx={elementStyle} variant="outlined">
+            <Paper sx={elementStyle}>
               <Stack>
                 블랙리스트 추가
                 {data ? (
@@ -324,16 +349,23 @@ export default function MyProfileSetting(): JSX.Element {
                     <Box sx={{ width: '100%' }}>
                       <Typography sx={{ width: '80%' }}>
                         {blackUser.nickname}
+                        <Button
+                          variant="contained"
+                          sx={{
+                            // boxShadow: 0,
+                            margin: '5px',
+                            height: '20px',
+                            width: '20px',
+                          }}
+                          onClick={() =>
+                            deleteFromBlackList({
+                              variables: { black_id: blackUser.id },
+                            })
+                          }
+                        >
+                          X
+                        </Button>
                       </Typography>
-                      <button
-                        onClick={() =>
-                          deleteFromBlackList({
-                            variables: { black_id: blackUser.id },
-                          })
-                        }
-                      >
-                        X
-                      </button>
                     </Box>
                   ))}
                 </Box>
@@ -342,12 +374,12 @@ export default function MyProfileSetting(): JSX.Element {
           </Grid>
 
           <Grid item xs={12}>
-            <Paper sx={elementStyle} variant="outlined">
+            <Paper sx={elementStyle}>
               <Typography variant="body2">회원탈퇴</Typography>
             </Paper>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
     </Box>
   );
 }

@@ -42,8 +42,8 @@ export const GET_MY_CHANNEL = gql`
         participants {
           id
           nickname
-          # avatar
-          # status
+          avatar
+          status
         }
         banned_users {
           id
@@ -218,8 +218,8 @@ export const LEAVE_CHANNEL = gql`
 `;
 
 export const MUTE_USER = gql`
-  mutation MuteUserOnChannel($user_id: ID!) {
-    muteUserOnChannel(user_id: $user_id)
+  mutation MuteUserOnChannel($mute_time: Int!, $user_id: ID!) {
+    muteUserOnChannel(mute_time: $mute_time, user_id: $user_id)
   }
 `;
 

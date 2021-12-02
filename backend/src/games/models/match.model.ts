@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { User } from '../../users/models/user.model';
+import { User } from '../users/models/user.model';
 
 // TODO
 // enum도 파일 분리해야 할 것 같은데...

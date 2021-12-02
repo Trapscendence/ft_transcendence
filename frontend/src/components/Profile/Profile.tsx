@@ -16,9 +16,14 @@ import {
   MatchData,
   MatchDataVars,
   User,
+  UserProfile,
+  UserProfileData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import { GET_MATCH_BY_NICKNAME, GET_USERS } from '../../utils/Apollo/UserQuery';
+import {
+  GET_MATCH_WITH_ACHIEVE_BY_NICKNAME,
+  GET_USERS,
+} from '../../utils/Apollo/UserQuery';
 
 function Profile(): JSX.Element {
   const avartarStyle = {
@@ -32,17 +37,6 @@ function Profile(): JSX.Element {
   const typoStyle = {
     margin: '10px',
   };
-
-  interface UserProfile {
-    nickname: string;
-    id: string;
-    rank: number;
-    avatar: string;
-  }
-
-  interface UserProfileData {
-    users: UserProfile[];
-  }
 
   const { error, data } = useQuery<UserProfileData, UsersDataVars>(GET_USERS, {
     variables: { ladder: false, offset: 0, limit: 0 },
@@ -79,9 +73,10 @@ function Profile(): JSX.Element {
     if (data?.users[urlInputId - 1]) setCurrentUser(data.users[urlInputId - 1]);
     else setCurrentUser(undefined);
   }, [urlInputId, data]);
-  //matchHistory
-  const { data: matchData } = useQuery<MatchData, MatchDataVars>(
-    GET_MATCH_BY_NICKNAME,
+
+  //---------------------------------------matchHistory and achieve
+  const { data: profileData } = useQuery<MatchData, MatchDataVars>(
+    GET_MATCH_WITH_ACHIEVE_BY_NICKNAME,
     {
       variables: {
         nickname: currentUser?.nickname ?? '',
@@ -90,7 +85,7 @@ function Profile(): JSX.Element {
       },
     }
   );
-  console.log(matchData);
+  console.log(profileData?.user);
 
   //---------------------------------------------------
 
@@ -176,7 +171,7 @@ function Profile(): JSX.Element {
           전적
         </Typography>
         <Paper style={paperStyle}>
-          {matchData?.user.Match.map((match) => (
+          {profileData?.user?.match_history?.map((match) => (
             <Stack>
               <Typography>
                 승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
@@ -190,7 +185,7 @@ function Profile(): JSX.Element {
         <Typography variant="h6" style={typoStyle}>
           업적
         </Typography>
-        <Paper style={paperStyle}></Paper>
+        <Paper style={paperStyle}>{profileData?.user?.achievements[0]}</Paper>
         <Typography variant="h6" style={typoStyle}>
           랭킹
         </Typography>

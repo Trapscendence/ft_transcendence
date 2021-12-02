@@ -23,7 +23,7 @@ import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/games/models/match.model';
+import { Match } from 'src/matchs/match.model';
 import { GamesService } from 'src/games/games.service';
 
 @Resolver((of) => User)
@@ -31,7 +31,6 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
-    // private readonly gamesService: GamesService,
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
@@ -220,6 +219,10 @@ export class UsersResolver {
     const { id } = user;
     return this.statusService.getStatus(id);
   }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
 
   @ResolveField('match_history', (returns) => [Match])
   async getMatchHistory(
