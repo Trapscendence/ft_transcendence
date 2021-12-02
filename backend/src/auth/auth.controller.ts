@@ -68,7 +68,7 @@ export class AuthController {
         break;
       } catch (err) {}
     }
-    res.redirect('/');
+    res.redirect('/register');
   }
 
   @Post('totp')
