@@ -49,7 +49,7 @@ export class AuthController {
       req.session.tfa_secret = tfa_secret;
       res.redirect(env.redirect.totp);
     } else {
-      res.redirect('/');
+      res.redirect(req.user.redirect);
     }
   }
 
