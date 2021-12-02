@@ -185,7 +185,7 @@ function Profile(): JSX.Element {
         <Typography variant="h6" style={typoStyle}>
           업적
         </Typography>
-        <Paper style={paperStyle}>{profileData?.user?.achievements[0]}</Paper>
+        <Paper style={paperStyle}>{profileData?.user?.achievements}</Paper>
         <Typography variant="h6" style={typoStyle}>
           랭킹
         </Typography>

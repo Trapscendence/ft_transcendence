@@ -1,5 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
+import { GamesService } from 'src/games/games.service';
 import { DatabaseService } from 'src/database/database.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserStatus } from 'src/users/models/user.model';
@@ -13,18 +18,15 @@ export class StatusService {
     { sid: string; status: UserStatus }
   >;
 
-  // Websocket Key -> User ID
-  private readonly webSocketKeyContainer: Map<string, { userId: string }>;
-
   constructor(
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
     private readonly databaseService: DatabaseService,
+    private readonly gamesService: GamesService,
   ) {
     this.statusContainer = new Map<
       string,
       { sid: string; status: UserStatus }
     >();
-    this.webSocketKeyContainer = new Map<string, { userId: string }>();
   }
 
   setStatus(userId: string, status: UserStatus): void {
@@ -40,8 +42,8 @@ export class StatusService {
     return this.statusContainer.get(userId)?.status ?? UserStatus.OFFLINE;
   }
 
-  newConnection(webSocketKey: string, userId: string, sid: string): void {
-    if (this.statusContainer.has(userId)) this.deleteConnection(webSocketKey);
+  async newConnection(userId: string, sid: string): Promise<void> {
+    if (this.statusContainer.has(userId)) await this.deleteConnection(userId);
     this.pubSub.publish(`status_of_${userId}`, {
       statusChange: UserStatus.ONLINE,
     });
@@ -49,18 +51,17 @@ export class StatusService {
       sid,
       status: UserStatus.ONLINE,
     });
-    this.webSocketKeyContainer.set(webSocketKey, { userId });
   }
 
-  deleteConnection(webSocketKey: string): void {
-    const userId = this.webSocketKeyContainer.get(webSocketKey)?.userId;
+  async deleteConnection(userId: string): Promise<void> {
     if (!userId) return;
     const statusObject = this.statusContainer.get(userId);
+    if (!statusObject) return;
 
-    this.databaseService.executeQuery(
-      `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}';`,
+    this.gamesService.surrenderGameWithUserId(userId);
+    await this.databaseService.executeQuery(
+      `DELETE FROM ${env.database.schema}.user_session WHERE sid = '${statusObject.sid}' RETURNING sid;`,
     );
-    this.webSocketKeyContainer.delete(webSocketKey);
     this.statusContainer.delete(userId);
     this.pubSub.publish(`status_of_${userId}`, {
       statusChange: UserStatus.OFFLINE,

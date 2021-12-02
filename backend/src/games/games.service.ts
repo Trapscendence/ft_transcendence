@@ -369,6 +369,14 @@ export class GamesService {
     return true;
   }
 
+  surrenderGameWithUserId(user_id: string) {
+    const game = this.userMap.get(user_id);
+    if (!game) return null;
+
+    const isLeft = game.left_player.id == user_id; // NOTE: 현재 user_id 타입이 멋대로라 === 비교를 안했음
+    this.surrenderGame(game.id, isLeft);
+  } // NOTE: onDisconnect에서 사용할 함수
+
   async makeCustomGame(
     user_id: string,
     target_id: string,
@@ -417,7 +425,7 @@ export class GamesService {
       false
     );
   `,
-      [winner_id, loser_id, 5, 5, new Date().getTime],
+      [winner_id, loser_id, 5, 5, new Date().getTime()],
     );
   }
 }

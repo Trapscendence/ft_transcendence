@@ -21,4 +21,8 @@ export const env = {
     clientSecret: process.env.FORTYTWO_APP_SECRET,
     callbackURL: process.env.FORTYTWO_REDIRECT_URI,
   },
+  storage: {
+    host: process.env.STORAGE_HOST,
+    port: process.env.STORAGE_PORT,
+  },
 };

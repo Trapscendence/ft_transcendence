@@ -7,6 +7,7 @@ import {
   Body,
   Post,
   Query,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
@@ -15,11 +16,15 @@ import { env } from 'src/utils/envs';
 import { UsersService } from 'src/users/users.service';
 import { PassTfaGuard } from './decorators/pass-tfa-guard.decorator';
 import { PassLoginGuard } from './decorators/pass-login-guard.decorator';
+import { StatusService } from 'src/status/status.service';
+import { UserStatus } from 'src/users/models/user.model';
+import { UserID } from 'src/users/decorators/user-id.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly statusService: StatusService,
     private readonly usersService: UsersService, // FIXME: remove this
   ) {}
 
@@ -35,9 +40,11 @@ export class AuthController {
   @PassTfaGuard()
   @PassLoginGuard()
   async loginWithFortyTwo(@Req() req: any, @Res() res: Response) {
-    const tfa_secret = await this.usersService.getSecret(req.user.id);
-
+    if (this.statusService.getStatus(req.user.id) !== UserStatus.OFFLINE)
+      await this.statusService.deleteConnection(req.user.id);
+    this.statusService.newConnection(req.user.id, req.session.id);
     req.session.uid = req.user.id;
+    const tfa_secret = await this.usersService.getSecret(req.user.id);
     if (tfa_secret) {
       req.session.tfa_secret = tfa_secret;
       res.redirect(env.redirect.totp);
@@ -88,10 +95,11 @@ export class AuthController {
   }
 
   @Get('logout')
-  async logout(@Req() req: any, @Res() res: Response) {
-    res.cookie[env.session.cookieName] = '';
+  async logout(@UserID() userId, @Req() req: any, @Res() res: Response) {
+    await this.statusService.deleteConnection(userId);
+    req.session.destroy();
+    res.clearCookie(env.session.cookieName);
     res.redirect('/');
-    // Delete session in statusService.deleteConnection that called from onDisconnect()
   }
 
   @Get('test')

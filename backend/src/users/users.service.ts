@@ -12,6 +12,7 @@ import { User, UserRole } from './models/user.model';
 import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
+import axios from 'axios';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/matchs/match.model';
@@ -108,10 +109,10 @@ export class UsersService {
     ) RETURNING id, tfa_secret;
     `);
 
-    if (insertQueryResult.length === 1){
-      this.achieveOne(oauth_id, "1");
-      return insertQueryResult[0];
-    } 
+  if (insertQueryResult.length === 1){
+    this.achieveOne(insertQueryResult[0].id, "1");
+    return insertQueryResult[0];
+  } 
     else
       throw new ConflictException(
         `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
@@ -215,13 +216,22 @@ export class UsersService {
   }
 
   async deleteAvatar(user_id: string): Promise<boolean> {
-    const queryResult = await this.databaseService.executeQuery(
+    const selectResult = await this.databaseService.executeQuery(
+      `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
+    );
+    if (selectResult.length !== 1) return false;
+    if (selectResult[0].avatar !== null) {
+      await axios.delete(
+        `http://${env.storage.host}:${env.storage.port}/delete/${selectResult[0].avatar}`,
+      );
+    }
+
+    const updateResult = await this.databaseService.executeQuery(
       `UPDATE ${
         env.database.schema
       }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
     );
-
-    if (queryResult.length === 1) return true;
+    if (updateResult.length === 1) return true;
     else return false;
   }
 

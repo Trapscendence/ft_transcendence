@@ -15,9 +15,9 @@ import {
   LeaveChannelResponse,
 } from '../../../utils/Apollo/responseModels';
 import handleError from '../../../utils/handleError';
+import ChannelManageModal from '../../ChannelList/ChannelListHeader/ChannelManageModal';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
-import ChannelEditModal from './ChannelEditModal';
 
 interface ChannelHeaderProps {
   id: string;
@@ -52,13 +52,6 @@ export default function ChannelHeader({
     ],
   });
 
-  const handleOpen = (): void => {
-    setOpen(true);
-  };
-  const handleClose = (): void => {
-    setOpen(false);
-  };
-
   const errorVar = leaveChannelError || channelRoleError;
   const loadingVar = channelRoleLoading || leaveChannelLoading;
 
@@ -87,7 +80,13 @@ export default function ChannelHeader({
         </Box>
         <Box>
           {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
-            <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+            <Button
+              variant="contained"
+              sx={{ m: 1 }}
+              onClick={() => {
+                setOpen(true);
+              }}
+            >
               Edit Channel
             </Button>
           )}
@@ -99,7 +98,8 @@ export default function ChannelHeader({
             Leave Channel
           </Button>
         </Box>
-        <ChannelEditModal {...{ open, handleClose, id }} />
+        {/* <ChannelEditModal {...{ open, handleClose, id }} /> */}
+        <ChannelManageModal {...{ open, setOpen }} isAddChannel={false} />
       </Paper>
     </>
   );

@@ -31,7 +31,6 @@ export class UsersResolver {
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
-    // private readonly gamesService: GamesService,
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
@@ -220,6 +219,7 @@ export class UsersResolver {
     const { id } = user;
     return this.statusService.getStatus(id);
   }
+
   /*
    ** ANCHOR: User Subscription
    */

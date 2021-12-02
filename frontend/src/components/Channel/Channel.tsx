@@ -123,6 +123,9 @@ export default function Channel({
       case Notify.EDIT:
         void channelRefetch();
         break;
+      case Notify.TRANSFER:
+        void channelRefetch();
+        break;
     }
   }, [subscribeData]);
 

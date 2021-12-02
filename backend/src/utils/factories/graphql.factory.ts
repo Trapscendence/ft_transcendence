@@ -37,23 +37,13 @@ export function graphqlFactory(statusService: StatusService) {
             cookies[env.session.cookieName],
             env.session.secret,
           );
-          if (sid === false) throw new WsException('Invalid credentials.');
+          if (!sid) throw new WsException('Invalid credentials.');
           else
             sessionStore.createSession(
               webSocket.upgradeReq,
               await getSession(sid),
             );
-          statusService.newConnection(
-            webSocket.upgradeReq.headers['sec-websocket-key'],
-            webSocket.upgradeReq.session.uid,
-            webSocket.upgradeReq.session.id,
-          );
           return { req: webSocket.upgradeReq };
-        },
-        onDisconnect: (webSocket, context) => {
-          statusService.deleteConnection(
-            webSocket.upgradeReq.headers['sec-websocket-key'],
-          );
         },
       },
     },
