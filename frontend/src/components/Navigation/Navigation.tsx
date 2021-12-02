@@ -44,6 +44,7 @@ const tabs: Itabs = {
 
 function Navigation(): JSX.Element {
   const history = useHistory();
+
   const location = useLocation();
 
   const [tabValue, setTabValue] = useState(0);
@@ -95,83 +96,77 @@ function Navigation(): JSX.Element {
   };
 
   return (
-    <>
-      <Box
-        py={1}
-        sx={{
-          position: 'fixed',
-          zIndex: 1,
-          bgcolor: 'white',
-          // width: '90px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height: '100vh',
-          borderRight: '1px solid #e0e0e0',
-        }}
-      >
-        <Box>
-          <Tabs value={tabValue} onChange={handleChange} orientation="vertical">
-            <Tab aria-label="/home" icon={<Home />} />
-            <Tab
-              aria-label={'/profile/' + currentUser.id}
-              icon={<AccountCircle />}
-            />
-            <Tab aria-label="/rank" icon={<Analytics />} />
-            <Tab aria-label="/channel" icon={<Forum />} />
-            <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
-          </Tabs>
-          <Divider />
-          <Box>
-            <Matching />
-          </Box>
-        </Box>
-        <Stack>
-          <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
+    <Box
+      py={1}
+      sx={{
+        position: 'fixed',
+        zIndex: 1,
+        bgcolor: 'white',
+        // width: '90px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        height: '100vh',
+        borderRight: '1px solid #e0e0e0',
+      }}
+    >
+      <Box>
+        <Tabs value={tabValue} onChange={handleChange} orientation="vertical">
+          <Tab aria-label="/home" icon={<Home />} />
           <Tab
-            aria-label="auth/logout"
-            icon={<LogoutIcon />}
-            onClick={logOut}
+            aria-label={'/profile/' + currentUser.id}
+            icon={<AccountCircle />}
           />
-        </Stack>
+          <Tab aria-label="/rank" icon={<Analytics />} />
+          <Tab aria-label="/channel" icon={<Forum />} />
+          <Tab aria-label="/setting" icon={<SettingsApplicationsSharp />} />
+        </Tabs>
+        <Divider />
+        <Box>
+          <Matching />
+        </Box>
+      </Box>
+      <Stack>
+        <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
+        <Tab aria-label="auth/logout" icon={<LogoutIcon />} onClick={logOut} />
+      </Stack>
 
-        <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
-          <Stack
-            sx={{ height: '100vh' }}
-            direction="column"
-            justifyContent="space-between"
-          >
-            <List>
-              {['공지사항', '패치노트', '게임규칙', '멋진그림', '크레딧'].map(
-                (text, index) => (
-                  <ListItem button={false} key={index}>
-                    <Button variant="contained" sx={{ width: '170px' }}>
-                      {text}
-                      {/* // NOTE: ListItemText와 그냥 text를 넣는 것의 차이가 디자인말고 있을까? 디자인은 취향 차이인듯. */}
-                    </Button>
-                  </ListItem>
-                )
-              )}
-            </List>
-            <Box />
-            <List>
-              {['유저목록', '게임목록', '채널목록'].map((text, index) => (
-                <ListItem key={index}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    sx={{ width: '170px' }}
-                  >
+      <Drawer anchor="left" open={open} onClose={toggleDrawer(false)}>
+        <Stack
+          sx={{ height: '100vh' }}
+          direction="column"
+          justifyContent="space-between"
+        >
+          <List>
+            {['공지사항', '패치노트', '게임규칙', '멋진그림', '크레딧'].map(
+              (text, index) => (
+                <ListItem button={false} key={index}>
+                  <Button variant="contained" sx={{ width: '170px' }}>
                     {text}
+                    {/* // NOTE: ListItemText와 그냥 text를 넣는 것의 차이가 디자인말고 있을까? 디자인은 취향 차이인듯. */}
                   </Button>
                 </ListItem>
-              ))}
-            </List>
-          </Stack>
-        </Drawer>
-      </Box>
-    </>
+              )
+            )}
+          </List>
+          <Box />
+          <List>
+            {['유저목록', '게임목록', '채널목록'].map((text, index) => (
+              <ListItem key={index}>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  sx={{ width: '170px' }}
+                >
+                  {text}
+                </Button>
+              </ListItem>
+            ))}
+          </List>
+        </Stack>
+      </Drawer>
+    </Box>
   );
 }
 
