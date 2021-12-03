@@ -15,7 +15,7 @@ import { Channel } from 'src/channels/models/channel.model';
 import axios from 'axios';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/matchs/match.model';
+import { Match } from 'src/games/models/match.model';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 
@@ -109,11 +109,10 @@ export class UsersService {
     ) RETURNING id, tfa_secret;
     `);
 
-    if (insertQueryResult.length === 1){
-      this.achieveOne(oauth_id, "1");
+    if (insertQueryResult.length === 1) {
+      this.achieveOne(insertQueryResult[0].id, '1');
       return insertQueryResult[0];
-    } 
-    else
+    } else
       throw new ConflictException(
         `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
       );

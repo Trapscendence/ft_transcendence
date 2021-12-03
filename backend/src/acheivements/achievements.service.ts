@@ -10,7 +10,9 @@ export class AchievementsService {
   async getAllAchievements(): Promise<Achievement[]> {
     return await this.databaseService.executeQuery(`
       SELECT
-        *
+        id,
+        name,
+        time_stamp
       FROM
         ${env.database.schema}.achievement;
     `);

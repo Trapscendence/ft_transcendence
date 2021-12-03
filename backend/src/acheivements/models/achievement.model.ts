@@ -8,6 +8,6 @@ export class Achievement {
   @Field()
   name: string;
 
-  @Field((type) => Int)
-  date: number;
+  @Field()
+  time_stamp: string;
 }

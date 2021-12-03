@@ -23,7 +23,7 @@ import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/matchs/match.model';
+import { Match } from 'src/games/models/match.model';
 import { GamesService } from 'src/games/games.service';
 
 @Resolver((of) => User)
