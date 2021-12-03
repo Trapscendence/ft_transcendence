@@ -67,7 +67,7 @@ export const GET_MATCH_WITH_ACHIEVE_BY_NICKNAME = gql`
       achievements {
         id
         name
-        date
+        time_stamp
       }
     }
   }
