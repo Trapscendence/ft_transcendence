@@ -85,12 +85,11 @@ function Profile(): JSX.Element {
       },
     }
   );
-  console.log(profileData?.user);
 
   //---------------------------------------------------
 
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
-
+  console.log(profileData?.user);
   return (
     <Box
       sx={{
@@ -178,10 +177,12 @@ function Profile(): JSX.Element {
           ))}
         </Paper>
         <Typography variant="h6" style={typoStyle}>
-          업적
+          달성한 업적
         </Typography>
         <Paper style={paperStyle} variant="outlined">
-          {profileData?.user?.achievements}
+          {profileData?.user?.achievements.map((achieve) => (
+            <Box> - {achieve.name}</Box>
+          ))}
         </Paper>
         <Typography variant="h6" style={typoStyle}>
           랭킹
