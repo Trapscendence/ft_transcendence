@@ -25,6 +25,7 @@ import { PubSub } from 'graphql-subscriptions';
 import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
 import { GamesService } from 'src/games/games.service';
+import { AchievementsService } from 'src/acheivements/achievements.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -33,6 +34,7 @@ export class UsersResolver {
     private readonly statusService: StatusService,
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   /*
@@ -154,7 +156,18 @@ export class UsersResolver {
     @UserID() user_id: string,
     @Args('achievement_id') achievement_id: string,
   ): Promise<boolean> {
-    return await this.usersService.achieveOne(user_id, achievement_id);
+    return await this.achievementsService.achieveOne(user_id, achievement_id);
+  }
+
+  @Mutation((returns) => Boolean)
+  async checkAchieved(
+    @UserID() user_id: string,
+    @Args('achievement_id') achievement_id: string,
+  ): Promise<boolean> {
+    return await this.achievementsService.checkAchieved(
+      user_id,
+      achievement_id,
+    );
   }
 
   @Mutation((returns) => Boolean)
@@ -165,6 +178,7 @@ export class UsersResolver {
     this.statusService.setStatus(user_id, status);
     return true;
   }
+
   // NOTE for test
   @Mutation((returns) => Boolean)
   async insertMatchResult(
@@ -211,7 +225,7 @@ export class UsersResolver {
 
   @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
   async getAchieved(@Parent() user: User): Promise<Achievement[]> {
-    return await this.usersService.getAchieved(user.id);
+    return await this.achievementsService.getAchieved(user.id);
   }
 
   @ResolveField('status', (returns) => UserStatus)

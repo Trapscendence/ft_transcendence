@@ -12,6 +12,8 @@ import {
   GameNotifyType,
 } from './models/game.model';
 import { env } from 'src/utils/envs';
+import { Parent, ResolveField } from '@nestjs/graphql';
+import { Match } from './models/match.model';
 
 const START_DELAY = 2000;
 
@@ -425,10 +427,10 @@ export class GamesService {
       ($4),
       ($5),
       ($6)
-    );
+    )
     returning *;
   `,
-      [winner_id, loser_id, points, points, new Date().getTime, ladder],
+      [winner_id, loser_id, points, points, new Date().getTime(), ladder],
     );
     if (!matchResult.length) return false;
     if (points) {
@@ -440,14 +442,19 @@ export class GamesService {
           rank_score = rank_score + 5
         WHERE
           id = ($1);
-        UPDATE
-          ${env.database.schema}.user
-        SET
-          rank_score = rank_score - 5
-        WHERE
-          id = ($2);
       `,
-        [winner_id, loser_id],
+        [winner_id],
+      );
+      this.databaseService.executeQuery(
+        `
+      UPDATE
+        ${env.database.schema}.user
+      SET
+        rank_score = rank_score - 5
+      WHERE
+        id = ($1);
+      `,
+        [loser_id],
       );
     }
     return true;

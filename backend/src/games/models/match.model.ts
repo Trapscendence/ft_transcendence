@@ -20,17 +20,17 @@ export class Match {
   @Field((type) => ID)
   id: string;
 
+  @Field((type) => ID)
+  winner_id: string;
+
   @Field((type) => User)
   winner: User;
 
-  @Field((type) => Int)
-  winner_points: number;
+  @Field((type) => ID)
+  loser_id: string;
 
   @Field((type) => User)
   loser: User;
-
-  @Field((type) => Int)
-  loser_points: number;
 
   @Field((type) => MatchType)
   type: MatchType;
