@@ -95,6 +95,10 @@ function Navigation(): JSX.Element {
     console.log(open);
   };
 
+  function adminOnclick(text: string) {
+    history.push('/admin/' + text);
+  }
+
   return (
     <Box
       py={1}
@@ -139,10 +143,14 @@ function Navigation(): JSX.Element {
           justifyContent="space-between"
         >
           <List>
-            {['공지사항', '패치노트', '게임규칙', '멋진그림', '크레딧'].map(
+            {['Notice', 'PatchNote', 'Rule', 'AmazingPicture', 'Credit'].map(
               (text, index) => (
                 <ListItem button={false} key={index}>
-                  <Button variant="contained" sx={{ width: '170px' }}>
+                  <Button
+                    variant="contained"
+                    sx={{ width: '170px' }}
+                    onClick={() => adminOnclick(text)}
+                  >
                     {text}
                     {/* // NOTE: ListItemText와 그냥 text를 넣는 것의 차이가 디자인말고 있을까? 디자인은 취향 차이인듯. */}
                   </Button>

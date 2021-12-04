@@ -3,6 +3,7 @@ import {
   Avatar,
   Box,
   Button,
+  Card,
   Paper,
   Skeleton,
   Stack,
@@ -31,7 +32,11 @@ function Profile(): JSX.Element {
     width: '150px',
   };
   const paperStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignsItem: 'center',
     minHeight: '170px',
+    padding: '5%',
     // width: '80%',
   };
   const typoStyle = {
@@ -89,7 +94,6 @@ function Profile(): JSX.Element {
   //---------------------------------------------------
 
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
-  console.log(profileData?.user);
   return (
     <Box
       sx={{
@@ -180,16 +184,42 @@ function Profile(): JSX.Element {
           달성한 업적
         </Typography>
         <Paper style={paperStyle} variant="outlined">
-          {profileData?.user?.achievements.map((achieve) => (
-            <Box> - {achieve.name}</Box>
-          ))}
+          <Box>
+            {profileData?.user?.achievements.map((achieve) => (
+              <Box
+                component="span"
+                sx={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  p: 2,
+                  border: '1px dashed grey',
+                }}
+              >
+                - {achieve.name}
+              </Box>
+            ))}
+          </Box>
         </Paper>
         <Typography variant="h6" style={typoStyle}>
           랭킹
         </Typography>
 
         <Paper style={paperStyle} variant="outlined">
-          {currentUser.rank}위
+          <Box
+            component="span"
+            sx={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              p: 2,
+              border: '1px dashed grey',
+            }}
+          >
+            {currentUser.rank}위
+          </Box>
         </Paper>
       </Box>
     </Box>

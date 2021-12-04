@@ -42,7 +42,7 @@ function App(): JSX.Element {
         <RestrictRoute exact path="/rank" component={Rank} />
         <RestrictRoute exact path="/setting" component={MyProfile} />
         <RestrictRoute exact path="/profile/:userid" component={Profile} />
-        <RestrictRoute exact path="/admin" component={Admin} />
+        <RestrictRoute exact path="/admin/:prop" component={Admin} />
         <Route exact path="/game" component={Game} />
         <Route exact path="/observe" component={ObserveGame} />
       </Switch>
