@@ -16,6 +16,7 @@ import { TfaGuard } from './auth/guards/tfa.guard';
 import { StatusModule } from './status/status.module';
 import { StatusService } from './status/status.service';
 import { graphqlFactory } from './utils/factories/graphql.factory';
+import { ArticleModule } from './article/article.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { graphqlFactory } from './utils/factories/graphql.factory';
     AchievementsModule,
     PubSubModule,
     AuthModule,
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [
