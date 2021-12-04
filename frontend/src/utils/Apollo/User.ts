@@ -21,12 +21,15 @@ export interface Match {
   time_stamp: string;
 }
 
+export interface achievement {
+  name: string;
+}
 export interface MatchData {
   user: {
     id: string;
     nickname: string;
     match_history: Match[];
-    achievements: string[];
+    achievements: achievement[];
   };
 }
 export interface UsersData {
