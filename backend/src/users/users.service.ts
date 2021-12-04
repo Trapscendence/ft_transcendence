@@ -503,7 +503,11 @@ export class UsersService {
   ): Promise<Match[]> {
     return await this.databaseService.executeQuery(`
       SELECT
-        *
+        id,
+        winner AS winner_id,
+        loser AS loser_id,
+        time_stamp,
+        ladder AS type
       FROM
         ${env.database.schema}.match
       WHERE

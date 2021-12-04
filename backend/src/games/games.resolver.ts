@@ -1,16 +1,19 @@
-import { Inject } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import {
   Args,
   ID,
   Int,
   Mutation,
+  Parent,
   Query,
+  ResolveField,
   Resolver,
   Subscription,
 } from '@nestjs/graphql';
 import { PubSub } from 'graphql-subscriptions';
 import { PUB_SUB } from 'src/pubsub.module';
 import { UserID } from 'src/users/decorators/user-id.decorator';
+import { User } from 'src/users/models/user.model';
 import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
 import {
@@ -19,6 +22,7 @@ import {
   GameNotify,
   RegisterNotify,
 } from './models/game.model';
+import { Match } from './models/match.model';
 
 @Resolver((of) => Game)
 export class GamesResolver {
@@ -155,5 +159,24 @@ export class GamesResolver {
   ) {
     // return this.pubSub.asyncIterator(`ingame_${game_id}_${user_id}`);
     return this.pubSub.asyncIterator(`canvas_${game_id}`);
+  }
+}
+
+@Resolver((of) => Match)
+export class MatchResolver {
+  constructor(
+    @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
+  ) {}
+
+  @ResolveField('winner', (returns) => User)
+  async getWinner(@Parent() match: Match): Promise<User> {
+    const { winner_id } = match;
+    return await this.usersService.getUserById(winner_id);
+  }
+
+  @ResolveField('loser', (returns) => User)
+  async getLoser(@Parent() match: Match): Promise<User> {
+    const { loser_id } = match;
+    return await this.usersService.getUserById(loser_id);
   }
 }
