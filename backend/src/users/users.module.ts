@@ -5,6 +5,7 @@ import { UsersResolver } from './users.resolver';
 import { GamesModule } from 'src/games/games.module';
 import { HttpModule } from '@nestjs/axios';
 import { StatusModule } from 'src/status/status.module';
+import { AchievementsModule } from 'src/acheivements/acheivements.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { StatusModule } from 'src/status/status.module';
     StatusModule,
     forwardRef(() => GamesModule),
     HttpModule,
+    AchievementsModule,
   ],
   providers: [UsersService, UsersResolver],
   exports: [UsersService],

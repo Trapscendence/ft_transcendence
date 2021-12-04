@@ -18,6 +18,7 @@ import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from '@nestjs/common/node_modules/axios';
+import { AchievementsService } from 'src/acheivements/achievements.service';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,7 @@ export class UsersService {
     @Inject(forwardRef(() => GamesService))
     private readonly gamesService: GamesService,
     private readonly httpService: HttpService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -110,7 +112,7 @@ export class UsersService {
     `);
 
     if (insertQueryResult.length === 1) {
-      this.achieveOne(insertQueryResult[0].id, '1');
+      this.achievementsService.achieveOne(insertQueryResult[0].id, '1');
       return insertQueryResult[0];
     } else
       throw new ConflictException(
@@ -576,58 +578,5 @@ export class UsersService {
           complete() {},
         });
     });
-  }
-
-  async getAchieved(user_id: string) {
-    return await this.databaseService.executeQuery(`
-      WITH ad AS (
-        SELECT
-          achievement_id id,
-          time_stamp time_stamp
-        FROM
-          ${env.database.schema}.achieved
-        WHERE
-          user_id = ${user_id}
-      )
-      SELECT
-        am.id,
-        am.name,
-        am.icon,
-        ad.time_stamp
-      FROM
-        ${env.database.schema}.achievement am
-      INNER JOIN
-        ad
-      ON
-        am.id = ad.id
-      ORDER BY
-        am.id ASC;
-    `);
-  }
-
-  async achieveOne(user_id: string, ach_id: string) {
-    const array = await this.databaseService.executeQuery(
-      `
-      INSERT INTO
-        ${env.database.schema}.achieved(
-          user_id,
-          achievement_id,
-          time_stamp
-        )
-      VALUES
-        (
-          ($1),
-          ($2),
-          ${new Date().getTime()}
-        )
-      ON CONFLICT
-        ON CONSTRAINT
-          user_id_achievement_id_unique
-      DO NOTHING
-      RETURNING *;
-    `,
-      [user_id, ach_id],
-    );
-    return array.length ? true : false;
   }
 }

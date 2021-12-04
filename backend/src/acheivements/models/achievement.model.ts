@@ -10,4 +10,7 @@ export class Achievement {
 
   @Field()
   time_stamp: string;
+
+  @Field({ nullable: true })
+  checked: boolean;
 }
