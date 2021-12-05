@@ -95,8 +95,9 @@ function NoticePage(): JSX.Element {
                 else {
                   writeNotice({
                     variables: { contents: inputSpace, title: titleSpace },
-                  }).catch(() => setErrorMessage('작성 실패!'));
-                  // window.location.replace('/admin/Notice');
+                  })
+                    .then(() => window.location.replace('/admin/Notice'))
+                    .catch(() => setErrorMessage('작성 실패!'));
                 }
               }}
             >

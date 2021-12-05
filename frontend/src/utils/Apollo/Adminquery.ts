@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 export const WRITE_NOTICE = gql`
   mutation writeNotice($contents: String!, $title: String!) {
-    writeNotice(contents: $contents, title: $contents)
+    writeNotice(contents: $contents, title: $title)
   }
 `;
 
