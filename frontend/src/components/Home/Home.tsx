@@ -53,7 +53,21 @@ function Home(): JSX.Element {
       setOffset(offset + 5);
     };
 
-    const handleNotice = () => {};
+    //TODO achieve 목록 쫙 확인해서 checked가 아닌 achieve 있으면 모달 띄워줘야함
+    /*
+
+
+  const [checkAchieved, { error: checkError }] = useMutation<{
+    achievement_id: string;
+  }>(gql`
+    mutation checkAchieved {
+      checkAchieved
+    }
+  `);
+  checkAchieved({
+    variables: { achievement_id: achievementId },
+  })
+    */
 
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
@@ -69,31 +83,6 @@ function Home(): JSX.Element {
           justifyContent: 'space-between',
         }}
       >
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 400,
-              bgcolor: 'background.paper',
-              border: '2px solid #000',
-              boxShadow: 24,
-              p: 4,
-            }}
-          >
-            <Typography id="modal-modal-title" variant="h6" component="h2">
-              새 공지를 입력해보세요.
-            </Typography>
-          </Box>
-        </Modal>
-
         {data?.Notices.map((notice, index) => {
           return (
             <Card
