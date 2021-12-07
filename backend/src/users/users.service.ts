@@ -506,8 +506,14 @@ export class UsersService {
         id,
         winner AS winner_id,
         loser AS loser_id,
+        win_points,
+        lose_points,
         time_stamp,
-        ladder AS type
+        CASE
+          WHEN ladder = true THEN 'RANK'
+          ELSE 'CUSTOM'
+        END
+          AS type
       FROM
         ${env.database.schema}.match
       WHERE
