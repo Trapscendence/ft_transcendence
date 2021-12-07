@@ -22,11 +22,16 @@ export class NoticeResolver {
   ) {}
 
   @Query((returns) => [Notice])
-  async Notices(
+  async notices(
     @Args('limit', { type: () => Int }) limit: number,
     @Args('offset', { type: () => Int }) offset: number,
   ): Promise<Notice[]> {
     return await this.articleService.getArticle(UseFor.NOTICE, limit, offset);
+  }
+
+  @Query((returns) => String)
+  credit(): string {
+    return process.env.CREDIT;
   }
 
   @Mutation((returns) => Boolean)

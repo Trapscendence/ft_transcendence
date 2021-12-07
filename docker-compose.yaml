@@ -105,6 +105,7 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
       - STORAGE_HOST=storage
       - STORAGE_PORT=3000
+      - CREDIT=${CREDIT}
     build: ./backend
     networks:
       - default
