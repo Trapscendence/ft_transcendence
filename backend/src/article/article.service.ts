@@ -88,7 +88,7 @@ export class ArticleService {
     use_for: UseFor,
   ): Promise<boolean> {
     if (!title && contents === undefined) return false;
-    if (title.length > 128 || contents.length > 8192)
+    if (title?.length > 128 || contents?.length > 8192)
       throw new PayloadTooLargeException('title or content is to long');
 
     const [article] = await this.databaseService.executeQuery(
@@ -140,6 +140,7 @@ export class ArticleService {
     time_stamp: string,
     use_for: UseFor,
   ): Promise<boolean> {
+    use_for as unknown;
     const [article] = await this.databaseService.executeQuery(
       `
       SELECT
@@ -163,10 +164,9 @@ export class ArticleService {
       DELETE FROM
         ${env.database.schema}.article
       WHERE
-        time_stamp = ($1),
-        use_for = ($2)
+        time_stamp = ($1)
       RETURNING *;`,
-      [time_stamp, use_for],
+      [time_stamp],
     );
     if (!deleted) throw new ConflictException('Not matching use');
     return true;

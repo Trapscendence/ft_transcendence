@@ -49,8 +49,8 @@ export class NoticeResolver {
     @Args('time_stamp') time_stamp: string,
     @Args('title', { nullable: true }) title: string,
     @Args('contents', { nullable: true }) contents: string,
-  ) {
-    this.articleService.editArticle(
+  ): Promise<boolean> {
+    return await this.articleService.editArticle(
       user_id,
       time_stamp,
       title,
@@ -63,8 +63,12 @@ export class NoticeResolver {
   async deleteNotice(
     @UserID() user_id: string,
     @Args('time_stamp') time_stamp: string,
-  ) {
-    this.articleService.deleteArticle(user_id, time_stamp, UseFor.NOTICE);
+  ): Promise<boolean> {
+    return await this.articleService.deleteArticle(
+      user_id,
+      time_stamp,
+      UseFor.NOTICE,
+    );
   }
 
   @ResolveField('writer', (returns) => User)
@@ -109,8 +113,8 @@ export class PatchNoteResolver {
     @Args('time_stamp') time_stamp: string,
     @Args('title', { nullable: true }) title: string,
     @Args('contents', { nullable: true }) contents: string,
-  ) {
-    this.articleService.editArticle(
+  ): Promise<boolean> {
+    return await this.articleService.editArticle(
       user_id,
       time_stamp,
       title,
@@ -123,8 +127,12 @@ export class PatchNoteResolver {
   async deleteNotice(
     @UserID() user_id: string,
     @Args('time_stamp') time_stamp: string,
-  ) {
-    this.articleService.deleteArticle(user_id, time_stamp, UseFor.PATCH);
+  ): Promise<boolean> {
+    return await this.articleService.deleteArticle(
+      user_id,
+      time_stamp,
+      UseFor.PATCH,
+    );
   }
 
   @ResolveField('writer', (returns) => User)
