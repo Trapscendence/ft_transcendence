@@ -39,11 +39,6 @@ export class UsersResolver {
    ** ANCHOR: User
    */
 
-  @Query((returns) => ID)
-  async getMyID(@UserID() user_id: string) {
-    return user_id;
-  }
-
   @Query((returns) => User, { nullable: true })
   async user(
     @UserID() user_id: string,
@@ -141,14 +136,6 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
-  @Mutation((returns) => String)
-  setAvatar(
-    @UserID() user_id: string,
-    @Args('file') file: string,
-  ): Promise<boolean> {
-    return this.usersService.setAvatar(user_id, file);
-  }
-
   @Mutation((returns) => Boolean)
   async achieveOne(
     @UserID() user_id: string,
@@ -165,6 +152,7 @@ export class UsersResolver {
     this.statusService.setStatus(user_id, status);
     return true;
   }
+
   // NOTE for test
   @Mutation((returns) => Boolean)
   async insertMatchResult(
@@ -200,12 +188,6 @@ export class UsersResolver {
   async getChannelRole(@Parent() user: User): Promise<UserRole | null> {
     const { id } = user;
     return await this.usersService.getChannelRole(id);
-  }
-
-  @ResolveField('avatar', (returns) => String, { nullable: true })
-  async getAvatar(@Parent() user: User): Promise<string> {
-    const { id } = user;
-    return await this.usersService.getAvatar(id);
   }
 
   @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
