@@ -21,8 +21,8 @@ export default function GameEndModal({
 }: GameEndModalProps): JSX.Element {
   const history = useHistory();
 
+  useAchievement({ achievementId: '2' });
   const onClickBtn = () => {
-    useAchievement({ achievementId: '2' });
     history.push('/home');
   };
 

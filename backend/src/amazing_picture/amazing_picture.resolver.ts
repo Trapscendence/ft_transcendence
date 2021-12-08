@@ -15,7 +15,7 @@ export class AmazingPictureResolver {
 
   @Query((returns) => String)
   amazingPicture() {
-    return `http://${env.server.host}:${env.server.port}/storage/amazing_picture`;
+    return `http://${env.storage.host}:${env.storage.port}/storage/amazing_picture`;
   }
 
   @Mutation((returns) => Boolean)

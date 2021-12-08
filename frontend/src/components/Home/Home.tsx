@@ -77,13 +77,13 @@ function Home(): JSX.Element {
         style={{
           overflow: 'scroll',
           width: '300px',
-          maxHeight: '300px',
+          minHeight: '300px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
         }}
       >
-        {data?.Notices.map((notice, index) => {
+        {data?.notices.map((notice, index) => {
           return (
             <Card
               sx={{
@@ -105,7 +105,7 @@ function Home(): JSX.Element {
             </Card>
           );
         })}
-        {data != undefined && data.Notices.length > 4 ? (
+        {data != undefined && data.notices.length > 4 ? (
           <Button
             onClick={() => handleClick()}
             variant="contained"

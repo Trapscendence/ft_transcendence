@@ -7,7 +7,7 @@ export interface Notice {
 }
 
 export interface NoticeData {
-  Notices: Notice[];
+  notices: Notice[];
 }
 export interface NoticeVars {
   offset: number;

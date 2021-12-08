@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useMutation, useQuery } from '@apollo/client';
 import {
   Box,
@@ -113,36 +114,37 @@ function NoticePage(): JSX.Element {
           </Stack>
         </Box>
       </Modal>
-      {data?.Notices.map((notice, index) => {
-        return (
-          <Card
-            sx={{
-              maxWidth: 275,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-          >
-            <CardContent>
-              <Typography>제목: {notice.title}</Typography>
-              <Typography gutterBottom>{notice.writer.nickname}</Typography>
-              <Typography gutterBottom>{notice.time_stamp}</Typography>
-              <CardActions>
-                <Button
-                  onClick={() =>
-                    deleteNotice({
-                      variables: { time_stamp: notice.time_stamp },
-                    })
-                  }
-                  size="small"
-                >
-                  삭제하기
-                </Button>
-              </CardActions>
-            </CardContent>
-          </Card>
-        );
-      })}
+      {data &&
+        data.notices.map((notice, index) => {
+          return (
+            <Card
+              sx={{
+                maxWidth: 275,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              <CardContent>
+                <Typography>제목: {notice.title}</Typography>
+                <Typography gutterBottom>{notice.writer.nickname}</Typography>
+                <Typography gutterBottom>{notice.time_stamp}</Typography>
+                <CardActions>
+                  <Button
+                    onClick={() =>
+                      deleteNotice({
+                        variables: { time_stamp: notice.time_stamp },
+                      })
+                    }
+                    size="small"
+                  >
+                    삭제하기
+                  </Button>
+                </CardActions>
+              </CardContent>
+            </Card>
+          );
+        })}
     </div>
   );
 }

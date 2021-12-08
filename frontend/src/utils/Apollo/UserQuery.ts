@@ -58,11 +58,9 @@ export const GET_MATCH_WITH_ACHIEVE_BY_NICKNAME = gql`
         winner {
           nickname
         }
-        winner_points
         loser {
           nickname
         }
-        loser_points
       }
       achievements {
         id

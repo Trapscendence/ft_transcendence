@@ -10,12 +10,14 @@ export default function useAchievement({
     achievement_id: string;
   }>(
     gql`
-      mutation achieveOne {
-        achieveOne
+      mutation achieveOne($achievement_id: String!) {
+        achieveOne(achievement_id: $achievement_id)
       }
     `,
     { variables: { achievement_id: achievementId } }
   );
 
-  achieveOne().catch(() => console.log('achive Settting Error!'));
+  achieveOne()
+    .then(() => console.log('achieve succes'))
+    .catch(() => console.log('achive Settting Error!'));
 }

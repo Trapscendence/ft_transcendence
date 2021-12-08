@@ -90,7 +90,6 @@ function Profile(): JSX.Element {
       },
     }
   );
-
   //---------------------------------------------------
 
   if (currentUser == undefined) return <div>404 TRap caRd!!</div>;
@@ -175,7 +174,7 @@ function Profile(): JSX.Element {
                 승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
               </Typography>
               <Typography>
-                {match.winner_points} : {match.loser_points}
+                {/* {match.winner_points} : {match.loser_points} */}
               </Typography>
             </Stack>
           ))}

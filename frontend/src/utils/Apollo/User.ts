@@ -14,9 +14,9 @@ export interface UserData {
 export interface Match {
   id: string;
   winner: User;
-  winner_points: number;
+  // winner_points: number;
   loser: User;
-  loser_points: number;
+  // loser_points: number;
   // type: MatchType!
   time_stamp: string;
 }
