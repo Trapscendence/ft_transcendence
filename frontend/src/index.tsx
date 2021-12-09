@@ -13,7 +13,7 @@ import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -139,6 +139,11 @@ ReactDOM.render(
     <ApolloProvider client={client}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <GlobalStyles
+          styles={{
+            body: { overflowY: 'hidden' }, // NOTE: html이 아니라 body에 주로 적용하는 듯
+          }}
+        />
         <App />
       </ThemeProvider>
     </ApolloProvider>

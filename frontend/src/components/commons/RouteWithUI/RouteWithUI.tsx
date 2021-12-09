@@ -1,25 +1,20 @@
-import { useReactiveVar } from '@apollo/client';
 import { Box } from '@mui/system';
-import { Redirect, Route, RouteComponentProps } from 'react-router';
+import { Route, RouteComponentProps } from 'react-router';
 
-import { userIdVar } from '../../..';
 import DirectMessage from '../../DirectMessage';
 import Navigation from '../../Navigation';
 import SocialDrawer from '../../SocialDrawer';
 
-interface RestrictRouteProps {
-  component: React.ComponentType<RouteComponentProps> | React.ComponentType; // 맞나?
-  path: string;
+interface RouteWithUIProps {
+  component?: React.ComponentType<RouteComponentProps> | React.ComponentType; // 맞나?
+  path?: string;
   exact?: boolean;
 }
 
-function RestrictRoute({
+function RouteWithUI({
   component: Component,
   ...rest
-}: RestrictRouteProps): JSX.Element {
-  const userId = useReactiveVar(userIdVar);
-  if (!userId) return <Redirect to="/login" />;
-
+}: RouteWithUIProps): JSX.Element {
   return (
     <Route
       {...rest}
@@ -36,7 +31,7 @@ function RestrictRoute({
                 p: 3,
               }}
             >
-              <Component {...props} />
+              {Component && <Component {...props} />}
             </Box>
             <DirectMessage />
             <SocialDrawer />
@@ -47,4 +42,4 @@ function RestrictRoute({
   );
 }
 
-export default RestrictRoute;
+export default RouteWithUI;
