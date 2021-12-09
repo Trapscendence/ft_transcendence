@@ -32,6 +32,7 @@ interface Itabs {
   '/profile/': number;
   '/rank': number;
   '/channel': number;
+  '/setting': number;
 }
 
 const tabs: Itabs = {
@@ -39,6 +40,7 @@ const tabs: Itabs = {
   '/profile/': 1,
   '/rank': 2,
   '/channel': 3,
+  '/setting': 4,
 }; // NOTE: 새로고침시 현재 주소에 따라 탭 선택을 활성화하기위해 사용
 
 function Navigation(): JSX.Element {

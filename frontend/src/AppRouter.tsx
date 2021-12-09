@@ -1,6 +1,13 @@
 import { useReactiveVar } from '@apollo/client';
-import { Redirect, Route, Switch } from 'react-router';
-import { BrowserRouter } from 'react-router-dom';
+// import { Redirect, Route, Switch, useHistory, useLocation } from 'react-router';
+import {
+  BrowserRouter,
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+} from 'react-router-dom';
 
 import { userIdVar } from '.';
 import Admin from './components/Admin';
@@ -19,6 +26,14 @@ import Register from './components/Register';
 
 export default function AppRouter(): JSX.Element {
   const userId = useReactiveVar(userIdVar);
+  // const history = useHistory();
+  // const location = useLocation();
+
+  // console.log(location);
+
+  // const loginedButNoUI = ['/game', '/observe', '/register'];
+
+  // const noUI = loginedButNoUI.find((val) => val === location);
 
   return (
     <BrowserRouter>
@@ -30,6 +45,16 @@ export default function AppRouter(): JSX.Element {
             <Route exact path="/register" component={Register} />
             <Route exact path="/" render={() => <Redirect to="/home" />} />
 
+            <Route exact path="/home" component={Home} />
+            <Route exact path="/channel" component={ChannelList} />
+            <Route exact path="/rank" component={Rank} />
+            <Route exact path="/setting" component={MyProfile} />
+            <Route exact path="/profile/:userid" component={Profile} />
+            <Route exact path="/admin" component={Admin} />
+
+            <Route component={NotFoundPage} />
+
+            {/* 
             <RouteWithUI exact path="/home" component={Home} />
             <RouteWithUI exact path="/channel" component={ChannelList} />
             <RouteWithUI exact path="/rank" component={Rank} />
@@ -37,13 +62,13 @@ export default function AppRouter(): JSX.Element {
             <RouteWithUI exact path="/profile/:userid" component={Profile} />
             <RouteWithUI exact path="/admin" component={Admin} />
 
-            <RouteWithUI component={NotFoundPage} />
+            <RouteWithUI component={NotFoundPage} /> */}
           </>
         ) : (
           <>
-            <Route exact path="/login" component={Login} />
+            {/* <Route exact path="/login" component={Login} />
             <Route exact path="/login/totp" component={LoginTotp} />
-            <Redirect from="*" to="/login" />
+            <Redirect from="*" to="/login" /> */}
           </>
         )}
 
