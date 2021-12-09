@@ -16,9 +16,9 @@ import { UsersService } from 'src/users/users.service';
 import { ChannelsService } from './channels.service';
 import { Channel, ChannelNotify } from './models/channel.model';
 import { PubSub } from 'graphql-subscriptions';
-import { ChannelRoleGuard } from './guard/channel-role.guard';
+import { ChannelRoleGuard } from '../users/guards/channel-role.guard';
 import { UserID } from 'src/users/decorators/user-id.decorator';
-import { ChannelRoles } from './decorators/channel-roles.decorator';
+import { ChannelRoles } from '../users/decorators/channel-roles.decorator';
 
 @Resolver((of) => Channel)
 @UseGuards(ChannelRoleGuard)
