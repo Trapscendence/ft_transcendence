@@ -118,16 +118,6 @@ services:
       - ./certbot/certs:/certs
 
   storage:
-    environment:
-      - SERVER_HOST=${SERVER_HOST}
-      - SERVER_PORT=${SERVER_PORT}
-      - POSTGRES_HOST=database
-      - POSTGRES_LOCAL_PORT=5432
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${STORAGE_DB_USER}
-      - POSTGRES_PASSWORD=${STORAGE_DB_PASSWORD}
-      - DB_SCHEMA=${DB_SCHEMA}
-      - SESSION_SECRET=${SESSION_SECRET}
     build:
       context: ./storage
     networks:

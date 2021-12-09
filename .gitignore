@@ -5,6 +5,7 @@ db-migrate-pg
 log
 certs
 schema.gql*
+storage/public
 
 .env
 .DS_Store

@@ -19,6 +19,8 @@ import { Match } from 'src/games/models/match.model';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 import { AchievementsService } from 'src/acheivements/achievements.service';
+import { map } from 'rxjs';
+import { FileUpload } from './dtos/fileupload.dto';
 
 @Injectable()
 export class UsersService {
@@ -216,23 +218,47 @@ export class UsersService {
     else throw new ConflictException(`No user with { user_id: ${user_id} }`);
   }
 
-  async deleteAvatar(user_id: string): Promise<boolean> {
-    const selectResult = await this.databaseService.executeQuery(
-      `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
+  async updateAvatar(user_id: string, file: FileUpload) {
+    const formData = new FormData();
+    const fileData = await file.createReadStream().read();
+    formData.append('avatar', fileData, file.filename);
+    const axiosResponse = await axios.post(
+      `http://${env.storage.host}:${env.storage.port}/`,
+      formData,
     );
-    if (selectResult.length !== 1) return false;
-    if (selectResult[0].avatar !== null) {
-      await axios.delete(
-        `http://${env.storage.host}:${env.storage.port}/delete/${selectResult[0].avatar}`,
-      );
-    }
 
-    const updateResult = await this.databaseService.executeQuery(
-      `UPDATE ${
-        env.database.schema
-      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+    if (axiosResponse.status !== 200 && axiosResponse.status !== 201)
+      throw new InternalServerErrorException(axiosResponse.statusText);
+    const updatedId = (
+      await this.databaseService.executeQuery(
+        `UPDATE ${env.database.schema}.user SET avatar = '${
+          axiosResponse.data
+        }' WHERE id = ${+user_id} RETURNING id;`,
+      )
+    ).at(0)?.id;
+    if (updatedId) return true;
+    else return false;
+  }
+
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const filename = (
+      await this.databaseService.executeQuery(
+        `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
+      )
+    ).at(0)?.avatar;
+    if (!filename) return false;
+    await axios.delete(
+      `http://${env.storage.host}:${env.storage.port}/${filename}`,
     );
-    if (updateResult.length === 1) return true;
+
+    const id = (
+      await this.databaseService.executeQuery(
+        `UPDATE ${
+          env.database.schema
+        }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+      )
+    ).at(0)?.id;
+    if (id) return true;
     else return false;
   }
 
@@ -553,6 +579,58 @@ export class UsersService {
           complete() {},
         });
     });
+  }
+  async getAchieved(user_id: string) {
+    return await this.databaseService.executeQuery(`
+      WITH ad AS (
+        SELECT
+          achievement_id id,
+          time_stamp time_stamp
+        FROM
+          ${env.database.schema}.achieved
+        WHERE
+          user_id = ${user_id}
+      )
+      SELECT
+        am.id,
+        am.name,
+        am.icon,
+        ad.time_stamp
+      FROM
+        ${env.database.schema}.achievement am
+      INNER JOIN
+        ad
+      ON
+        am.id = ad.id
+      ORDER BY
+        am.id ASC;
+    `);
+  }
+
+  async achieveOne(user_id: string, ach_id: string) {
+    const array = await this.databaseService.executeQuery(
+      `
+      INSERT INTO
+        ${env.database.schema}.achieved(
+          user_id,
+          achievement_id,
+          time_stamp
+        )
+      VALUES
+        (
+          ($1),
+          ($2),
+          ${new Date().getTime()}
+        )
+      ON CONFLICT
+        ON CONSTRAINT
+          user_id_achievement_id_unique
+      DO NOTHING
+      RETURNING *;
+    `,
+      [user_id, ach_id],
+    );
+    return array.length ? true : false;
   }
 
   async setAvatar(user_id: string, image: string): Promise<boolean> {
