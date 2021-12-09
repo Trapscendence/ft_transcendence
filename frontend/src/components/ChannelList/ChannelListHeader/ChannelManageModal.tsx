@@ -77,6 +77,7 @@ export default function ChannelManageModal({
           setOpen(false);
           setTitle('');
           setPassword('');
+          setTitleError(false);
         }}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
