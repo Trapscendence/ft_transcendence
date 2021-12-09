@@ -6,6 +6,7 @@ import { GamesModule } from 'src/games/games.module';
 import { HttpModule } from '@nestjs/axios';
 import { StatusModule } from 'src/status/status.module';
 import { timeout } from 'rxjs';
+import { AchievementsModule } from 'src/acheivements/acheivements.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { timeout } from 'rxjs';
         maxRedirects: 5,
       }),
     }),
+    AchievementsModule,
   ],
   providers: [UsersService, UsersResolver],
   exports: [UsersService],
