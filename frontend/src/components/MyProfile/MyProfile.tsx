@@ -163,12 +163,11 @@ export default function MyProfileSetting(): JSX.Element {
     //     }).then(() => window.location.replace('/setting/'));
     //   }
 
-    const [setAmazingPicture, { error }] = useMutation<{
-      amazing_picture: string;
-    }>(
+    const [updateAvatar, { error }] = useMutation(
       gql`
-        mutation setAmazingPicture($amazing_picture: String!) {
-          setAmazingPicture(amazing_picture: $amazing_picture)
+      mutation updateAvatar($file: Upload!){
+
+        updateAvatar(file: $file)
         }
       `
     );
@@ -180,7 +179,7 @@ export default function MyProfileSetting(): JSX.Element {
         const uploadFile = e.target.files[0];
         // const formData = new FormData();
         // formData.append('file', uploadFile);
-        setAmazingPicture({ variables: { amazing_picture: uploadFile } })
+        updateAvatar({ variables: { file: uploadFile } })
           .then(() => window.location.replace('/setting'))
           .catch(() => console.log('변경 실패!'));
       }
