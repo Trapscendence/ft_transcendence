@@ -1,36 +1,46 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import axios from 'axios';
+import { FileUpload } from 'graphql-upload';
 import { DatabaseService } from 'src/database/database.service';
 import { env } from 'src/utils/envs';
 
 @Injectable()
 export class AmazingPictureService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  uploadAmazingPicture(amazing_picture: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.httpService
-        .post(
-          `http://${env.storage.host}:${env.storage.port}/upload/amazing_picture`,
-          amazing_picture,
-        )
-        .subscribe({
-          next: async (axiosResponse: AxiosResponse) => {
-            if (axiosResponse.status === 201) resolve(true);
-            else resolve(false);
-          },
-          error(error) {
-            reject(error);
-          },
-          complete() {},
-        });
-    });
+  async find() {
+    return (
+      await this.databaseService.executeQuery(
+        `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = "amazing_picture";`,
+      )
+    ).at(0)?.url;
   }
 
-  deleteAmazingPicture(): void {
-    this.httpService.delete(
-      `http://${env.storage.host}:${env.storage.port}/delete/amazing_picture`,
+  async create(file: FileUpload) {
+    const formData = new FormData();
+    const fileData = await file.createReadStream().read();
+    formData.append('amazing_picture', fileData, file.filename);
+    const axiosResponse = await axios.post(
+      `http://${env.storage.host}:${env.storage.port}/`,
+      formData,
     );
+
+    if (axiosResponse.status !== 200 && axiosResponse.status !== 201)
+      throw new InternalServerErrorException(axiosResponse.statusText);
+
+    await this.databaseService.executeQuery(
+      `INSERT INTO ${env.database.schema}.storage_url(filename, url) VALUES("amazing_picture", "${axiosResponse.data}");`,
+    );
+    return true;
+  }
+
+  async delete() {
+    const url = (
+      await this.databaseService.executeQuery(
+        `DELETE FROM ${env.database.schema}.storage_url WHERE filename = "amazing_picture" RETURNING "url";`,
+      )
+    ).at(0)?.url;
+    await axios.delete(`http://${env.storage.host}:${env.storage.port}/${url}`);
+    return true;
   }
 }
