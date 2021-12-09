@@ -190,6 +190,12 @@ export class UsersResolver {
     return await this.usersService.getChannelRole(id);
   }
 
+  @ResolveField('avatar', (returns) => String, { nullable: true })
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
   @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
   async getAchieved(@Parent() user: User): Promise<Achievement[]> {
     return await this.usersService.getAchieved(user.id);
