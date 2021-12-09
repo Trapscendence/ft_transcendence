@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/client';
 import {
   Avatar,
@@ -143,27 +143,50 @@ export default function MyProfileSetting(): JSX.Element {
   //-----------------------------------------------tfa
 
   function ChangeMyPicture() {
+    // const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    //   e.preventDefault();
+
+    //   if (e.target.files) {
+    //     const uploadFile = e.target.files[0];
+    //     const formData = new FormData();
+    //     formData.append('file', uploadFile);
+    //     //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
+    //     //     process.env.REACT_APP_SERVER_PORT ?? ''
+    //     //   }/upload/profile`;
+    //     await axios({
+    //       method: 'post',
+    //       url: '/upload/profile',
+    //       data: formData,
+    //       headers: {
+    //         'Content-Type': 'multipart/form-data',
+    //       },
+    //     }).then(() => window.location.replace('/setting/'));
+    //   }
+
+    const [setAmazingPicture, { error }] = useMutation<{
+      amazing_picture: string;
+    }>(
+      gql`
+        mutation setAmazingPicture($amazing_picture: String!) {
+          setAmazingPicture(amazing_picture: $amazing_picture)
+        }
+      `
+    );
+
     const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
       e.preventDefault();
 
       if (e.target.files) {
         const uploadFile = e.target.files[0];
-        const formData = new FormData();
-        formData.append('file', uploadFile);
-        //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
-        //     process.env.REACT_APP_SERVER_PORT ?? ''
-        //   }/upload/profile`;
-        await axios({
-          method: 'post',
-          url: '/upload/profile',
-          data: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }).then(() => window.location.replace('/setting/'));
+        // const formData = new FormData();
+        // formData.append('file', uploadFile);
+        setAmazingPicture({ variables: { amazing_picture: uploadFile } })
+          .then(() => window.location.replace('/setting'))
+          .catch(() => console.log('변경 실패!'));
       }
     };
 
+    if (currentUser) console.log(currentUser);
     return (
       <Grid item xs={12}>
         <Paper sx={elementStyle} variant="outlined">

@@ -73,52 +73,56 @@ function Home(): JSX.Element {
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     return (
-      <div
-        style={{
-          overflow: 'scroll',
-          width: '300px',
-          minHeight: '300px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        {data?.notices.map((notice, index) => {
-          return (
-            <Card
+      <div>
+        <Typography>Created by gmoon, jolim, seohchoi & seyu</Typography>
+
+        <div
+          style={{
+            overflow: 'scroll',
+            width: '300px',
+            minHeight: '300px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          {data?.notices.map((notice, index) => {
+            return (
+              <Card
+                sx={{
+                  maxWidth: 275,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+                onClick={
+                  () => handleOpen()
+                  // , setContent(notice.time_stamp)
+                }
+              >
+                <CardContent>
+                  <Typography>제목: {notice.title}</Typography>
+                  <Typography gutterBottom>{notice.writer.nickname}</Typography>
+                  <Typography gutterBottom>내용: {notice.contents}</Typography>
+                </CardContent>
+              </Card>
+            );
+          })}
+          {data != undefined && data.notices.length > 4 ? (
+            <Button
+              onClick={() => handleClick()}
+              variant="contained"
               sx={{
-                maxWidth: 275,
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
+                boxShadow: 0,
+                margin: '5px 0px 5px 8px',
               }}
-              onClick={
-                () => handleOpen()
-                // , setContent(notice.time_stamp)
-              }
             >
-              <CardContent>
-                <Typography>제목: {notice.title}</Typography>
-                <Typography gutterBottom>{notice.writer.nickname}</Typography>
-                <Typography gutterBottom>내용: {notice.contents}</Typography>
-              </CardContent>
-            </Card>
-          );
-        })}
-        {data != undefined && data.notices.length > 4 ? (
-          <Button
-            onClick={() => handleClick()}
-            variant="contained"
-            sx={{
-              boxShadow: 0,
-              margin: '5px 0px 5px 8px',
-            }}
-          >
-            이전 공지 가져오기
-          </Button>
-        ) : (
-          <div />
-        )}
+              이전 공지 가져오기
+            </Button>
+          ) : (
+            <div />
+          )}
+        </div>
       </div>
     );
   }
