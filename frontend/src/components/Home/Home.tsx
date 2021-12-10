@@ -89,6 +89,7 @@ function Home(): JSX.Element {
           {data?.notices.map((notice, index) => {
             return (
               <Card
+                key={notice.time_stamp}
                 sx={{
                   maxWidth: 275,
                   display: 'flex',
