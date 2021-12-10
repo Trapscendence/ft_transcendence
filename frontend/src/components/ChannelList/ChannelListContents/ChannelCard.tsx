@@ -7,13 +7,14 @@ import {
   Grid,
   Typography,
 } from '@mui/material';
+import { useState } from 'react';
 
 import { ENTER_CHANNEL, GET_MY_CHANNEL } from '../../../utils/Apollo/gqls';
 import { IChannelListItem } from '../../../utils/Apollo/models';
 import { EnterChannelResponse } from '../../../utils/Apollo/responseModels';
-import handleError from '../../../utils/handleError';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
+import EnterChannelModal from './EnterChannelModal';
 
 interface ChannelCardProps {
   channelSummary: IChannelListItem;
@@ -24,13 +25,28 @@ export default function ChannelCard({
 }: ChannelCardProps): JSX.Element {
   const { id, title, is_private, owner, participants } = channelSummary;
 
+  const [openModal, setOpenModal] = useState(false);
+
   const [enterChannel, { loading, error }] = useMutation<EnterChannelResponse>(
     ENTER_CHANNEL,
     {
       refetchQueries: [GET_MY_CHANNEL],
-      variables: { channel_id: id },
+      // variables: { channel_id: id },
     }
   );
+
+  const onClickBtn = async () => {
+    if (is_private) {
+      setOpenModal(true);
+      return;
+    }
+
+    try {
+      await enterChannel({ variables: { channel_id: id } });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return (
     <>
@@ -57,9 +73,17 @@ export default function ChannelCard({
             </Typography>
           </CardContent>
           <CardActions>
-            <Button size="small" onClick={() => handleError(enterChannel)}>
+            <Button size="small" onClick={onClickBtn}>
               Enter channel
             </Button>
+            {openModal && (
+              <EnterChannelModal
+                open={openModal}
+                setOpen={setOpenModal}
+                channel_id={id}
+                enterChannel={enterChannel}
+              />
+            )}
           </CardActions>
         </Card>
       </Grid>

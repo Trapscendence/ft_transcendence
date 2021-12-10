@@ -184,8 +184,8 @@ export const EDIT_CHANNEL = gql`
 `;
 
 export const ENTER_CHANNEL = gql`
-  mutation EnterChannel($channel_id: ID!) {
-    enterChannel(channel_id: $channel_id) {
+  mutation EnterChannel($channel_id: ID!, $password: String) {
+    enterChannel(channel_id: $channel_id, password: $password) {
       id
       title
       is_private
