@@ -1,6 +1,7 @@
 import { useLazyQuery } from '@apollo/client';
 import { Autocomplete, TextField } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
+import { useEffect, useState } from 'react';
 
 import { NickName, User, UserData, UsersData } from '../utils/Apollo/User';
 import { GET_USER_BY_NICKNAME } from '../utils/Apollo/UserQuery';
@@ -38,10 +39,12 @@ export default function UseSearchUser({
     matchFrom: 'start',
     limit: 3,
   });
+  useEffect(() => {
   if (data?.user) {
     setButtonActive(false);
     setInputSpace(data?.user);
   } else setButtonActive(true);
+}, []);
 
   return (
     <Autocomplete

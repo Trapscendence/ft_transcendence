@@ -35,7 +35,6 @@ import {
   UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import axios from 'axios';
 import {
   CHANGE_NICKNAME,
   CREATE_TFA,
@@ -179,13 +178,12 @@ export default function MyProfileSetting(): JSX.Element {
         const uploadFile = e.target.files[0];
         // const formData = new FormData();
         // formData.append('file', uploadFile);
-        updateAvatar({ variables: { file: uploadFile } })
+        updateAvatar({ variables: { uploadFile } })
           .then(() => window.location.replace('/setting'))
           .catch(() => console.log('변경 실패!'));
       }
     };
 
-    if (currentUser) console.log(currentUser);
     return (
       <Grid item xs={12}>
         <Paper sx={elementStyle} variant="outlined">
@@ -289,8 +287,6 @@ export default function MyProfileSetting(): JSX.Element {
                     else if (nicknameUserData?.user != undefined)
                       setErrorMessage('이미 존재하는 닉네임입니다.');
                     else {
-                      console.log(nicknameinputSpace);
-
                       changeNickname({
                         variables: { new_nickname: nicknameinputSpace },
                       }).catch(() => setErrorMessage('변경 실패!'));
@@ -390,7 +386,7 @@ export default function MyProfileSetting(): JSX.Element {
                     <Box>
                       블랙리스트 목록 <Divider />
                       {blacklistData?.user?.blacklist?.map((blackUser) => (
-                        <Box sx={{ width: '100%' }}>
+                        <Box key={blackUser.id} sx={{ width: '100%' }}>
                           <Typography sx={{ width: '80%' }}>
                             {blackUser.nickname}
                             <Button

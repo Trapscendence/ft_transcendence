@@ -83,7 +83,7 @@ export default function NicknameMenu({
       refetchQueries: [GET_MY_BLACKLIST],
     });
 
-  const [addFriend, { loading: addFriendLoading, error: addFriendError }] =
+  const [addFriend] =
     useMutation<{ addFriend: boolean }>(
       gql`
         mutation AddFriend($friend_id: ID!) {
@@ -95,7 +95,6 @@ export default function NicknameMenu({
 
   const [
     deleteFriend,
-    { loading: deleteFriendLoading, error: deleteFriendError },
   ] = useMutation<{ deleteFriend: boolean }>(
     gql`
       mutation DeleteFriend($friend_id: ID!) {

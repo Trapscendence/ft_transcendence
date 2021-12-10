@@ -17,12 +17,8 @@ import Typography from '@mui/material/Typography';
 import { useRef, useState } from 'react';
 
 import {
-  DmsData,
   DmUsersData,
   DmUsersVars,
-  DmVars,
-  Message,
-  ReceiveMessageData,
 } from '../../utils/Apollo/Message';
 import { GET_DM_USERS } from '../../utils/Apollo/MessageQuery';
 import DirectMessageContent from './DirectMessageContent';
@@ -61,7 +57,7 @@ export default function DirectMessage(): JSX.Element {
   };
 
   //ANCHOR DM 나눈 적 있는 유저를 받아오는 쿼리
-  const { error, loading, data } = useQuery<DmUsersData, DmUsersVars>(
+  const {  data } = useQuery<DmUsersData, DmUsersVars>(
     GET_DM_USERS,
     {
       variables: { limit: 10, offset: 0 },

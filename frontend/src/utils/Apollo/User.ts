@@ -23,7 +23,9 @@ export interface Match {
 
 export interface achievement {
   name: string;
+  time_stamp: string;
 }
+
 export interface MatchData {
   user: {
     id: string;
@@ -32,6 +34,7 @@ export interface MatchData {
     achievements: achievement[];
   };
 }
+
 export interface UsersData {
   users: User[];
 }

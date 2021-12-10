@@ -1,17 +1,12 @@
-import { useApolloClient, useMutation, useSubscription } from '@apollo/client';
+import { useMutation,  } from '@apollo/client';
 // import { Send } from '@mui/icons-material';
 import { Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import {
-  DmsData,
-  DmVars,
-  Message,
   SendMessageData,
 } from '../../utils/Apollo/Message';
 import {
-  GET_DM,
-  RECEIVE_MESSAGE,
   SEND_MESSAGE,
 } from '../../utils/Apollo/MessageQuery';
 //ANCHOR 새로운 DM 보내기

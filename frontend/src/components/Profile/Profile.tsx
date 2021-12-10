@@ -1,9 +1,10 @@
+/* eslint-disable */
+
 import { useQuery } from '@apollo/client';
 import {
   Avatar,
   Box,
   Button,
-  Card,
   Paper,
   Skeleton,
   Stack,
@@ -169,7 +170,7 @@ function Profile(): JSX.Element {
         </Typography>
         <Paper style={paperStyle} variant="outlined">
           {profileData?.user?.match_history?.map((match) => (
-            <Stack>
+            <Stack key={match.id}>
               <Typography>
                 승자 : {match.winner.nickname} 패자 : {match.loser.nickname}
               </Typography>
@@ -185,7 +186,8 @@ function Profile(): JSX.Element {
         <Paper style={paperStyle} variant="outlined">
           <Box>
             {profileData?.user?.achievements.map((achieve) => (
-              <Box
+              <Box 
+              key={achieve.time_stamp}
                 component="span"
                 sx={{
                   width: '100%',

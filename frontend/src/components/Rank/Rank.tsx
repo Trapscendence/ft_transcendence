@@ -2,10 +2,7 @@ import { useQuery } from '@apollo/client';
 import {
   Avatar,
   Box,
-  Button,
   Divider,
-  Paper,
-  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
@@ -36,7 +33,7 @@ export default function RankPage(): JSX.Element {
         <h3>Rank Page</h3>
 
         {data?.users.map((user, index) => (
-          <Box>
+          <Box key={user.id}>
             <Divider light />
             <Stack
               sx={{ margin: '10px' }}
