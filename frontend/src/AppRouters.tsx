@@ -10,7 +10,6 @@ import Game from './components/Game';
 import ObserveGame from './components/Game/ObserveGame';
 import Home from './components/Home';
 import Login from './components/Login';
-import LoginTotp from './components/LoginTotp';
 import MyProfile from './components/MyProfile';
 import Navigation from './components/Navigation';
 import Profile from './components/Profile';
@@ -30,8 +29,7 @@ export default function AppRouters(): JSX.Element {
       {!userId && (
         <>
           <Route exact path="/login" component={Login} />
-          <Route exact path="/login/totp" component={LoginTotp} />
-          {/* <Redirect from="*" to="/login" /> */}
+          <Redirect to="/login" />
         </>
       )}
 

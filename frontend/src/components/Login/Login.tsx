@@ -1,14 +1,8 @@
-import { useReactiveVar } from '@apollo/client';
 import { Button } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import { Redirect } from 'react-router';
-
-import { userIdVar } from '../..';
 
 function Login(): JSX.Element {
-  const userId = useReactiveVar(userIdVar);
-
   const [buttonsEnabledState, setButtonsEnabledState] = useState<boolean>(true);
 
   const onClickLoginButton = (
@@ -19,8 +13,6 @@ function Login(): JSX.Element {
     location.replace(loginURI);
   };
 
-  if (userId) return <Redirect to="/" />;
-
   return (
     <Box
       display="flex"
@@ -28,7 +20,6 @@ function Login(): JSX.Element {
       alignItems="center"
       width="100%"
       height="100vh"
-      // bgcolor="gray"
     >
       <Box width="250px" sx={{ display: 'flex', flexDirection: 'column' }}>
         <Button
@@ -44,7 +35,8 @@ function Login(): JSX.Element {
         <Button
           variant="contained"
           color="secondary"
-          disabled={!buttonsEnabledState}
+          disabled
+          // disabled={!buttonsEnabledState}
           onClick={() => onClickLoginButton('google')}
           sx={{ margin: '5px 0' }}
         >
@@ -54,7 +46,8 @@ function Login(): JSX.Element {
         <Button
           variant="contained"
           color="inherit"
-          disabled={!buttonsEnabledState}
+          disabled
+          // disabled={!buttonsEnabledState}
           onClick={() => onClickLoginButton('dummy')}
           sx={{ margin: '5px 0' }}
         >
@@ -65,8 +58,7 @@ function Login(): JSX.Element {
   );
 }
 
-// Login.defaultProps = {
-//   option: '!',
-// };
-
 export default Login;
+
+// NOTE
+// * 제출할 것이므로 일단 다른 버튼은 disabled(비활성화)
