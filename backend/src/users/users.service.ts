@@ -33,7 +33,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -56,7 +55,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -127,7 +125,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -218,6 +215,35 @@ export class UsersService {
     else return false;
   }
 
+  async findDefaultAvatar(): Promise<string> {
+    console.log('Default avatar');
+    return (
+      await this.databaseService.executeQuery(
+        `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = 'default_avatar';`,
+      )
+    ).at(0)?.url;
+  }
+
+  async createDefaultAvatar(file: FileUpload) {
+    const filename = await this.storageService.post(file);
+    await this.databaseService.executeQuery(
+      `INSERT ${env.database.schema}.storage_url VALUES('default_avatar', '${filename}');`,
+    );
+    return true;
+  }
+
+  async deleteDefaultAvatar() {
+    const filename = (
+      await this.databaseService.executeQuery(
+        `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = 'default_avatar';`,
+      )
+    ).at(0)?.url;
+    if (!filename) return true;
+
+    await this.storageService.delete(filename);
+    return true;
+  }
+
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
     if (user_id === friend_id)
       throw new BadRequestException('One cannot be their own friend');
@@ -260,7 +286,6 @@ export class UsersService {
       SELECT
         u.id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role
@@ -325,12 +350,21 @@ export class UsersService {
    ** ANCHOR: ResolveField
    */
 
+  async getAvatar(id: string): Promise<string> {
+    const avatar = (
+      await this.databaseService.executeQuery(
+        `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+id};`,
+      )
+    ).at(0).avatar;
+    if (avatar) return avatar;
+    else return await this.findDefaultAvatar();
+  }
+
   async getFriend(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role
@@ -356,7 +390,6 @@ export class UsersService {
       SELECT
         u.id,
         u.nickname,
-        u.avatar,
         u.status_message,
         u.rank_score,
         u.site_role,

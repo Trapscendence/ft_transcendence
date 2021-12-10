@@ -2,6 +2,7 @@ import {
   forwardRef,
   Inject,
   InternalServerErrorException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   Query,
@@ -27,6 +28,8 @@ import { Match } from 'src/games/models/match.model';
 import { GamesService } from 'src/games/games.service';
 import { AchievementsService } from 'src/acheivements/achievements.service';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { SiteRoleGuard } from './guards/site-role.guard';
+import { SiteRoles } from './decorators/site-roles.decorator';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -88,6 +91,13 @@ export class UsersResolver {
         `Error occured during delete avatar (id: ${user_id})`,
       );
   }
+
+  @Mutation((returns) => Boolean)
+  @UseGuards(SiteRoleGuard)
+  @SiteRoles(UserRole.ADMIN)
+  async updateDefaultAvatar(
+    @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
+  ) {}
 
   @Mutation((returns) => ID)
   async createDummyUser(): Promise<string> {
@@ -202,6 +212,12 @@ export class UsersResolver {
    ** ANCHOR: ResolveField
    */
 
+  @ResolveField('avatar', (returns) => String, { nullable: true })
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
   @ResolveField('friends', (returns) => [User])
   async getFriends(@Parent() user: User): Promise<User[]> {
     const { id } = user;
@@ -256,10 +272,6 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getGameByUserId(id);
   }
-
-  /*
-   ** ANCHOR: User Subscription
-   */
 
   @Subscription((returns) => UserStatus)
   statusChange(@Args('user_id', { type: () => ID }) user_id: string) {

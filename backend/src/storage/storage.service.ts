@@ -23,6 +23,7 @@ export class StorageService {
         })
         .pipe(map((res) => res.data)),
     );
+    if (!storageUrl) throw `Error occured during upload file, ${file.filename}`;
     this.logger.verbose(`Upload ${file.filename} on storage, ${storageUrl}`);
     return storageUrl;
   }
