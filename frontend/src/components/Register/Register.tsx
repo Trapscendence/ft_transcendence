@@ -17,6 +17,7 @@ import { useHistory } from 'react-router-dom';
 import { useInput } from '../../hooks/useInput';
 import { User, UserData } from '../../utils/Apollo/User';
 import { CHANGE_NICKNAME, GET_USER } from '../../utils/Apollo/UserQuery';
+import ErrorAlert from '../commons/ErrorAlert';
 
 const avartarStyle = {
   height: '45px',
@@ -33,7 +34,7 @@ export default function Register(): JSX.Element {
     id: '',
     avatar: '',
   });
-  const [nickname, setNickname, onChangeNickname] = useInput('');
+  const [nickname, , onChangeNickname] = useInput('');
   const [nicknameError, setNicknameError] = useState(false);
   const history = useHistory();
 
@@ -43,7 +44,7 @@ export default function Register(): JSX.Element {
 
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
-  const [changeNickname, { data: changeNicknameError }] =
+  const [changeNickname, { error: changeNicknameError }] =
     useMutation<{ changeNickname: boolean }>(CHANGE_NICKNAME);
 
   useEffect(() => {
@@ -93,74 +94,79 @@ export default function Register(): JSX.Element {
    */
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: '100%',
-        height: '100vh',
-      }}
-    >
-      <Card sx={{ m: 1, width: '350px', bgcolor: 'grey.100' }}>
-        <CardHeader
-          title="Hello, new user!"
-          subheader="Set your nickname and profile picture"
-        />
-        <CardContent>
-          <Paper variant="outlined" sx={{ p: 1 }}>
-            <TextField
-              label="nickname"
-              variant="filled"
-              size="small"
-              sx={{ width: '100%' }}
-              margin="dense"
-              error={nicknameError}
-              helperText={nicknameError ? 'Nickname must be entered.' : null}
-              value={nickname}
-              onChange={onChangeNickname}
-            />
-            <Box
-              sx={{
-                my: 1,
-                width: '100%',
-                display: 'inlineFlex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              {currentUser?.avatar ? (
-                <Avatar
-                  sx={avartarStyle}
-                  src={'/storage/' + currentUser?.avatar}
-                />
-              ) : (
-                <Avatar sx={avartarStyle}>
-                  {currentUser?.nickname[0]?.toUpperCase()}
-                </Avatar>
-              )}
-              <Button size="small" variant="contained">
-                <form>
-                  <label htmlFor="profile-upload" />
-                  <input
-                    type="file"
-                    id="profile-upload"
-                    accept="image/*"
-                    onChange={onChangeImg}
-                    hidden
+    <>
+      {changeNicknameError && (
+        <ErrorAlert name="Register" error={changeNicknameError} />
+      )}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100vh',
+        }}
+      >
+        <Card sx={{ m: 1, width: '350px', bgcolor: 'grey.100' }}>
+          <CardHeader
+            title="Hello, new user!"
+            subheader="Set your nickname and profile picture"
+          />
+          <CardContent>
+            <Paper variant="outlined" sx={{ p: 1 }}>
+              <TextField
+                label="nickname"
+                variant="filled"
+                size="small"
+                sx={{ width: '100%' }}
+                margin="dense"
+                error={nicknameError}
+                helperText={nicknameError ? 'Nickname must be entered.' : null}
+                value={nickname}
+                onChange={onChangeNickname}
+              />
+              <Box
+                sx={{
+                  my: 1,
+                  width: '100%',
+                  display: 'inlineFlex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {currentUser?.avatar ? (
+                  <Avatar
+                    sx={avartarStyle}
+                    src={'/storage/' + currentUser?.avatar}
                   />
-                </form>
-                upload
-              </Button>
-            </Box>
-          </Paper>
-        </CardContent>
-        <CardActions>
-          <Button size="large" onClick={onClickSubmit}>
-            set profile
-          </Button>
-        </CardActions>
-      </Card>
-    </Box>
+                ) : (
+                  <Avatar sx={avartarStyle}>
+                    {currentUser?.nickname[0]?.toUpperCase()}
+                  </Avatar>
+                )}
+                <Button size="small" variant="contained">
+                  <form>
+                    <label htmlFor="profile-upload" />
+                    <input
+                      type="file"
+                      id="profile-upload"
+                      accept="image/*"
+                      onChange={onChangeImg}
+                      hidden
+                    />
+                  </form>
+                  upload
+                </Button>
+              </Box>
+            </Paper>
+          </CardContent>
+          <CardActions>
+            <Button size="large" onClick={onClickSubmit}>
+              set profile
+            </Button>
+          </CardActions>
+        </Card>
+      </Box>
+    </>
   );
 }
