@@ -1,7 +1,6 @@
 import {
   ApolloClient,
   ApolloProvider,
-  createHttpLink,
   from,
   InMemoryCache,
   makeVar,
@@ -9,7 +8,6 @@ import {
   // useQuery,
   // gql,
 } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
@@ -21,13 +19,6 @@ import ReactDOM from 'react-dom';
 
 import App from './App';
 import { IChatting } from './utils/Apollo/models';
-
-const cookieParser = (name: string): string | undefined => {
-  const matches = new RegExp(
-    '(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'
-  ).exec(document.cookie);
-  return matches ? decodeURIComponent(matches[1]) : undefined;
-};
 
 const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
@@ -41,25 +32,11 @@ const wsLink = new WebSocketLink({
   },
 });
 
-const httpLink = createHttpLink({
+const uploadLink = createUploadLink({
   uri: `http://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
     process.env.REACT_APP_SERVER_PORT ?? '3000'
   }/graphql`,
   credentials: 'include',
-});
-
-const authLink = setContext((_, { headers }) => {
-  const token: string | undefined = cookieParser('access_token');
-  return {
-    /**
-     * FIXME: Unsafe assignment of an `any` value. eslint(@typescript-eslint/no-unsafe-assignment)
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    headers: {
-      ...headers,
-      authorization: token ? `Bearer ${token}` : '',
-    },
-  };
 });
 
 const splitLink = split(
@@ -71,7 +48,7 @@ const splitLink = split(
     );
   },
   wsLink,
-  authLink.concat(httpLink)
+  uploadLink
 );
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -89,11 +66,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     );
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   if (networkError) console.log(`[Network error]: ${networkError}`);
-});
-const uploadLink = createUploadLink({
-  uri: `http://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
-    process.env.REACT_APP_SERVER_PORT ?? '3000'
-  }`,
 });
 
 const client = new ApolloClient({

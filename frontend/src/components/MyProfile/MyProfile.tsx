@@ -164,9 +164,8 @@ export default function MyProfileSetting(): JSX.Element {
 
     const [updateAvatar, { error }] = useMutation(
       gql`
-      mutation updateAvatar($file: Upload!){
-
-        updateAvatar(file: $file)
+        mutation updateAvatar($file: Upload!) {
+          updateAvatar(file: $file)
         }
       `
     );
@@ -175,10 +174,8 @@ export default function MyProfileSetting(): JSX.Element {
       e.preventDefault();
 
       if (e.target.files) {
-        const uploadFile = e.target.files[0];
-        // const formData = new FormData();
-        // formData.append('file', uploadFile);
-        updateAvatar({ variables: { uploadFile } })
+        const file = e.target.files[0];
+        updateAvatar({ variables: { file } })
           .then(() => window.location.replace('/setting'))
           .catch(() => console.log('변경 실패!'));
       }
