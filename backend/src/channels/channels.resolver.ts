@@ -56,8 +56,13 @@ export class ChannelsResolver {
   async enterChannel(
     @UserID() user_id: string,
     @Args('channel_id', { type: () => ID! }) channel_id: string,
+    @Args('password', { nullable: true }) password: string,
   ): Promise<Channel | null> {
-    return await this.channelsService.enterChannel(user_id, channel_id);
+    return await this.channelsService.enterChannel(
+      user_id,
+      channel_id,
+      password,
+    );
   }
 
   @Mutation((returns) => Boolean)
@@ -78,7 +83,7 @@ export class ChannelsResolver {
       );
     }
     const newChannelId = await this.channelsService.addChannel(title, password);
-    await this.channelsService.enterChannel(user_id, newChannelId);
+    await this.channelsService.enterChannel(user_id, newChannelId, password);
     await this.channelsService.updateChannelRole(user_id, UserRole.OWNER);
   }
 
