@@ -40,11 +40,11 @@ export default function UseSearchUser({
     limit: 3,
   });
   useEffect(() => {
-  if (data?.user) {
-    setButtonActive(false);
-    setInputSpace(data?.user);
-  } else setButtonActive(true);
-}, []);
+    if (data?.user) {
+      setButtonActive(false);
+      setInputSpace(data?.user);
+    } else setButtonActive(true);
+  }, []);
 
   return (
     <Autocomplete
@@ -74,7 +74,7 @@ export default function UseSearchUser({
       onInputChange={(event, value) =>
         //ANCHOR TextField 인풋값이 변경될때마다 DB에있는 닉네임과 비교해서 닉네임이 존재할 경우 '다음'버튼을 활성화시켜주는 부분
         {
-          getUser({ variables: { nickname: value } });
+          void getUser({ variables: { nickname: value } });
         }
       }
     />

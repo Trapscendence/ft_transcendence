@@ -4,7 +4,7 @@ import {
   useQuery,
   useSubscription,
 } from '@apollo/client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { chattingMessagesVar } from '../..';
 import useSnackbar from '../../hooks/useSnackbar';
