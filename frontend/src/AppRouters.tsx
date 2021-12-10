@@ -59,7 +59,7 @@ export default function AppRouters(): JSX.Element {
             <Route exact path="/rank" component={Rank} />
             <Route exact path="/setting" component={MyProfile} />
             <Route exact path="/profile/:userid" component={Profile} />
-            <Route exact path="/admin" component={Admin} />
+            <Route exact path="/admin/:prop" component={Admin} />
             {/* <Redirect to="/home" /> */}
           </Box>
           <DirectMessage />
