@@ -145,7 +145,7 @@ function Navigation(): JSX.Element {
           justifyContent="space-between"
         >
           <List>
-            {['Notice', 'PatchNote', 'Rule', 'AmazingPicture'].map(
+            {['Notice', 'PatchNote', 'DefaultAvatar', 'AmazingPicture'].map(
               (text, index) => (
                 <ListItem button={false} key={index}>
                   <Button
