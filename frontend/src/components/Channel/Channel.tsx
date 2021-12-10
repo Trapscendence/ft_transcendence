@@ -50,6 +50,11 @@ export default function Channel({
   } = channel;
 
   const [alertMsg, displayAlertMsg] = useSnackbar(3000);
+  const [umounted, setUnmounted] = useState(false);
+
+  useEffect(() => {
+    return () => setUnmounted(true);
+  }, []); // NOTE: "Can't perform a React state update on an unmounted component." 에러 임시로 이렇게 해결
 
   const {
     data: blacklistData,
@@ -63,6 +68,7 @@ export default function Channel({
     });
 
   useEffect(() => {
+    if (umounted) return;
     if (!subscribeData) return; // NOTE: undefined 방지를 위해
 
     const { type, participant, text, check }: IChannelNotify =
@@ -91,34 +97,34 @@ export default function Channel({
         break;
       case Notify.MUTE:
         if (check) {
-          void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가하는 식으로 추후 개선 가능
           displayAlertMsg(
             `MUTE: User '${(participant as IUser).nickname}' is muted.`
           );
+          void channelRefetch(); // TODO: 현재는 그냥 refetch하게 구현했지만, 나중에 로컬 캐시에 직접 추가하는 식으로 추후 개선 가능
         } else {
-          void channelRefetch();
           displayAlertMsg(
             `UNMUTE: User '${(participant as IUser).nickname}' is unmuted.`
           );
+          void channelRefetch();
         }
         break;
       case Notify.KICK:
-        void channelRefetch();
         displayAlertMsg(
           `KICK: User '${(participant as IUser).nickname}' is kicked.`
         );
+        void channelRefetch();
         break;
       case Notify.BAN:
-        void channelRefetch();
         displayAlertMsg(
           `BAN: User '${(participant as IUser).nickname}' is banned.`
         );
+        void channelRefetch();
         break;
       case Notify.ENTER:
-        void channelRefetch();
         displayAlertMsg(
           `ENTER: User '${(participant as IUser).nickname}' enter.`
         );
+        void channelRefetch();
         break;
       case Notify.EDIT:
         void channelRefetch();
