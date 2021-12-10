@@ -15,9 +15,9 @@ import {
   LeaveChannelResponse,
 } from '../../../utils/Apollo/responseModels';
 import handleError from '../../../utils/handleError';
+import ChannelManageModal from '../../ChannelList/ChannelListHeader/ChannelManageModal';
 import ErrorAlert from '../../commons/ErrorAlert';
 import LoadingBackdrop from '../../commons/LoadingBackdrop';
-import ChannelEditModal from './ChannelEditModal';
 
 interface ChannelHeaderProps {
   id: string;
@@ -36,30 +36,30 @@ export default function ChannelHeader({
 }: ChannelHeaderProps): JSX.Element {
   const [open, setOpen] = useState(false);
 
-  const { data: channelRoleData, error: channelRoleError } =
-    useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
+  const {
+    data: channelRoleData,
+    error: channelRoleError,
+    loading: channelRoleLoading,
+  } = useQuery<GetMyChannelRoleResponse>(GET_MY_CHANNEL_ROLE);
 
-  const [leaveChannel, { loading, error: leaveChannelError }] =
-    useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
-      refetchQueries: [
-        GET_MY_CHANNEL,
-        { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
-      ],
-    });
-
-  const handleOpen = (): void => {
-    setOpen(true);
-  };
-  const handleClose = (): void => {
-    setOpen(false);
-  };
+  const [
+    leaveChannel,
+    { loading: leaveChannelLoading, error: leaveChannelError },
+  ] = useMutation<LeaveChannelResponse>(LEAVE_CHANNEL, {
+    refetchQueries: [
+      GET_MY_CHANNEL,
+      { query: GET_CHANNELS, variables: { limit: 0, offset: 0 } },
+    ],
+  });
 
   const errorVar = leaveChannelError || channelRoleError;
+  const loadingVar = channelRoleLoading || leaveChannelLoading;
+
+  if (loadingVar) return <LoadingBackdrop loading={loadingVar} />;
 
   return (
     <>
       {errorVar && <ErrorAlert name="ChannelHeader" error={errorVar} />}
-      {loading && <LoadingBackdrop loading={loading} />}
       <Paper
         variant="outlined"
         sx={{
@@ -80,7 +80,13 @@ export default function ChannelHeader({
         </Box>
         <Box>
           {channelRoleData && channelRoleData.user.channel_role === 'OWNER' && (
-            <Button variant="contained" sx={{ m: 1 }} onClick={handleOpen}>
+            <Button
+              variant="contained"
+              sx={{ m: 1 }}
+              onClick={() => {
+                setOpen(true);
+              }}
+            >
               Edit Channel
             </Button>
           )}
@@ -92,7 +98,8 @@ export default function ChannelHeader({
             Leave Channel
           </Button>
         </Box>
-        <ChannelEditModal {...{ open, handleClose, id }} />
+        {/* <ChannelEditModal {...{ open, handleClose, id }} /> */}
+        <ChannelManageModal {...{ open, setOpen }} isAddChannel={false} />
       </Paper>
     </>
   );

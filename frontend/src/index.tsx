@@ -13,7 +13,7 @@ import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { CssBaseline } from '@mui/material';
+import { CssBaseline, GlobalStyles } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -35,9 +35,7 @@ const wsLink = new WebSocketLink({
   options: {
     reconnect: true,
     connectionParams: {
-      authorization: cookieParser('access_token')
-        ? `Bearer ${cookieParser('access_token') ?? ''}`
-        : '',
+      credential: 'include',
     },
   },
 });
@@ -80,7 +78,12 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     graphQLErrors.forEach(({ message, locations, path }) =>
       console.log(
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+        `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
+          locations,
+          null,
+          4
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        )}, Path: ${path}`
       )
     );
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -136,6 +139,11 @@ ReactDOM.render(
     <ApolloProvider client={client}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <GlobalStyles
+          styles={{
+            body: { overflowY: 'hidden' }, // NOTE: html이 아니라 body에 주로 적용하는 듯
+          }}
+        />
         <App />
       </ThemeProvider>
     </ApolloProvider>

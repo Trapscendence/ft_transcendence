@@ -100,6 +100,7 @@ export class ChannelsResolver {
   async muteUserOnChannel(
     @UserID() my_id: string,
     @Args('user_id', { type: () => ID! }) user_id: string,
+    @Args('mute_time', { type: () => Int! }) mute_time: number,
   ): Promise<boolean> {
     // Mute myself?
     if (my_id === user_id) {
@@ -117,7 +118,16 @@ export class ChannelsResolver {
     }
 
     const channel_id = await this.usersService.getChannelIdByUserId(my_id);
-    await this.channelsService.updateChannelMute(channel_id, user_id, true);
+    if (channel_id === null) {
+      throw new ConflictException(
+        `The user(id: ${my_id}) is not on any channel`,
+      );
+    }
+    await this.channelsService.updateChannelMute(
+      channel_id,
+      user_id,
+      mute_time,
+    );
     return true;
   }
 
@@ -128,7 +138,12 @@ export class ChannelsResolver {
     @Args('user_id', { type: () => ID! }) user_id: string,
   ): Promise<boolean> {
     const channel_id = await this.usersService.getChannelIdByUserId(my_id);
-    await this.channelsService.updateChannelMute(channel_id, user_id, false);
+    if (channel_id === null) {
+      throw new ConflictException(
+        `The user(id: ${my_id}) is not on any channel`,
+      );
+    }
+    await this.channelsService.updateChannelMute(channel_id, user_id, 0);
     return true;
   }
 

@@ -250,7 +250,7 @@ export class ChannelsService {
         password
       ) = (
         '${title}',
-        '${password ? `${await this.hashPassword(password)}` : 'NULL'}'
+        ${password ? `'${await this.hashPassword(password)}'` : 'NULL'}
       )
       WHERE
         id = ${channel_id}
@@ -327,21 +327,46 @@ export class ChannelsService {
     return true; // TODO: 임시로 true만 반환하도록 함. 수정 필요!
   }
 
+  private async muteTimeoutHandler(channel_id: string, user_id: string) {
+    // Check the validate of channel_id and user_id
+    if (
+      this.muted_users.hasChannel(channel_id) === false ||
+      this.muted_users.hasUser(channel_id, user_id) === false
+    ) {
+      // Do nothing
+      return;
+    } else {
+      this.muted_users.popUser(channel_id, user_id);
+      this.pubSub.publish(`to_channel_${channel_id}`, {
+        subscribeChannel: {
+          type: Notify.MUTE,
+          participant: this.usersService.getUserById(user_id),
+          text: null,
+          check: false,
+        },
+      });
+    }
+  }
+
   async updateChannelMute(
     channel_id: string,
     user_id: string,
-    mute: boolean,
+    mute_time: number,
   ): Promise<void> {
-    if (this.muted_users.hasUser(channel_id, user_id) === mute) {
+    // Check the user in muted list
+    if (this.muted_users.hasUser(channel_id, user_id) === !!mute_time) {
       throw new ConflictException(
         `The user(id: ${user_id}) is already ${
-          mute ? 'muted' : 'unmuted'
+          mute_time ? 'muted' : 'unmuted'
         } in this channel(id: ${channel_id})`,
       );
     }
 
-    if (mute) {
+    if (mute_time) {
       this.muted_users.pushUser(channel_id, user_id);
+      setTimeout(() => {
+        this.muteTimeoutHandler(channel_id, user_id);
+      }, mute_time);
     } else {
       this.muted_users.popUser(channel_id, user_id);
     }
@@ -351,7 +376,7 @@ export class ChannelsService {
         type: Notify.MUTE,
         participant: this.usersService.getUserById(user_id),
         text: null,
-        check: mute,
+        check: !!mute_time,
       },
     });
   }
@@ -417,7 +442,8 @@ export class ChannelsService {
   }
 
   async updateChannelRole(user_id: string, role: UserRole): Promise<boolean> {
-    const updateChannel = await this.databaseService.executeQuery(`
+    const updateChannel: { channel_id: string }[] = await this.databaseService
+      .executeQuery(`
       UPDATE
         ${env.database.schema}.channel_user
       SET
@@ -433,6 +459,14 @@ export class ChannelsService {
         `The user(id: ${user_id}) is not on any channel`,
       );
     } else {
+      this.pubSub.publish(`to_channel_${updateChannel[0].channel_id}`, {
+        subscribeChannel: {
+          type: Notify.TRANSFER,
+          participant: await this.usersService.getUserById(user_id),
+          text: role,
+          check: true,
+        },
+      });
       return true;
     }
   }

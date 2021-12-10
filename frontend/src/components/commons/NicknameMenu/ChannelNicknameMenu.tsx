@@ -24,12 +24,10 @@ import handleError from '../../../utils/handleError';
 import ErrorAlert from '../ErrorAlert';
 
 interface ChannelNicknameMenuProps {
-  channelId: string;
   id: string;
 }
 
 export default function ChannelNicknameMenu({
-  channelId,
   id,
 }: ChannelNicknameMenuProps): JSX.Element {
   const { data: channelRoleData, error: channelRoleError } =
@@ -43,7 +41,8 @@ export default function ChannelNicknameMenu({
   const [muteUser, { error: muteError }] = useMutation<MuteUserResponse>(
     MUTE_USER,
     {
-      variables: { user_id: id },
+      variables: { mute_time: 60000, user_id: id }, // NOTE: 일단은 1분으로. 추후 수정.
+      // variables: { mute_time: 3000, user_id: id }, // NOTE: 테스트를 위해 3초로 임시 수정
     }
   );
 
@@ -103,7 +102,7 @@ export default function ChannelNicknameMenu({
             <ListItemIcon>
               <Forum fontSize="small" />
             </ListItemIcon>
-            Mute
+            Mute 1 min
           </MenuItem>
           <MenuItem onClick={() => handleError(kickUser)}>
             <ListItemIcon>

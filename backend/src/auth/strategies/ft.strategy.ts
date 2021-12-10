@@ -17,12 +17,15 @@ export class FTStrategy extends PassportStrategy(Strategy, '42') {
     cb: VerifyCallback,
   ) {
     const oauth_id = profile.id;
-    const user =
-      (await this.usersService.getUserByOAuth('FORTYTWO', oauth_id)) ??
-      (await this.usersService.createUserByOAuth('FORTYTWO', oauth_id));
+    let redirect = '/';
+    let user = await this.usersService.getUserByOAuth('FORTYTWO', oauth_id);
+    if (!user) {
+      user = await this.usersService.createUserByOAuth('FORTYTWO', oauth_id);
+      redirect = '/register';
+    }
 
     if (user) {
-      return cb(null, { id: user.id });
+      return cb(null, { id: user.id, redirect });
     } else {
       return cb('Bad query result', null);
     }
