@@ -106,8 +106,11 @@ function Profile(): JSX.Element {
       <Stack
         id="top-var-Stack"
         direction="row"
-        spacing={2}
+        spacing={3}
         justifyContent="space-between"
+        sx={{
+          width: '60%',
+        }}
       >
         {currentUser?.avatar ? (
           <Avatar
@@ -186,8 +189,8 @@ function Profile(): JSX.Element {
         <Paper style={paperStyle} variant="outlined">
           <Box>
             {profileData?.user?.achievements.map((achieve) => (
-              <Box 
-              key={achieve.time_stamp}
+              <Box
+                key={achieve.time_stamp}
                 component="span"
                 sx={{
                   width: '100%',
