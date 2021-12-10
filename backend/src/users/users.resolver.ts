@@ -23,8 +23,11 @@ import { StatusService } from 'src/status/status.service';
 import { PUB_SUB } from 'src/pubsub.module';
 import { PubSub } from 'graphql-subscriptions';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/matchs/match.model';
+import { Match } from 'src/games/models/match.model';
 import { GamesService } from 'src/games/games.service';
+import { AchievementsService } from 'src/acheivements/achievements.service';
+import { FileUpload } from './dtos/fileupload.dto';
+import { GraphQLUpload } from 'graphql-upload';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -33,16 +36,12 @@ export class UsersResolver {
     private readonly statusService: StatusService,
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   /*
    ** ANCHOR: User
    */
-
-  @Query((returns) => ID)
-  async getMyID(@UserID() user_id: string) {
-    return user_id;
-  }
 
   @Query((returns) => User, { nullable: true })
   async user(
@@ -64,6 +63,18 @@ export class UsersResolver {
     @Args('limit', { type: () => Int }) limit: number,
   ): Promise<User[]> {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
+  }
+
+  @Mutation((returns) => Boolean)
+  async updateAvatar(
+    @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
+    @UserID() user_id: string,
+  ): Promise<Boolean> {
+    if (await this.usersService.updateAvatar(user_id, file)) return true;
+    else
+      throw new InternalServerErrorException(
+        `Error occured during update avatar(id: ${user_id})`,
+      );
   }
 
   @Mutation((returns) => Boolean)
@@ -141,20 +152,23 @@ export class UsersResolver {
     return await this.usersService.setSiteRole(user_id, target_id, role);
   }
 
-  @Mutation((returns) => String)
-  setAvatar(
-    @UserID() user_id: string,
-    @Args('file') file: string,
-  ): Promise<boolean> {
-    return this.usersService.setAvatar(user_id, file);
-  }
-
   @Mutation((returns) => Boolean)
   async achieveOne(
     @UserID() user_id: string,
     @Args('achievement_id') achievement_id: string,
   ): Promise<boolean> {
-    return await this.usersService.achieveOne(user_id, achievement_id);
+    return await this.achievementsService.achieveOne(user_id, achievement_id);
+  }
+
+  @Mutation((returns) => Boolean)
+  async checkAchieved(
+    @UserID() user_id: string,
+    @Args('achievement_id') achievement_id: string,
+  ): Promise<boolean> {
+    return await this.achievementsService.checkAchieved(
+      user_id,
+      achievement_id,
+    );
   }
 
   @Mutation((returns) => Boolean)
@@ -165,13 +179,20 @@ export class UsersResolver {
     this.statusService.setStatus(user_id, status);
     return true;
   }
+
+  @Mutation((returns) => Boolean)
+  async unregister(@UserID() user_id: string): Promise<boolean> {
+    return await this.usersService.unregister(user_id);
+  }
+
   // NOTE for test
   @Mutation((returns) => Boolean)
   async insertMatchResult(
     @Args('winner_id', { type: () => ID }) winner_id: string,
     @Args('loser_id', { type: () => ID }) loser_id: string,
-  ) {
-    this.gamesService.recordMatch(winner_id, loser_id);
+    @Args('ladder') ladder: boolean,
+  ): Promise<boolean> {
+    return await this.gamesService.recordMatch(winner_id, loser_id, ladder);
   }
 
   /*
@@ -202,15 +223,9 @@ export class UsersResolver {
     return await this.usersService.getChannelRole(id);
   }
 
-  @ResolveField('avatar', (returns) => String, { nullable: true })
-  async getAvatar(@Parent() user: User): Promise<string> {
-    const { id } = user;
-    return await this.usersService.getAvatar(id);
-  }
-
   @ResolveField('achievements', (returns) => [Achievement], { nullable: true })
   async getAchieved(@Parent() user: User): Promise<Achievement[]> {
-    return await this.usersService.getAchieved(user.id);
+    return await this.achievementsService.getAchieved(user.id);
   }
 
   @ResolveField('status', (returns) => UserStatus)
@@ -222,11 +237,6 @@ export class UsersResolver {
   /*
    ** ANCHOR: User Subscription
    */
-
-  @Subscription((returns) => UserStatus)
-  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
-    return this.pubSub.asyncIterator(`status_of_${user_id}`);
-  }
 
   @ResolveField('match_history', (returns) => [Match])
   async getMatchHistory(
@@ -242,5 +252,14 @@ export class UsersResolver {
   async getGame(@Parent() user: User): Promise<Game | null> {
     const { id } = user;
     return await this.usersService.getGameByUserId(id);
+  }
+
+  /*
+   ** ANCHOR: User Subscription
+   */
+
+  @Subscription((returns) => UserStatus)
+  statusChange(@Args('user_id', { type: () => ID }) user_id: string) {
+    return this.pubSub.asyncIterator(`status_of_${user_id}`);
   }
 }

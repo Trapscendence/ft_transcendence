@@ -171,4 +171,7 @@ export class Game {
 
   @Field()
   paddle_height: number;
+
+  // @Field()
+  // ladder: boolean;
 }

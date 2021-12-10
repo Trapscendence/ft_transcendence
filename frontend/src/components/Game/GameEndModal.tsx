@@ -8,6 +8,8 @@ import {
 } from '@mui/material';
 import { useHistory } from 'react-router';
 
+import useAchievement from '../../hooks/useAchievement';
+
 interface GameEndModalProps {
   open: boolean;
   winner: string;
@@ -19,6 +21,7 @@ export default function GameEndModal({
 }: GameEndModalProps): JSX.Element {
   const history = useHistory();
 
+  useAchievement({ achievementId: '2' });
   const onClickBtn = () => {
     history.push('/home');
   };

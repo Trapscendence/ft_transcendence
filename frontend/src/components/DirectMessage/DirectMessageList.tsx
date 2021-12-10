@@ -38,10 +38,12 @@ function DirectMessageList({
   };
 
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
-  const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
+  const { data: blacklistData } = useQuery<GetMyBlacklistResponse>(
+    GET_MY_BLACKLIST,
+    {
       variables: { id: currentUserData?.user.id },
-    });
+    }
+  );
 
   useEffect(() => {
     blacklistData?.user.blacklist.forEach((value) => {

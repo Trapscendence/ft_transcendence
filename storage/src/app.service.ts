@@ -1,41 +1,39 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { unlinkSync } from 'fs';
+import { Injectable, Logger, StreamableFile } from '@nestjs/common';
+import { createReadStream, unlinkSync } from 'fs';
 import { join } from 'path';
-import { DatabaseService } from './database/database.service';
-import { env } from './utils/envs';
 
 @Injectable()
 export class AppService {
-  private readonly logger: Logger;
+  private readonly findLogger: Logger;
+  private readonly createLogger: Logger;
+  private readonly deleteLogger: Logger;
 
-  constructor(private readonly databaseService: DatabaseService) {
-    this.logger = new Logger('FileSystem');
+  constructor() {
+    this.findLogger = new Logger('GET');
+    this.createLogger = new Logger('POST');
+    this.deleteLogger = new Logger('DELETE');
   }
 
-  getHello(): string {
-    return 'Hello World!';
+  find(filename: string) {
+    const file = createReadStream(join(process.cwd(), 'public', filename));
+    this.findLogger.log(`Search the file: ${filename}`);
+    return new StreamableFile(file);
   }
 
-  async setUserProfileUrl(userId: string, url: string) {
-    const queryResult = await this.databaseService.executeQuery(
-      `UPDATE ${
-        env.database.schema
-      }.user SET avatar = '${url}' WHERE id = ${+userId} RETURNING id;`,
+  create(file: Express.Multer.File) {
+    this.createLogger.log(
+      `Created file: ${file.originalname} -> ${file.filename} (${file.size} bytes)`,
     );
-
-    if (queryResult.length === 1) return true;
-    else return false;
+    return file.filename;
   }
 
-  deleteFile(filename: string): boolean {
-    const filepath = join(__dirname, '..', 'public', filename);
-
+  delete(filename: string): boolean {
     try {
-      unlinkSync(filepath);
-      this.logger.verbose(`DELETE ${filepath}`);
+      unlinkSync(join(process.cwd(), 'public', filename));
+      this.deleteLogger.log(`Delete the file: ${filename}`);
       return true;
     } catch (error) {
-      this.logger.error(`Error occured during delete file: ${filepath}`);
+      this.deleteLogger.error(`Error occured during delete file: ${filename}`);
       return false;
     }
   }

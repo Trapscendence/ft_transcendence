@@ -7,7 +7,7 @@ export class AchievementsResolver {
   constructor(private readonly achievementService: AchievementsService) {}
 
   @Query((returns) => [Achievement])
-  async achievement(): Promise<Achievement[]> {
+  async achievements(): Promise<Achievement[]> {
     return await this.achievementService.getAllAchievements();
   }
 

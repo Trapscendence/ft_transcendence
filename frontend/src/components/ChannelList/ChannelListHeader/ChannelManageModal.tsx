@@ -46,10 +46,9 @@ export default function ChannelManageModal({
     }
   );
 
-  const [editChannel, { loading: editLoading, error: editError }] =
-    useMutation<EditChannelResponse>(EDIT_CHANNEL, {
-      variables: { title, password: password === '' ? null : password },
-    });
+  const [editChannel] = useMutation<EditChannelResponse>(EDIT_CHANNEL, {
+    variables: { title, password: password === '' ? null : password },
+  });
 
   const btnFunction = isAddChannel ? addChannelFunc : editChannel;
   const btnText = isAddChannel ? 'make channel' : 'edit channel';

@@ -6,5 +6,6 @@ import { AchievementsService } from './achievements.service';
 @Module({
   imports: [DatabaseModule],
   providers: [AchievementsResolver, AchievementsService],
+  exports: [AchievementsService],
 })
 export class AchievementsModule {}

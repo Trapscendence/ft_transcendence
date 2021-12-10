@@ -15,6 +15,7 @@ import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { CssBaseline, GlobalStyles } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createUploadLink } from 'apollo-upload-client';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -89,9 +90,15 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   if (networkError) console.log(`[Network error]: ${networkError}`);
 });
+const uploadLink = createUploadLink({
+  uri: `http://${process.env.REACT_APP_SERVER_HOST ?? 'localhost'}:${
+    process.env.REACT_APP_SERVER_PORT ?? '3000'
+  }`,
+});
 
 const client = new ApolloClient({
-  link: from([errorLink, splitLink]),
+  link: from([errorLink, splitLink, uploadLink]),
+
   cache: new InMemoryCache({
     // typePolicies: {
     //   Query: {

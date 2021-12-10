@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/client';
 import {
   Avatar,
@@ -10,6 +10,9 @@ import {
   Paper,
   Stack,
   Typography,
+  Tabs,
+  Tab,
+  TextField,
 } from '@mui/material';
 import qrcode from 'qrcode';
 import { useEffect, useState } from 'react';
@@ -32,7 +35,6 @@ import {
   UsersData,
   UsersDataVars,
 } from '../../utils/Apollo/User';
-import axios from 'axios';
 import {
   CHANGE_NICKNAME,
   CREATE_TFA,
@@ -48,13 +50,19 @@ export default function MyProfileSetting(): JSX.Element {
     width: '95px',
   };
   const elementStyle = {
-    height: '150px',
+    // height: '150px',
+    minHeight: '170px',
 
     display: 'flex',
     justifyContent: 'space-around',
     alignItems: 'center',
   };
 
+  const buttonStyle = {
+    // boxShadow: 0,
+    margin: '5px',
+    height: '30px',
+  };
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
@@ -132,32 +140,96 @@ export default function MyProfileSetting(): JSX.Element {
   }, [tfaUri]);
 
   //-----------------------------------------------tfa
-  // const PictureHandler = () => {
 
-  //   axios
-  //     .post(endpoint, 'file')
-  //     .then((response) => this.setState({ articleId: response.data.id }));
-  // };
-  const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
+  function ChangeMyPicture() {
+    // const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    //   e.preventDefault();
 
-    if (e.target.files) {
-      const uploadFile = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-      //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
-      //     process.env.REACT_APP_SERVER_PORT ?? ''
-      //   }/upload/profile`;
-      await axios({
-        method: 'post',
-        url: '/upload/profile',
-        data: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }).then(() => window.location.replace('/setting/'));
-    }
+    //   if (e.target.files) {
+    //     const uploadFile = e.target.files[0];
+    //     const formData = new FormData();
+    //     formData.append('file', uploadFile);
+    //     //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
+    //     //     process.env.REACT_APP_SERVER_PORT ?? ''
+    //     //   }/upload/profile`;
+    //     await axios({
+    //       method: 'post',
+    //       url: '/upload/profile',
+    //       data: formData,
+    //       headers: {
+    //         'Content-Type': 'multipart/form-data',
+    //       },
+    //     }).then(() => window.location.replace('/setting/'));
+    //   }
+
+    const [updateAvatar, { error }] = useMutation(
+      gql`
+      mutation updateAvatar($file: Upload!){
+
+        updateAvatar(file: $file)
+        }
+      `
+    );
+
+    const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      e.preventDefault();
+
+      if (e.target.files) {
+        const uploadFile = e.target.files[0];
+        // const formData = new FormData();
+        // formData.append('file', uploadFile);
+        updateAvatar({ variables: { uploadFile } })
+          .then(() => window.location.replace('/setting'))
+          .catch(() => console.log('변경 실패!'));
+      }
+    };
+
+    return (
+      <Grid item xs={12}>
+        <Paper sx={elementStyle} variant="outlined">
+          <Stack spacing={1} alignItems="center">
+            {currentUser?.avatar ? (
+              <Avatar
+                sx={avartarStyle}
+                src={'/storage/' + currentUser?.avatar}
+              ></Avatar>
+            ) : (
+              <Avatar sx={avartarStyle}>
+                {currentUser?.nickname[0]?.toUpperCase()}
+              </Avatar>
+              // <Skeleton variant="circular" sx={avartarStyle} />
+            )}
+            <Box />
+            {/* <button> 프로필 사진 변경</button> */}
+            <form>
+              <label htmlFor="profile-upload">
+                <input
+                  type="file"
+                  id="profile-upload"
+                  accept="image/*"
+                  onChange={onChangeImg}
+                  style={{ display: 'none' }}
+                />
+                <Button sx={buttonStyle} variant="contained" component="span">
+                  아바타 변경
+                </Button>
+              </label>
+            </form>
+          </Stack>
+        </Paper>
+      </Grid>
+    );
+  }
+
+  const [value, setValue] = useState(0);
+
+  const handleChange = (
+    event: React.SyntheticEvent<Element, Event>,
+    newValue: number
+  ) => {
+    setValue(newValue);
   };
+
   //----------------------------------------------------picture
   return (
     <Box
@@ -167,13 +239,12 @@ export default function MyProfileSetting(): JSX.Element {
         alignItems: 'center',
       }}
     >
-      <Paper
-        elevation={3}
+      <Box
         sx={{
           height: '70%',
           width: '90%',
-          padding: '5% 15%',
-          margin: '5%',
+          padding: '0% 15%',
+          margin: '0%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'space-between',
@@ -182,41 +253,31 @@ export default function MyProfileSetting(): JSX.Element {
         <Grid
           container
           // direction="column"
-          rowSpacing={4}
+          rowSpacing={5}
           columnSpacing={{ md: 1 }}
         >
-          <Grid item xs={6}>
-            <Paper sx={elementStyle} variant="outlined">
-              <Stack spacing={1} alignItems="center">
-                {currentUser?.avatar ? (
-                  <Avatar
-                    sx={avartarStyle}
-                    src={'/storage/' + currentUser?.avatar}
-                  ></Avatar>
-                ) : (
-                  <Avatar sx={avartarStyle}>
-                    {currentUser?.nickname[0]?.toUpperCase()}
-                  </Avatar>
-                  // <Skeleton variant="circular" sx={avartarStyle} />
-                )}
-                <Box />
-                {/* <button> 프로필 사진 변경</button> */}
-                <form>
-                  <label htmlFor="profile-upload" />
-                  <input
-                    type="file"
-                    id="profile-upload"
-                    accept="image/*"
-                    onChange={onChangeImg}
-                  />
-                </form>
-              </Stack>
-            </Paper>
+          <Grid item xs={12}>
+            <Box sx={elementStyle}>
+              <Typography variant="h3">
+                {currentUser?.nickname}님의
+                <br />
+                설정입니다.
+              </Typography>
+            </Box>
+            <Tabs value={value} onChange={handleChange} centered>
+              <Tab label="아바타 변경" />
+              <Tab label="닉네임 변경" />
+              <Tab label="2차 인증" />
+              <Tab label="블랙리스트 관리" />
+              <Tab label="회원 탈퇴" />
+            </Tabs>
           </Grid>
 
-          <Grid item xs={6}>
+          <ChangeMyPicture />
+
+          <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
-              <Stack>
+              <Stack spacing={1} alignItems="center">
                 <form
                   onSubmit={(event) => {
                     event.preventDefault();
@@ -226,8 +287,6 @@ export default function MyProfileSetting(): JSX.Element {
                     else if (nicknameUserData?.user != undefined)
                       setErrorMessage('이미 존재하는 닉네임입니다.');
                     else {
-                      console.log(nicknameinputSpace);
-
                       changeNickname({
                         variables: { new_nickname: nicknameinputSpace },
                       }).catch(() => setErrorMessage('변경 실패!'));
@@ -237,24 +296,19 @@ export default function MyProfileSetting(): JSX.Element {
                     }
                   }}
                 >
-                  {/* TODO USESEARCHUSER 써서 닉네임 중복 안되게 해야합니당 */}
-                  <Box>
-                    <Typography>
-                      {currentUser?.nickname}님, 안녕하세요!
-                    </Typography>
-                  </Box>
-
                   <input
                     onChange={onchangeNickname}
                     // defaultValue={currentUser?.nickname}
                   ></input>
-                  <button
+                  <Button
+                    variant="contained"
                     type="submit"
                     // disabled={nicknameButtonActive}
                     // onClick={handleChangeNickname}
+                    sx={buttonStyle}
                   >
                     닉네임 변경
-                  </button>
+                  </Button>
                 </form>
                 {errorMessage ? errorMessage : ''}
               </Stack>
@@ -267,18 +321,26 @@ export default function MyProfileSetting(): JSX.Element {
                 2차 인증 <br />
                 {imageUrl && imageUrl != '' ? (
                   <Stack>
-                    <button
+                    <Button
+                      sx={buttonStyle}
+                      variant="contained"
                       onClick={() => {
                         deleteTfa();
                         setImageUrl('');
                       }}
                     >
                       비활성화하기
-                    </button>
+                    </Button>
                     <img src={imageUrl} />
                   </Stack>
                 ) : (
-                  <button onClick={() => createTfa()}>활성화하기</button>
+                  <Button
+                    variant="contained"
+                    sx={buttonStyle}
+                    onClick={() => createTfa()}
+                  >
+                    활성화하기
+                  </Button>
                 )}
               </Typography>
             </Paper>
@@ -318,24 +380,36 @@ export default function MyProfileSetting(): JSX.Element {
                   <Box />
                 )}
                 <Box>
-                  블랙리스트 목록
-                  <Divider />
-                  {blacklistData?.user?.blacklist?.map((blackUser) => (
-                    <Box sx={{ width: '100%' }}>
-                      <Typography sx={{ width: '80%' }}>
-                        {blackUser.nickname}
-                      </Typography>
-                      <button
-                        onClick={() =>
-                          deleteFromBlackList({
-                            variables: { black_id: blackUser.id },
-                          })
-                        }
-                      >
-                        X
-                      </button>
+                  {blacklistData?.user ? (
+                    <Box />
+                  ) : (
+                    <Box>
+                      블랙리스트 목록 <Divider />
+                      {blacklistData?.user?.blacklist?.map((blackUser) => (
+                        <Box key={blackUser.id} sx={{ width: '100%' }}>
+                          <Typography sx={{ width: '80%' }}>
+                            {blackUser.nickname}
+                            <Button
+                              variant="contained"
+                              sx={{
+                                // boxShadow: 0,
+                                margin: '5px',
+                                height: '20px',
+                                width: '20px',
+                              }}
+                              onClick={() =>
+                                deleteFromBlackList({
+                                  variables: { black_id: blackUser.id },
+                                })
+                              }
+                            >
+                              X
+                            </Button>
+                          </Typography>
+                        </Box>
+                      ))}
                     </Box>
-                  ))}
+                  )}
                 </Box>
               </Stack>
             </Paper>
@@ -347,7 +421,7 @@ export default function MyProfileSetting(): JSX.Element {
             </Paper>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
     </Box>
   );
 }

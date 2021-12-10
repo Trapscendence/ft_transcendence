@@ -49,21 +49,24 @@ export const GET_USER_BY_NICKNAME = gql`
   }
 `;
 
-export const GET_MATCH_BY_NICKNAME = gql`
+export const GET_MATCH_WITH_ACHIEVE_BY_NICKNAME = gql`
   query getMatch($nickname: String, $offset: Int!, $limit: Int!) {
     user(nickname: $nickname) {
       id
       nickname
       match_history(offset: $offset, limit: $limit) {
-
-      winner {
-        nickname
+        id
+        winner {
+          nickname
+        }
+        loser {
+          nickname
+        }
       }
-      winner_points
-      loser {
-        nickname
-      }
-      loser_points
+      achievements {
+        id
+        name
+        time_stamp
       }
     }
   }

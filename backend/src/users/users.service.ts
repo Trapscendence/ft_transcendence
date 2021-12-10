@@ -15,9 +15,10 @@ import { Channel } from 'src/channels/models/channel.model';
 import axios from 'axios';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
-import { Match } from 'src/matchs/match.model';
-import { HttpService } from '@nestjs/axios';
+import { Match } from 'src/games/models/match.model';
 import { AxiosResponse } from '@nestjs/common/node_modules/axios';
+import { AchievementsService } from 'src/acheivements/achievements.service';
+import { FileUpload } from './dtos/fileupload.dto';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +26,7 @@ export class UsersService {
     private databaseService: DatabaseService,
     @Inject(forwardRef(() => GamesService))
     private readonly gamesService: GamesService,
-    private readonly httpService: HttpService,
+    private readonly achievementsService: AchievementsService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -109,8 +110,10 @@ export class UsersService {
     ) RETURNING id, tfa_secret;
     `);
 
-    if (insertQueryResult.length === 1) return insertQueryResult[0];
-    else
+    if (insertQueryResult.length === 1) {
+      this.achievementsService.achieveOne(insertQueryResult[0].id, '1');
+      return insertQueryResult[0];
+    } else
       throw new ConflictException(
         `Conflict with oauth data (oauth_type: ${oauth_type}, oauth_id: ${oauth_id})`,
       );
@@ -212,23 +215,47 @@ export class UsersService {
     else throw new ConflictException(`No user with { user_id: ${user_id} }`);
   }
 
-  async deleteAvatar(user_id: string): Promise<boolean> {
-    const selectResult = await this.databaseService.executeQuery(
-      `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
+  async updateAvatar(user_id: string, file: FileUpload) {
+    const formData = new FormData();
+    const fileData = await file.createReadStream().read();
+    formData.append('avatar', fileData, file.filename);
+    const axiosResponse = await axios.post(
+      `http://${env.storage.host}:${env.storage.port}/`,
+      formData,
     );
-    if (selectResult.length !== 1) return false;
-    if (selectResult[0].avatar !== null) {
-      await axios.delete(
-        `http://${env.storage.host}:${env.storage.port}/delete/${selectResult[0].avatar}`,
-      );
-    }
 
-    const updateResult = await this.databaseService.executeQuery(
-      `UPDATE ${
-        env.database.schema
-      }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+    if (axiosResponse.status !== 200 && axiosResponse.status !== 201)
+      throw new InternalServerErrorException(axiosResponse.statusText);
+    const updatedId = (
+      await this.databaseService.executeQuery(
+        `UPDATE ${env.database.schema}.user SET avatar = '${
+          axiosResponse.data
+        }' WHERE id = ${+user_id} RETURNING id;`,
+      )
+    ).at(0)?.id;
+    if (updatedId) return true;
+    else return false;
+  }
+
+  async deleteAvatar(user_id: string): Promise<boolean> {
+    const filename = (
+      await this.databaseService.executeQuery(
+        `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
+      )
+    ).at(0)?.avatar;
+    if (!filename) return false;
+    await axios.delete(
+      `http://${env.storage.host}:${env.storage.port}/${filename}`,
     );
-    if (updateResult.length === 1) return true;
+
+    const id = (
+      await this.databaseService.executeQuery(
+        `UPDATE ${
+          env.database.schema
+        }.user SET avatar = NULL WHERE id = ${+user_id} RETURNING id`,
+      )
+    ).at(0)?.id;
+    if (id) return true;
     else return false;
   }
 
@@ -323,6 +350,16 @@ export class UsersService {
     `);
 
     return !!array.length;
+  }
+
+  async unregister(user_id: string): Promise<boolean> {
+    const queryResult = await this.databaseService.executeQuery(
+      `DELETE FROM ${
+        env.database.schema
+      }.user WHERE id = ${+user_id} RETURNING id;`,
+    );
+    if (queryResult.length === 1) return true;
+    else return false;
   }
 
   /*
@@ -499,7 +536,17 @@ export class UsersService {
   ): Promise<Match[]> {
     return await this.databaseService.executeQuery(`
       SELECT
-        *
+        id,
+        winner AS winner_id,
+        loser AS loser_id,
+        win_points,
+        lose_points,
+        time_stamp,
+        CASE
+          WHEN ladder = true THEN 'RANK'
+          ELSE 'CUSTOM'
+        END
+          AS type
       FROM
         ${env.database.schema}.match
       WHERE
@@ -510,70 +557,6 @@ export class UsersService {
         time_stamp DESC
       LIMIT ${limit} OFFSET ${offset}
     `);
-  }
-
-  async getAvatar(user_id: string): Promise<string> {
-    const array = await this.databaseService.executeQuery(`
-      SELECT
-        avatar
-      FROM
-        ${env.database.schema}.user
-      WHERE
-        id = ${user_id}
-    `);
-    if (!array.length) return null;
-    const [{ uuid }] = array;
-    if (!uuid) return null;
-    return new Promise((resolve, reject) => {
-      this.httpService
-        .get(
-          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/storage/${uuid}`,
-        )
-        .subscribe({
-          next(axiosResponse: AxiosResponse) {
-            resolve(axiosResponse.data as string);
-          },
-          error(error) {
-            reject(error);
-          },
-          complete() {},
-        });
-    });
-  }
-
-  async setAvatar(user_id: string, image: string): Promise<boolean> {
-    return new Promise((resolve, reject) => {
-      this.httpService
-        .post(
-          `http://${process.env.SERVER_HOST}:${process.env.SERVER_PORT}/upload`,
-          image,
-        )
-        .subscribe({
-          next: async (axiosResponse: AxiosResponse) => {
-            this.databaseService
-              .executeQuery(
-                `
-              UPDATE
-                ${env.database.schema}.user
-              SET
-                avatar = ($1)
-              WHERE
-                id = ${user_id}
-              RETURNING *;
-          `,
-                [image],
-              )
-              .then((array) => {
-                if (!array.length) resolve(false);
-                resolve(true);
-              });
-          },
-          error(error) {
-            reject(error);
-          },
-          complete() {},
-        });
-    });
   }
 
   async getAchieved(user_id: string) {

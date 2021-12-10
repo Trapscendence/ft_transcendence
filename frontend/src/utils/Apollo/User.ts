@@ -14,16 +14,27 @@ export interface UserData {
 export interface Match {
   id: string;
   winner: User;
-  winner_points: number;
+  // winner_points: number;
   loser: User;
-  loser_points: number;
+  // loser_points: number;
   // type: MatchType!
   time_stamp: string;
 }
 
-export interface MatchData {
-  user: { id: string; nickname: string; match_history: Match[] };
+export interface achievement {
+  name: string;
+  time_stamp: string;
 }
+
+export interface MatchData {
+  user: {
+    id: string;
+    nickname: string;
+    match_history: Match[];
+    achievements: achievement[];
+  };
+}
+
 export interface UsersData {
   users: User[];
 }
@@ -42,4 +53,15 @@ export interface MatchDataVars {
   nickname: string;
   offset: number;
   limit: number;
+}
+
+export interface UserProfile {
+  nickname: string;
+  id: string;
+  rank: number;
+  avatar: string;
+}
+
+export interface UserProfileData {
+  users: UserProfile[];
 }

@@ -28,7 +28,7 @@ interface ChannelHeaderProps {
 }
 
 export default function ChannelHeader({
-  id, // NOTE: setting에서 사용되지 않을까? 근데 그러려면 ban 목록도 있어야하지 않나?
+  // id, // NOTE: setting에서 사용되지 않을까? 근데 그러려면 ban 목록도 있어야하지 않나?
   title,
   is_private,
   owner,

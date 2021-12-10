@@ -1,14 +1,5 @@
 import { useQuery } from '@apollo/client';
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  Paper,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Avatar, Box, Divider, Stack, Typography } from '@mui/material';
 
 import { UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
@@ -20,7 +11,7 @@ export default function RankPage(): JSX.Element {
     margin: '10px',
   };
 
-  const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
+  const { data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
     variables: { ladder: true, offset: 0, limit: 0 },
   });
 
@@ -36,7 +27,7 @@ export default function RankPage(): JSX.Element {
         <h3>Rank Page</h3>
 
         {data?.users.map((user, index) => (
-          <Box>
+          <Box key={user.id}>
             <Divider light />
             <Stack
               sx={{ margin: '10px' }}

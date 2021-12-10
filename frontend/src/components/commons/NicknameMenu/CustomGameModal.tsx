@@ -2,7 +2,6 @@ import { useMutation } from '@apollo/client';
 import { FormControl, FormLabel } from '@material-ui/core';
 import { LoadingButton } from '@mui/lab';
 import {
-  Button,
   Card,
   CardActions,
   CardContent,
@@ -24,7 +23,7 @@ export default function CustomGameModal({
   id,
   open,
   setOpen,
-}: CustomGameModalProps) {
+}: CustomGameModalProps): JSX.Element {
   const [isPaddleNormal, setIsPaddleNormal] = useState(true);
   const [isBallNormal, setIsBallNormal] = useState(true);
   const [btnLoading, setBtnLoading] = useState(false);

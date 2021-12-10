@@ -9,8 +9,8 @@ import UserSummary from '../commons/UserSummary';
 export default function SocialDrawer(): JSX.Element {
   const {
     data: friendsData,
-    loading: friendsLoading,
-    error: friendsError,
+    // loading: friendsLoading,
+    // error: friendsError,
   } = useQuery<{
     user: {
       id: string;

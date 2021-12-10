@@ -15,7 +15,6 @@ import { useState } from 'react';
 import UseSearchUser from '../../hooks/useSearchUser';
 import { User, UsersData, UsersDataVars } from '../../utils/Apollo/User';
 import { GET_USERS } from '../../utils/Apollo/UserQuery';
-import DirectMessageContent from './DirectMessageContent';
 
 // NOTE 여기까지는 가능하면 다른 파일에 export로 내보내둘것
 

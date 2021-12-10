@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react';
 export default function useInterval(
   callback: () => void,
   delay: number | null
-) {
+): void {
   const savedCallback = useRef(callback);
 
   // Remember the latest callback if it changes.
