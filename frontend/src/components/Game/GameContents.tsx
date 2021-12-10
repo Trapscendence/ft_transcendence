@@ -99,7 +99,7 @@ export default function GameContents({
     }
   );
 
-  const [surrenderGame, { error: surrenderGameError }] = useMutation<{
+  const [surrenderGame] = useMutation<{
     surrenderGame: boolean;
   }>(
     gql`

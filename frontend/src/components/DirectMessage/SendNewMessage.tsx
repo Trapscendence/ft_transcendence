@@ -1,14 +1,10 @@
-import { useMutation,  } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 // import { Send } from '@mui/icons-material';
 import { Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import {
-  SendMessageData,
-} from '../../utils/Apollo/Message';
-import {
-  SEND_MESSAGE,
-} from '../../utils/Apollo/MessageQuery';
+import { SendMessageData } from '../../utils/Apollo/Message';
+import { SEND_MESSAGE } from '../../utils/Apollo/MessageQuery';
 //ANCHOR 새로운 DM 보내기
 
 interface SendNewMessageContentProps {
@@ -26,7 +22,6 @@ export default function SendNewMessage({
   useEffect(() => {
     scrollToBottom();
   });
-  const [loadingState, setLoadingState] = useState(false);
 
   const [form, setForm] = useState('');
   //TODO 센드 하고나면 프론트가 알아서 새로고침하기

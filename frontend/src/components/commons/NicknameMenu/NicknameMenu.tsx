@@ -41,11 +41,7 @@ export default function NicknameMenu({
   const { data: blacklistData, error: blacklistError } =
     useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST);
 
-  const {
-    data: friendsData,
-    loading: friendsLoading,
-    error: friendsError,
-  } = useQuery<{
+  const { data: friendsData } = useQuery<{
     user: {
       id: string;
       friends: {
@@ -83,19 +79,16 @@ export default function NicknameMenu({
       refetchQueries: [GET_MY_BLACKLIST],
     });
 
-  const [addFriend] =
-    useMutation<{ addFriend: boolean }>(
-      gql`
-        mutation AddFriend($friend_id: ID!) {
-          addFriend(friend_id: $friend_id)
-        }
-      `,
-      { variables: { friend_id: id }, refetchQueries: ['GetMyFriends'] }
-    );
+  const [addFriend] = useMutation<{ addFriend: boolean }>(
+    gql`
+      mutation AddFriend($friend_id: ID!) {
+        addFriend(friend_id: $friend_id)
+      }
+    `,
+    { variables: { friend_id: id }, refetchQueries: ['GetMyFriends'] }
+  );
 
-  const [
-    deleteFriend,
-  ] = useMutation<{ deleteFriend: boolean }>(
+  const [deleteFriend] = useMutation<{ deleteFriend: boolean }>(
     gql`
       mutation DeleteFriend($friend_id: ID!) {
         deleteFriend(friend_id: $friend_id)

@@ -1,24 +1,12 @@
 /* eslint-disable */
 
 import { useMutation, useQuery } from '@apollo/client';
-import {
-  Avatar,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  Paper,
-  Stack,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Avatar, Box, Button, Stack } from '@mui/material';
 import gql from 'graphql-tag';
 
 function AmazingPicture(): JSX.Element {
   //TODO 권한 없을경우 권한이 없습니다. 띄우게하기
-  const [setAmazingPicture, { error }] = useMutation<{
+  const [setAmazingPicture] = useMutation<{
     amazing_picture: string;
   }>(
     gql`
@@ -41,12 +29,12 @@ function AmazingPicture(): JSX.Element {
 
     if (e.target.files) {
       const uploadFile = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', uploadFile);
+      // const formData = new FormData();
+      // formData.append('file', uploadFile);
       //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
       //     process.env.REACT_APP_SERVER_PORT ?? ''
       //   }/upload/profile`;
-      setAmazingPicture({ variables: { amazing_picture: formData } })
+      setAmazingPicture({ variables: { amazing_picture: uploadFile } })
         .then(() => window.location.replace('/admin/AmazingPicture'))
         .catch(() => console.log('변경 실패!'));
     }

@@ -6,7 +6,7 @@ export default function useAchievement({
 }: {
   achievementId: string;
 }): void {
-  const [achieveOne, { error }] = useMutation<{
+  const [achieveOne] = useMutation<{
     achievement_id: string;
   }>(
     gql`
