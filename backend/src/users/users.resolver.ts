@@ -97,7 +97,12 @@ export class UsersResolver {
   @SiteRoles(UserRole.ADMIN)
   async updateDefaultAvatar(
     @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
-  ) {}
+  ) {
+    return (
+      (await this.usersService.deleteDefaultAvatar()) &&
+      (await this.usersService.createDefaultAvatar(file))
+    );
+  }
 
   @Mutation((returns) => ID)
   async createDummyUser(): Promise<string> {
