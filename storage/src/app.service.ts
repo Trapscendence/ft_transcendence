@@ -4,25 +4,21 @@ import { join } from 'path';
 
 @Injectable()
 export class AppService {
-  private readonly findLogger: Logger;
-  private readonly createLogger: Logger;
-  private readonly deleteLogger: Logger;
+  private readonly logger: Logger;
 
   constructor() {
-    this.findLogger = new Logger('GET');
-    this.createLogger = new Logger('POST');
-    this.deleteLogger = new Logger('DELETE');
+    this.logger = new Logger('Storage');
   }
 
   find(filename: string) {
     const file = createReadStream(join(process.cwd(), 'public', filename));
-    this.findLogger.log(`Search the file: ${filename}`);
+    this.logger.log(`Read file: ${filename}`);
     return new StreamableFile(file);
   }
 
   create(file: Express.Multer.File) {
-    this.createLogger.log(
-      `Created file: ${file.originalname} -> ${file.filename} (${file.size} bytes)`,
+    this.logger.log(
+      `Created file: ${file.originalname} > ${file.filename} (${file.size} bytes)`,
     );
     return file.filename;
   }
@@ -30,10 +26,10 @@ export class AppService {
   delete(filename: string): boolean {
     try {
       unlinkSync(join(process.cwd(), 'public', filename));
-      this.deleteLogger.log(`Delete the file: ${filename}`);
+      this.logger.log(`Delete file: ${filename}`);
       return true;
     } catch (error) {
-      this.deleteLogger.error(`Error occured during delete file: ${filename}`);
+      this.logger.error(`Error occured during delete file: ${filename}`);
       return false;
     }
   }

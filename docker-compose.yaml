@@ -146,6 +146,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - storage
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./proxy/default.conf:/etc/nginx/templates/default.conf.template:ro

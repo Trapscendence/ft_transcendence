@@ -17,6 +17,7 @@ import { StatusModule } from './status/status.module';
 import { StatusService } from './status/status.service';
 import { graphqlFactory } from './utils/factories/graphql.factory';
 import { ArticleModule } from './article/article.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ArticleModule } from './article/article.module';
     PubSubModule,
     AuthModule,
     ArticleModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [

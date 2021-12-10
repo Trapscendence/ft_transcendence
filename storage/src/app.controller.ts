@@ -2,6 +2,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Post,
   UploadedFile,
@@ -12,6 +13,8 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
+  private readonly logger = new Logger('App');
+
   constructor(private readonly appService: AppService) {}
 
   @Get('/storage/:filename')
@@ -22,7 +25,8 @@ export class AppController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   createFile(@UploadedFile() file: Express.Multer.File) {
-    return this.appService.create(file);
+    if (!file) this.logger.error(`Uploaded file is ${file}`);
+    else return this.appService.create(file);
   }
 
   @Delete('/:filename')
