@@ -4,7 +4,6 @@ import { FileUpload } from 'graphql-upload';
 import * as FormData from 'form-data';
 import { env } from 'src/utils/envs';
 import { lastValueFrom, map } from 'rxjs';
-import axios from 'axios';
 
 @Injectable()
 export class StorageService {

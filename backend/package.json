@@ -29,7 +29,6 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/websockets": "^8.2.3",
     "apollo-server-express": "^3.4.0",
-    "axios": "^0.24.0",
     "bcrypt": "^5.0.1",
     "connect-pg-simple": "^7.0.0",
     "cookie": "^0.4.1",
