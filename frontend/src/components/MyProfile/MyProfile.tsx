@@ -44,25 +44,26 @@ import {
   GET_USERS,
 } from '../../utils/Apollo/UserQuery';
 
+const avartarStyle = {
+  height: '95px',
+  width: '95px',
+};
+const elementStyle = {
+  // height: '150px',
+  minHeight: '170px',
+
+  display: 'flex',
+  justifyContent: 'space-around',
+  alignItems: 'center',
+};
+
+const buttonStyle = {
+  // boxShadow: 0,
+  margin: '5px',
+  height: '30px',
+};
+
 export default function MyProfileSetting(): JSX.Element {
-  const avartarStyle = {
-    height: '95px',
-    width: '95px',
-  };
-  const elementStyle = {
-    // height: '150px',
-    minHeight: '170px',
-
-    display: 'flex',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  };
-
-  const buttonStyle = {
-    // boxShadow: 0,
-    margin: '5px',
-    height: '30px',
-  };
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
@@ -127,7 +128,7 @@ export default function MyProfileSetting(): JSX.Element {
   const [deleteTfa] = useMutation(DELETE_TFA);
 
   useEffect(() => {
-    console.log(tfaUri);
+    // console.log(tfaUri);
     if (tfaUri?.createTfa != undefined) {
       qrcode.toDataURL(tfaUri.createTfa, (err, img) => {
         if (err) {

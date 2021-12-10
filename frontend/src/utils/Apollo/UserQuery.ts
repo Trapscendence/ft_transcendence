@@ -57,9 +57,11 @@ export const GET_MATCH_WITH_ACHIEVE_BY_NICKNAME = gql`
       match_history(offset: $offset, limit: $limit) {
         id
         winner {
+          # id
           nickname
         }
         loser {
+          # id
           nickname
         }
       }

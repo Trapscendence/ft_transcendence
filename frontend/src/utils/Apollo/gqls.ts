@@ -23,6 +23,7 @@ export const GET_CHANNELS = gql`
 export const GET_MY_CHANNEL = gql`
   query GetMyChannel {
     user {
+      id
       channel {
         id
         title
@@ -77,6 +78,7 @@ export const GET_CHANNEL_ROLE = gql`
 export const GET_MY_BLACKLIST = gql`
   query GetMyBlacklist {
     user {
+      id
       blacklist {
         id
         nickname
