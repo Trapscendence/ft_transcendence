@@ -1,7 +1,7 @@
 import { useLazyQuery } from '@apollo/client';
 import { Autocomplete, TextField } from '@mui/material';
 import { createFilterOptions } from '@mui/material/Autocomplete';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { NickName, User, UserData, UsersData } from '../utils/Apollo/User';
 import { GET_USER_BY_NICKNAME } from '../utils/Apollo/UserQuery';
