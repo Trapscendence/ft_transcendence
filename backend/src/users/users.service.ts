@@ -4,7 +4,6 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
@@ -12,13 +11,12 @@ import { User, UserRole } from './models/user.model';
 import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
-import axios from 'axios';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
-import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 import { AchievementsService } from 'src/acheivements/achievements.service';
-import { FileUpload } from './dtos/fileupload.dto';
+import { FileUpload } from 'graphql-upload';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class UsersService {
@@ -27,6 +25,7 @@ export class UsersService {
     @Inject(forwardRef(() => GamesService))
     private readonly gamesService: GamesService,
     private readonly achievementsService: AchievementsService,
+    private readonly storageService: StorageService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -143,35 +142,6 @@ export class UsersService {
     `);
   }
 
-  async createUser(nickname: string): Promise<User | null> {
-    // Deprecated
-    nickname = sqlEscaper(nickname);
-    const existingUser = await this.databaseService.executeQuery(`
-      SELECT
-        id
-      FROM
-        ${env.database.schema}.user
-      WHERE
-        nickname = '${nickname}'
-      `);
-
-    if (existingUser.length) return null;
-    const users = await this.databaseService.executeQuery(`
-      INSERT INTO
-        ${env.database.schema}.user(
-          nickname,
-          oauth_id,
-          oauth_type
-        )
-      VALUES (
-        '${nickname}',
-        'mock_id', /* 적절한 변환 필요 */
-        'FORTYTWO' )
-      RETURNING *;
-    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
-    return users[0];
-  }
-
   async setNickname(user_id: string, nickname: string): Promise<boolean> {
     const existence = await this.databaseService.executeQuery(
       `
@@ -216,21 +186,12 @@ export class UsersService {
   }
 
   async updateAvatar(user_id: string, file: FileUpload) {
-    const formData = new FormData();
-    const fileData = await file.createReadStream().read();
-    formData.append('avatar', fileData, file.filename);
-    const axiosResponse = await axios.post(
-      `http://${env.storage.host}:${env.storage.port}/`,
-      formData,
-    );
-
-    if (axiosResponse.status !== 200 && axiosResponse.status !== 201)
-      throw new InternalServerErrorException(axiosResponse.statusText);
+    const fileUrl = await this.storageService.post(file);
     const updatedId = (
       await this.databaseService.executeQuery(
-        `UPDATE ${env.database.schema}.user SET avatar = '${
-          axiosResponse.data
-        }' WHERE id = ${+user_id} RETURNING id;`,
+        `UPDATE ${
+          env.database.schema
+        }.user SET avatar = '${fileUrl}' WHERE id = ${+user_id} RETURNING id;`,
       )
     ).at(0)?.id;
     if (updatedId) return true;
@@ -243,10 +204,8 @@ export class UsersService {
         `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
       )
     ).at(0)?.avatar;
-    if (!filename) return false;
-    await axios.delete(
-      `http://${env.storage.host}:${env.storage.port}/${filename}`,
-    );
+    if (!filename) return true;
+    else this.storageService.delete(filename);
 
     const id = (
       await this.databaseService.executeQuery(

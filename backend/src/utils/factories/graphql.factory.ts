@@ -19,6 +19,7 @@ function getSession(sid: string): Promise<any> {
 export function graphqlFactory(statusService: StatusService) {
   return {
     autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    uploads: false,
     installSubscriptionHandlers: true,
     playground: {
       subscriptionEndpoint: '/subscriptions',
