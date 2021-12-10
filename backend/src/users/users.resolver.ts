@@ -180,6 +180,11 @@ export class UsersResolver {
     return true;
   }
 
+  @Mutation((returns) => Boolean)
+  async unregister(@UserID() user_id: string): Promise<boolean> {
+    return await this.usersService.unregister(user_id);
+  }
+
   // NOTE for test
   @Mutation((returns) => Boolean)
   async insertMatchResult(
