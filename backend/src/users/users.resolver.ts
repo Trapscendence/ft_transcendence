@@ -2,6 +2,7 @@ import {
   forwardRef,
   Inject,
   InternalServerErrorException,
+  Logger,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -30,6 +31,9 @@ import { AchievementsService } from 'src/acheivements/achievements.service';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { SiteRoleGuard } from './guards/site-role.guard';
 import { SiteRoles } from './decorators/site-roles.decorator';
+import { createReadStream, readFileSync } from 'fs';
+import { join } from 'path';
+import { env } from 'src/utils/envs';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -39,7 +43,15 @@ export class UsersResolver {
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
     private readonly achievementsService: AchievementsService,
-  ) {}
+  ) {
+    const defaultAvatarReadStream = createReadStream(
+      join(process.cwd(), 'src', env.defaultAvatar),
+    );
+    this.usersService.createDefaultAvatar(
+      defaultAvatarReadStream,
+      env.defaultAvatar,
+    );
+  }
 
   /*
    ** ANCHOR: User
@@ -97,7 +109,15 @@ export class UsersResolver {
   @SiteRoles(UserRole.ADMIN)
   async updateDefaultAvatar(
     @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
-  ) {}
+  ) {
+    return (
+      (await this.usersService.deleteDefaultAvatar()) &&
+      (await this.usersService.createDefaultAvatar(
+        file.createReadStream(),
+        file.filename,
+      ))
+    );
+  }
 
   @Mutation((returns) => ID)
   async createDummyUser(): Promise<string> {
@@ -212,7 +232,7 @@ export class UsersResolver {
    ** ANCHOR: ResolveField
    */
 
-  @ResolveField('avatar', (returns) => String, { nullable: true })
+  @ResolveField('avatar', (returns) => String)
   async getAvatar(@Parent() user: User): Promise<string> {
     const { id } = user;
     return await this.usersService.getAvatar(id);

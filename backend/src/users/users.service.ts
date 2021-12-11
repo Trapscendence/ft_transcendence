@@ -4,6 +4,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
@@ -20,6 +21,8 @@ import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private databaseService: DatabaseService,
     @Inject(forwardRef(() => GamesService))
@@ -183,7 +186,10 @@ export class UsersService {
   }
 
   async updateAvatar(user_id: string, file: FileUpload) {
-    const fileUrl = await this.storageService.post(file);
+    const fileUrl = await this.storageService.post(
+      file.createReadStream(),
+      file.filename,
+    );
     const updatedId = (
       await this.databaseService.executeQuery(
         `UPDATE ${
@@ -216,7 +222,6 @@ export class UsersService {
   }
 
   async findDefaultAvatar(): Promise<string> {
-    console.log('Default avatar');
     return (
       await this.databaseService.executeQuery(
         `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = 'default_avatar';`,
@@ -224,11 +229,17 @@ export class UsersService {
     ).at(0)?.url;
   }
 
-  async createDefaultAvatar(file: FileUpload) {
-    const filename = await this.storageService.post(file);
+  async createDefaultAvatar(fileStream, filename) {
+    const defaultAvatar = await this.findDefaultAvatar();
+    if (defaultAvatar) {
+      this.logger.verbose(`Skip creating default avatar`);
+      return false;
+    }
+    const url = await this.storageService.post(fileStream, filename);
     await this.databaseService.executeQuery(
-      `INSERT ${env.database.schema}.storage_url VALUES('default_avatar', '${filename}');`,
+      `INSERT INTO ${env.database.schema}.storage_url VALUES('default_avatar', '${url}');`,
     );
+    this.logger.verbose(`Create default avatar: ${filename}`);
     return true;
   }
 

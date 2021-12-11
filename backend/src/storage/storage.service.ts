@@ -4,6 +4,7 @@ import { FileUpload } from 'graphql-upload';
 import * as FormData from 'form-data';
 import { env } from 'src/utils/envs';
 import { lastValueFrom, map } from 'rxjs';
+import { ReadStream } from 'fs';
 
 @Injectable()
 export class StorageService {
@@ -11,10 +12,11 @@ export class StorageService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  async post(file: FileUpload): Promise<string> {
-    if (!file) throw new BadRequestException(`File is ${file}`);
+  async post(fileStream: ReadStream, filename: string): Promise<string> {
+    if (!fileStream || !filename)
+      throw `fileStream is ${fileStream}, fileName is ${filename}`;
     const formData = new FormData();
-    formData.append('file', file.createReadStream(), file.filename);
+    formData.append('file', fileStream, filename);
     const storageUrl = await lastValueFrom(
       this.httpService
         .post(`http://${env.storage.host}:${env.storage.port}/`, formData, {
@@ -22,8 +24,8 @@ export class StorageService {
         })
         .pipe(map((res) => res.data)),
     );
-    if (!storageUrl) throw `Error occured during upload file, ${file.filename}`;
-    this.logger.verbose(`Upload ${file.filename} on storage, ${storageUrl}`);
+    if (!storageUrl) throw `Error occured during upload file, ${filename}`;
+    this.logger.verbose(`Upload ${filename} on storage, ${storageUrl}`);
     return storageUrl;
   }
 
