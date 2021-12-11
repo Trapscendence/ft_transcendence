@@ -20,7 +20,10 @@ export class AmazingPictureService {
   }
 
   async create(file: FileUpload) {
-    const amazingUrl = await this.storageService.post(file);
+    const amazingUrl = await this.storageService.post(
+      file.createReadStream(),
+      file.filename,
+    );
     if (!amazingUrl)
       throw new InternalServerErrorException(
         `Error occured during upload file, ${file.filename}`,
