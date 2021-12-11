@@ -55,8 +55,7 @@ function Profile(): JSX.Element {
   const [buttonActive, setButtonActive] = useState(true);
   const history = useHistory();
   const handleOnclick = (value: User) => {
-    console.log(value.nickname);
-    console.log(history);
+    console.log(value.id);
     history.push('/profile/' + value.id);
   };
   //NOTE 이 유저가 그 유저면 그 유저 프로필을 조회하게 하는 훅

@@ -24,20 +24,14 @@ export const SEND_MESSAGE = gql`
 `;
 
 export const UPDATE_CHECK_DATE = gql`
-  mutation updateCheckdate {
-    updateCheckdate
+  mutation updateCheckdate($other_id: ID!) {
+    updateCheckdate(other_id: $other_id)
   }
 `;
 
 export const GET_DM = gql`
   query DM($other_id: ID!, $offset: Int!, $limit: Int!) {
     DM(other_id: $other_id) {
-      user_id
-      other_id
-      other_user {
-        id
-        nickname
-      }
       messages(offset: $offset, limit: $limit) {
         id
         received
@@ -45,7 +39,6 @@ export const GET_DM = gql`
         checked
         time_stamp
       }
-      checked_date
     }
   }
 `;

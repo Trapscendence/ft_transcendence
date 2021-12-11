@@ -273,7 +273,7 @@ export default function MyProfileSetting(): JSX.Element {
         >
           <Grid item xs={12}>
             <Box sx={elementStyle}>
-              <Typography variant="h3">
+              <Typography component={'span'} variant="h3">
                 {currentUser?.nickname}님의
                 <br />
                 설정입니다.
@@ -325,7 +325,7 @@ export default function MyProfileSetting(): JSX.Element {
 
           <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
-              <Typography variant="body2">
+              <Typography component={'span'} variant="body2">
                 2차 인증 <br />
                 {imageUrl ? (
                   <Stack>
@@ -392,8 +392,6 @@ export default function MyProfileSetting(): JSX.Element {
                 )}
                 <Box>
                   {blacklistData?.user ? (
-                    <Box />
-                  ) : (
                     <Box>
                       블랙리스트 목록 <Divider />
                       {blacklistData?.user?.blacklist?.map((blackUser) => (
@@ -420,6 +418,8 @@ export default function MyProfileSetting(): JSX.Element {
                         </Box>
                       ))}
                     </Box>
+                  ) : (
+                    <Box />
                   )}
                 </Box>
               </Stack>
