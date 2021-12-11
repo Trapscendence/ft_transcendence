@@ -12,7 +12,7 @@ import {
   Typography,
   Tabs,
   Tab,
-  TextField,
+  TextField
 } from '@mui/material';
 import qrcode from 'qrcode';
 import { useEffect, useState } from 'react';
@@ -21,19 +21,19 @@ import UseSearchUser from '../../hooks/useSearchUser';
 import {
   ADD_TO_BLACKLIST,
   DELETE_FROM_BLACKLIST,
-  GET_MY_BLACKLIST,
+  GET_MY_BLACKLIST
 } from '../../utils/Apollo/gqls';
 import {
   AddToBlackListResponse,
   DeleteFromBlackListResponse,
-  GetMyBlacklistResponse,
+  GetMyBlacklistResponse
 } from '../../utils/Apollo/responseModels';
 import {
   CurrentUsersData,
   User,
   UserData,
   UsersData,
-  UsersDataVars,
+  UsersDataVars
 } from '../../utils/Apollo/User';
 import {
   CHANGE_NICKNAME,
@@ -41,12 +41,12 @@ import {
   DELETE_TFA,
   GET_USER,
   GET_USER_BY_NICKNAME,
-  GET_USERS,
+  GET_USERS
 } from '../../utils/Apollo/UserQuery';
 
 const avartarStyle = {
   height: '95px',
-  width: '95px',
+  width: '95px'
 };
 const elementStyle = {
   // height: '150px',
@@ -54,13 +54,13 @@ const elementStyle = {
 
   display: 'flex',
   justifyContent: 'space-around',
-  alignItems: 'center',
+  alignItems: 'center'
 };
 
 const buttonStyle = {
   // boxShadow: 0,
   margin: '5px',
-  height: '30px',
+  height: '30px'
 };
 
 export default function MyProfileSetting(): JSX.Element {
@@ -68,23 +68,24 @@ export default function MyProfileSetting(): JSX.Element {
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
     id: '',
-    avatar: '',
+    avatar: ''
   });
   useEffect(() => {
     if (currentUserData?.user) setCurrentUser(currentUserData?.user);
   }, [currentUserData]);
 
-  const { data: blacklistData, error: blacklistError } =
-    useQuery<GetMyBlacklistResponse>(GET_MY_BLACKLIST, {
-      // variables: { id: currentUserData?.user.id },
-    });
+  const { data: blacklistData, error: blacklistError } = useQuery<
+    GetMyBlacklistResponse
+  >(GET_MY_BLACKLIST, {
+    // variables: { id: currentUserData?.user.id },
+  });
 
   //ANCHOR----------------------------------------------------------닉네임
   // const [nicknameButtonActive, setNicknameButtonActive] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [nicknameinputSpace, setNicknameInputSpace] = useState<string>('');
   const { data: nicknameUserData } = useQuery<UserData>(GET_USER_BY_NICKNAME, {
-    variables: { nickname: nicknameinputSpace },
+    variables: { nickname: nicknameinputSpace }
   });
   const onchangeNickname = (e: React.FormEvent<HTMLInputElement>) =>
     setNicknameInputSpace(e.currentTarget.value);
@@ -93,8 +94,9 @@ export default function MyProfileSetting(): JSX.Element {
   //   else setNicknameButtonActive(false);
   // }, [nicknameinputSpace]);
 
-  const [changeNickname, { data: changeNicknameError }] =
-    useMutation<{ changeNickname: boolean }>(CHANGE_NICKNAME);
+  const [changeNickname, { data: changeNicknameError }] = useMutation<{
+    changeNickname: boolean;
+  }>(CHANGE_NICKNAME);
 
   //----------------------------------------------------------닉네임
 
@@ -102,28 +104,31 @@ export default function MyProfileSetting(): JSX.Element {
   const [inputSpace, setInputSpace] = useState<User>({
     nickname: '',
     id: '',
-    avatar: '',
+    avatar: ''
   });
 
-  const [addToBlackList, { error: AddError }] =
-    useMutation<AddToBlackListResponse>(ADD_TO_BLACKLIST, {
-      variables: { black_id: inputSpace.id },
-      refetchQueries: [GET_MY_BLACKLIST],
-    });
+  const [addToBlackList, { error: AddError }] = useMutation<
+    AddToBlackListResponse
+  >(ADD_TO_BLACKLIST, {
+    variables: { black_id: inputSpace.id },
+    refetchQueries: [GET_MY_BLACKLIST]
+  });
 
-  const [deleteFromBlackList, { error: deleteError }] =
-    useMutation<DeleteFromBlackListResponse>(DELETE_FROM_BLACKLIST, {
-      refetchQueries: [GET_MY_BLACKLIST],
-    });
+  const [deleteFromBlackList, { error: deleteError }] = useMutation<
+    DeleteFromBlackListResponse
+  >(DELETE_FROM_BLACKLIST, {
+    refetchQueries: [GET_MY_BLACKLIST]
+  });
 
   //------------------------------------------------------------블랙리스트
 
   const { error, data } = useQuery<UsersData, UsersDataVars>(GET_USERS, {
-    variables: { ladder: false, offset: 0, limit: 0 },
+    variables: { ladder: false, offset: 0, limit: 0 }
   });
 
-  const [createTfa, { data: tfaUri, error: TfaError }] =
-    useMutation<{ createTfa: string }>(CREATE_TFA);
+  const [createTfa, { data: tfaUri, error: TfaError }] = useMutation<{
+    createTfa: string;
+  }>(CREATE_TFA);
   const [imageUrl, setImageUrl] = useState<string>();
   const [deleteTfa] = useMutation(DELETE_TFA);
 
@@ -230,20 +235,20 @@ export default function MyProfileSetting(): JSX.Element {
 
   //----------------------------------------------------picture
 
-  const [unregister] = useMutation(
-    gql`
-      mutation unregister {
-        unregister
-      }
-    `
-  );
+  // const [unregister] = useMutation(
+  //   gql`
+  //     mutation unregister {
+  //       unregister
+  //     }
+  //   `
+  // );
 
   return (
     <Box
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'center'
       }}
     >
       <Box
@@ -254,7 +259,7 @@ export default function MyProfileSetting(): JSX.Element {
           margin: '0%',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'space-between',
+          alignItems: 'space-between'
         }}
       >
         <Grid
@@ -271,13 +276,6 @@ export default function MyProfileSetting(): JSX.Element {
                 설정입니다.
               </Typography>
             </Box>
-            <Tabs value={value} onChange={handleChange} centered>
-              <Tab label="아바타 변경" />
-              <Tab label="닉네임 변경" />
-              <Tab label="2차 인증" />
-              <Tab label="블랙리스트 관리" />
-              <Tab label="회원 탈퇴" />
-            </Tabs>
           </Grid>
 
           <ChangeMyPicture />
@@ -286,7 +284,7 @@ export default function MyProfileSetting(): JSX.Element {
             <Paper sx={elementStyle} variant="outlined">
               <Stack spacing={1} alignItems="center">
                 <form
-                  onSubmit={(event) => {
+                  onSubmit={event => {
                     event.preventDefault();
                     setErrorMessage('');
                     if (nicknameinputSpace == '')
@@ -295,7 +293,7 @@ export default function MyProfileSetting(): JSX.Element {
                       setErrorMessage('이미 존재하는 닉네임입니다.');
                     else {
                       changeNickname({
-                        variables: { new_nickname: nicknameinputSpace },
+                        variables: { new_nickname: nicknameinputSpace }
                       }).catch(() => setErrorMessage('변경 실패!'));
                       console.log(changeNicknameError);
 
@@ -364,7 +362,7 @@ export default function MyProfileSetting(): JSX.Element {
                       width: '400px',
                       // backgroundColor: 'blue',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                      justifyContent: 'space-between'
                     }}
                   >
                     <div style={{ width: '320px' }}>
@@ -392,7 +390,7 @@ export default function MyProfileSetting(): JSX.Element {
                   ) : (
                     <Box>
                       블랙리스트 목록 <Divider />
-                      {blacklistData?.user?.blacklist?.map((blackUser) => (
+                      {blacklistData?.user?.blacklist?.map(blackUser => (
                         <Box key={blackUser.id} sx={{ width: '100%' }}>
                           <Typography sx={{ width: '80%' }}>
                             {blackUser.nickname}
@@ -402,11 +400,11 @@ export default function MyProfileSetting(): JSX.Element {
                                 // boxShadow: 0,
                                 margin: '5px',
                                 height: '20px',
-                                width: '20px',
+                                width: '20px'
                               }}
                               onClick={() =>
                                 deleteFromBlackList({
-                                  variables: { black_id: blackUser.id },
+                                  variables: { black_id: blackUser.id }
                                 })
                               }
                             >
@@ -422,13 +420,13 @@ export default function MyProfileSetting(): JSX.Element {
             </Paper>
           </Grid>
 
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
               <Button variant="contained" onClick={() => unregister()}>
                 회원탈퇴
               </Button>
             </Paper>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Box>
     </Box>
