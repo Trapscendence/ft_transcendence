@@ -18,6 +18,7 @@ import { Match } from 'src/games/models/match.model';
 import { AchievementsService } from 'src/acheivements/achievements.service';
 import { FileUpload } from 'graphql-upload';
 import { StorageService } from 'src/storage/storage.service';
+import { ReadStream } from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -229,7 +230,7 @@ export class UsersService {
     ).at(0)?.url;
   }
 
-  async createDefaultAvatar(fileStream, filename) {
+  async createDefaultAvatar(fileStream: ReadStream, filename: string) {
     const defaultAvatar = await this.findDefaultAvatar();
     if (defaultAvatar) {
       this.logger.verbose(`Skip creating default avatar`);
