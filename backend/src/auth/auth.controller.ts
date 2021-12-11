@@ -19,6 +19,7 @@ import { PassLoginGuard } from './decorators/pass-login-guard.decorator';
 import { StatusService } from 'src/status/status.service';
 import { UserStatus } from 'src/users/models/user.model';
 import { UserID } from 'src/users/decorators/user-id.decorator';
+import { GamesService } from 'src/games/games.service';
 
 @Controller('auth')
 export class AuthController {
@@ -26,6 +27,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly statusService: StatusService,
     private readonly usersService: UsersService, // FIXME: remove this
+    private readonly gamesService: GamesService,
   ) {}
 
   private readonly cookieOption = {
@@ -95,8 +97,9 @@ export class AuthController {
   }
 
   @Get('logout')
-  async logout(@UserID() userId, @Req() req: any, @Res() res: Response) {
-    await this.statusService.deleteConnection(userId);
+  async logout(@UserID() user_id, @Req() req: any, @Res() res: Response) {
+    this.gamesService.unregisterGame(user_id);
+    await this.statusService.deleteConnection(user_id);
     req.session.destroy();
     res.clearCookie(env.session.cookieName);
     res.redirect('/');
