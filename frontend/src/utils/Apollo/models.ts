@@ -4,8 +4,8 @@ export interface IChannelListItem {
   id: string;
   title: string;
   is_private: boolean;
-  owner: { nickname: string };
-  participants: { nickname: string }[];
+  owner: { id: string; nickname: string };
+  participants: { id: string; nickname: string }[];
 }
 
 export interface IUser {

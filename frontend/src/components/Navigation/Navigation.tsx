@@ -75,8 +75,6 @@ function Navigation(): JSX.Element {
     }
   `);
 
-  console.log(siteRoleData);
-
   useEffect(() => {
     if (location.pathname.startsWith('/profile')) {
       setTabValue(1);

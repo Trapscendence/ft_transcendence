@@ -1,5 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { Divider } from '@mui/material';
+import { useEffect } from 'react';
 
 import { GET_MY_CHANNEL } from '../../utils/Apollo/gqls';
 import { GetMyChannelResponse } from '../../utils/Apollo/responseModels';

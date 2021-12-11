@@ -11,9 +11,11 @@ export const GET_CHANNELS = gql`
       title
       is_private
       owner {
+        id
         nickname
       }
       participants {
+        id
         nickname
       }
     }
@@ -62,6 +64,7 @@ export const GET_MY_CHANNEL = gql`
 export const GET_MY_CHANNEL_ROLE = gql`
   query GetMyChannelRole {
     user {
+      id
       channel_role
     }
   }
@@ -70,6 +73,7 @@ export const GET_MY_CHANNEL_ROLE = gql`
 export const GET_CHANNEL_ROLE = gql`
   query GetChannelRole($id: ID!) {
     user(id: $id) {
+      id
       channel_role
     }
   }

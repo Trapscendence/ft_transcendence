@@ -30,12 +30,14 @@ export interface GetMyChannelResponse {
 
 export interface GetMyChannelRoleResponse {
   user: {
+    id: string;
     channel_role: UserRole;
   };
 }
 
 export interface GetChannelRoleResponse {
   user: {
+    id: string;
     channel_role: UserRole;
   };
 }

@@ -72,17 +72,18 @@ const client = new ApolloClient({
   link: from([errorLink, splitLink]),
 
   cache: new InMemoryCache({
-    // typePolicies: {
-    //   Query: {
-    //     fields: {
-    //       chattingMessages: {
-    //         read({ args }) {
-    //           console.log(args);
-    //         },
-    //       },
-    //     },
-    //   },
-    // },
+    typePolicies: {
+      Query: {
+        fields: {
+          channels: {
+            merge(existing, incoming) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+              return incoming;
+            },
+          },
+        },
+      },
+    },
   }),
   defaultOptions: {
     watchQuery: {
