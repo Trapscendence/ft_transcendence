@@ -2,6 +2,8 @@ import {
   forwardRef,
   Inject,
   InternalServerErrorException,
+  Logger,
+  UseGuards,
 } from '@nestjs/common';
 import {
   Query,
@@ -26,8 +28,12 @@ import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
 import { GamesService } from 'src/games/games.service';
 import { AchievementsService } from 'src/acheivements/achievements.service';
-import { FileUpload } from './dtos/fileupload.dto';
-import { GraphQLUpload } from 'graphql-upload';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { SiteRoleGuard } from './guards/site-role.guard';
+import { SiteRoles } from './decorators/site-roles.decorator';
+import { createReadStream, readFileSync } from 'fs';
+import { join } from 'path';
+import { env } from 'src/utils/envs';
 
 @Resolver((of) => User)
 export class UsersResolver {
@@ -37,7 +43,15 @@ export class UsersResolver {
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
     private readonly achievementsService: AchievementsService,
-  ) {}
+  ) {
+    const defaultAvatarReadStream = createReadStream(
+      join(process.cwd(), 'src', env.defaultAvatar),
+    );
+    this.usersService.createDefaultAvatar(
+      defaultAvatarReadStream,
+      env.defaultAvatar,
+    );
+  }
 
   /*
    ** ANCHOR: User
@@ -70,7 +84,11 @@ export class UsersResolver {
     @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
     @UserID() user_id: string,
   ): Promise<Boolean> {
-    if (await this.usersService.updateAvatar(user_id, file)) return true;
+    if (
+      (await this.usersService.deleteAvatar(user_id)) &&
+      (await this.usersService.updateAvatar(user_id, file))
+    )
+      return true;
     else
       throw new InternalServerErrorException(
         `Error occured during update avatar(id: ${user_id})`,
@@ -84,6 +102,21 @@ export class UsersResolver {
       throw new InternalServerErrorException(
         `Error occured during delete avatar (id: ${user_id})`,
       );
+  }
+
+  @Mutation((returns) => Boolean)
+  @UseGuards(SiteRoleGuard)
+  @SiteRoles(UserRole.ADMIN)
+  async updateDefaultAvatar(
+    @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
+  ) {
+    return (
+      (await this.usersService.deleteDefaultAvatar()) &&
+      (await this.usersService.createDefaultAvatar(
+        file.createReadStream(),
+        file.filename,
+      ))
+    );
   }
 
   @Mutation((returns) => ID)
@@ -199,6 +232,12 @@ export class UsersResolver {
    ** ANCHOR: ResolveField
    */
 
+  @ResolveField('avatar', (returns) => String)
+  async getAvatar(@Parent() user: User): Promise<string> {
+    const { id } = user;
+    return await this.usersService.getAvatar(id);
+  }
+
   @ResolveField('friends', (returns) => [User])
   async getFriends(@Parent() user: User): Promise<User[]> {
     const { id } = user;
@@ -253,10 +292,6 @@ export class UsersResolver {
     const { id } = user;
     return await this.usersService.getGameByUserId(id);
   }
-
-  /*
-   ** ANCHOR: User Subscription
-   */
 
   @Subscription((returns) => UserStatus)
   statusChange(@Args('user_id', { type: () => ID }) user_id: string) {

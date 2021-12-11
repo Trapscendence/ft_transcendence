@@ -105,7 +105,6 @@ services:
       - SESSION_SECRET=${SESSION_SECRET}
       - STORAGE_HOST=storage
       - STORAGE_PORT=3000
-      - CREDIT=${CREDIT}
     build: ./backend
     networks:
       - default
@@ -147,6 +146,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - storage
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./proxy/default.conf:/etc/nginx/templates/default.conf.template:ro

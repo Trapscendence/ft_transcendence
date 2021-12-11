@@ -229,6 +229,15 @@ export default function MyProfileSetting(): JSX.Element {
   };
 
   //----------------------------------------------------picture
+
+  const [unregister] = useMutation(
+    gql`
+      mutation unregister {
+        unregister
+      }
+    `
+  );
+
   return (
     <Box
       sx={{
@@ -415,7 +424,9 @@ export default function MyProfileSetting(): JSX.Element {
 
           <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
-              <Typography variant="body2">회원탈퇴</Typography>
+              <Button variant="contained" onClick={() => unregister()}>
+                회원탈퇴
+              </Button>
             </Paper>
           </Grid>
         </Grid>

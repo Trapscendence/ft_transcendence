@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import * as session from 'express-session';
 import { sessionStore } from './utils/sessionStore';
 import { env } from './utils/envs';
+import { graphqlUploadExpress } from 'graphql-upload';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -28,6 +29,7 @@ async function bootstrap() {
       store: sessionStore,
     }),
   );
+  app.use(graphqlUploadExpress({ maxFileSize: 1000000, maxFiles: 10 }));
   await app.listen(3000);
 }
 

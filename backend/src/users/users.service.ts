@@ -4,7 +4,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
@@ -12,21 +12,23 @@ import { User, UserRole } from './models/user.model';
 import { env } from 'src/utils/envs';
 import { sqlEscaper } from 'src/utils/sqlescaper.utils';
 import { Channel } from 'src/channels/models/channel.model';
-import axios from 'axios';
 import { GamesService } from 'src/games/games.service';
 import { Game } from 'src/games/models/game.model';
 import { Match } from 'src/games/models/match.model';
-import { AxiosResponse } from '@nestjs/common/node_modules/axios';
 import { AchievementsService } from 'src/acheivements/achievements.service';
-import { FileUpload } from './dtos/fileupload.dto';
+import { FileUpload } from 'graphql-upload';
+import { StorageService } from 'src/storage/storage.service';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     private databaseService: DatabaseService,
     @Inject(forwardRef(() => GamesService))
     private readonly gamesService: GamesService,
     private readonly achievementsService: AchievementsService,
+    private readonly storageService: StorageService,
   ) {}
 
   async getUserById(id: string): Promise<User | null> {
@@ -34,7 +36,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -57,7 +58,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -128,7 +128,6 @@ export class UsersService {
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role,
@@ -141,35 +140,6 @@ export class UsersService {
       ${ladder ? 'ORDER BY rank_score DESC' : ''}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
-  }
-
-  async createUser(nickname: string): Promise<User | null> {
-    // Deprecated
-    nickname = sqlEscaper(nickname);
-    const existingUser = await this.databaseService.executeQuery(`
-      SELECT
-        id
-      FROM
-        ${env.database.schema}.user
-      WHERE
-        nickname = '${nickname}'
-      `);
-
-    if (existingUser.length) return null;
-    const users = await this.databaseService.executeQuery(`
-      INSERT INTO
-        ${env.database.schema}.user(
-          nickname,
-          oauth_id,
-          oauth_type
-        )
-      VALUES (
-        '${nickname}',
-        'mock_id', /* 적절한 변환 필요 */
-        'FORTYTWO' )
-      RETURNING *;
-    `); // NOTE oauth_id, oauth_type는 일단 제외함. database.service에도 완성 전까지는 주석처리 해야할 듯?
-    return users[0];
   }
 
   async setNickname(user_id: string, nickname: string): Promise<boolean> {
@@ -216,21 +186,15 @@ export class UsersService {
   }
 
   async updateAvatar(user_id: string, file: FileUpload) {
-    const formData = new FormData();
-    const fileData = await file.createReadStream().read();
-    formData.append('avatar', fileData, file.filename);
-    const axiosResponse = await axios.post(
-      `http://${env.storage.host}:${env.storage.port}/`,
-      formData,
+    const fileUrl = await this.storageService.post(
+      file.createReadStream(),
+      file.filename,
     );
-
-    if (axiosResponse.status !== 200 && axiosResponse.status !== 201)
-      throw new InternalServerErrorException(axiosResponse.statusText);
     const updatedId = (
       await this.databaseService.executeQuery(
-        `UPDATE ${env.database.schema}.user SET avatar = '${
-          axiosResponse.data
-        }' WHERE id = ${+user_id} RETURNING id;`,
+        `UPDATE ${
+          env.database.schema
+        }.user SET avatar = '${fileUrl}' WHERE id = ${+user_id} RETURNING id;`,
       )
     ).at(0)?.id;
     if (updatedId) return true;
@@ -243,10 +207,8 @@ export class UsersService {
         `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+user_id}`,
       )
     ).at(0)?.avatar;
-    if (!filename) return false;
-    await axios.delete(
-      `http://${env.storage.host}:${env.storage.port}/${filename}`,
-    );
+    if (!filename) return true;
+    else this.storageService.delete(filename);
 
     const id = (
       await this.databaseService.executeQuery(
@@ -257,6 +219,40 @@ export class UsersService {
     ).at(0)?.id;
     if (id) return true;
     else return false;
+  }
+
+  async findDefaultAvatar(): Promise<string> {
+    return (
+      await this.databaseService.executeQuery(
+        `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = 'default_avatar';`,
+      )
+    ).at(0)?.url;
+  }
+
+  async createDefaultAvatar(fileStream, filename) {
+    const defaultAvatar = await this.findDefaultAvatar();
+    if (defaultAvatar) {
+      this.logger.verbose(`Skip creating default avatar`);
+      return false;
+    }
+    const url = await this.storageService.post(fileStream, filename);
+    await this.databaseService.executeQuery(
+      `INSERT INTO ${env.database.schema}.storage_url VALUES('default_avatar', '${url}');`,
+    );
+    this.logger.verbose(`Create default avatar: ${filename}`);
+    return true;
+  }
+
+  async deleteDefaultAvatar() {
+    const filename = (
+      await this.databaseService.executeQuery(
+        `SELECT url FROM ${env.database.schema}.storage_url WHERE filename = 'default_avatar';`,
+      )
+    ).at(0)?.url;
+    if (!filename) return true;
+
+    await this.storageService.delete(filename);
+    return true;
   }
 
   async addFriend(user_id: string, friend_id: string): Promise<boolean> {
@@ -301,7 +297,6 @@ export class UsersService {
       SELECT
         u.id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role
@@ -366,12 +361,21 @@ export class UsersService {
    ** ANCHOR: ResolveField
    */
 
+  async getAvatar(id: string): Promise<string> {
+    const avatar = (
+      await this.databaseService.executeQuery(
+        `SELECT avatar FROM ${env.database.schema}.user WHERE id = ${+id};`,
+      )
+    ).at(0).avatar;
+    if (avatar) return avatar;
+    else return await this.findDefaultAvatar();
+  }
+
   async getFriend(id: string): Promise<User[]> {
     return await this.databaseService.executeQuery(`
       SELECT
         id,
         nickname,
-        avatar,
         status_message,
         rank_score,
         site_role
@@ -397,7 +401,6 @@ export class UsersService {
       SELECT
         u.id,
         u.nickname,
-        u.avatar,
         u.status_message,
         u.rank_score,
         u.site_role,

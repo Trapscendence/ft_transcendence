@@ -5,8 +5,8 @@ import { UsersResolver } from './users.resolver';
 import { GamesModule } from 'src/games/games.module';
 import { HttpModule } from '@nestjs/axios';
 import { StatusModule } from 'src/status/status.module';
-import { timeout } from 'rxjs';
 import { AchievementsModule } from 'src/acheivements/acheivements.module';
+import { StorageModule } from 'src/storage/storage.module';
 
 @Module({
   imports: [
@@ -20,6 +20,7 @@ import { AchievementsModule } from 'src/acheivements/acheivements.module';
       }),
     }),
     AchievementsModule,
+    StorageModule,
   ],
   providers: [UsersService, UsersResolver],
   exports: [UsersService],
