@@ -1,5 +1,6 @@
 /* eslint-disable */
 // import { Redirect } from 'react-router';
+import gql from 'graphql-tag';
 
 import { useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
@@ -68,7 +69,13 @@ function Home(): JSX.Element {
     variables: { achievement_id: achievementId },
   })
     */
-
+    const { data: AmazingPictureUri } = useQuery<{ amazingPicture: string }>(
+      gql`
+        query amazingPicture {
+          amazingPicture
+        }
+      `
+    );
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -124,6 +131,14 @@ function Home(): JSX.Element {
             <div />
           )}
         </div>
+        {AmazingPictureUri?.amazingPicture != null ? (
+          <div>
+            <img src={'/storage/' + AmazingPictureUri.amazingPicture}></img>
+            <div>AMAZING PICTURE!!!!!!!!!!!!!!!!!!!!!!!!!</div>
+          </div>
+        ) : (
+          <div />
+        )}
       </div>
     );
   }
