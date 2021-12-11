@@ -64,7 +64,8 @@ const buttonStyle = {
 };
 
 export default function MyProfileSetting(): JSX.Element {
-  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  const { data: currentUserData, refetch: userRefetch } =
+    useQuery<UserData>(GET_USER);
   const [currentUser, setCurrentUser] = useState<User | undefined>({
     nickname: '',
     id: '',
@@ -170,7 +171,10 @@ export default function MyProfileSetting(): JSX.Element {
         mutation updateAvatar($file: Upload!) {
           updateAvatar(file: $file)
         }
-      `
+      `,
+      {
+        refetchQueries: [GET_USER],
+      }
     );
 
     const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,7 +183,7 @@ export default function MyProfileSetting(): JSX.Element {
       if (e.target.files) {
         const file = e.target.files[0];
         updateAvatar({ variables: { file } })
-          .then(() => window.location.replace('/setting'))
+          // .then(() => window.location.replace('/setting'))
           .catch(() => console.log('변경 실패!'));
       }
     };

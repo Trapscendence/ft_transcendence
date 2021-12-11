@@ -74,8 +74,6 @@ function UserSummary({ IUser, channelId }: UserSummaryProps): JSX.Element {
     setCurrentStatus(statusChange);
   }, [data]);
 
-  console.log(IUser);
-
   return (
     <ListItem>
       <ListItemAvatar onClick={handleClick} sx={{ cursor: 'pointer' }}>
@@ -89,7 +87,7 @@ function UserSummary({ IUser, channelId }: UserSummaryProps): JSX.Element {
           }
         >
           {avatar ? (
-            <Avatar src={avatar} />
+            <Avatar src={'/storage/' + avatar} />
           ) : (
             <Avatar>{nickname[0].toUpperCase()}</Avatar>
           )}
