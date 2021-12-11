@@ -61,6 +61,11 @@ function Navigation(): JSX.Element {
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
 
   useEffect(() => {
+    if (location.pathname.startsWith('/profile')) {
+      setTabValue(1);
+      return;
+    }
+
     setTabValue(tabs[location.pathname] ?? 0);
   }, []);
 
