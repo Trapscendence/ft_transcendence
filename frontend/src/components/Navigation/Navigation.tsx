@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 import {
   AccountCircle,
   Analytics,
@@ -23,6 +23,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { userIdVar } from '../..';
+import { UserRole } from '../../utils/Apollo/schemaEnums';
 import { User, UserData } from '../../utils/Apollo/User';
 import { GET_USER } from '../../utils/Apollo/UserQuery';
 import Matching from './Matching';
@@ -59,6 +60,22 @@ function Navigation(): JSX.Element {
 
   //TODO useQuery로 내 id 가져오기
   const { data: currentUserData } = useQuery<UserData>(GET_USER);
+
+  const { data: siteRoleData } = useQuery<{
+    user: {
+      id: string;
+      site_role: UserRole;
+    };
+  }>(gql`
+    query getUserSiteRole {
+      user {
+        id
+        site_role
+      }
+    }
+  `);
+
+  console.log(siteRoleData);
 
   useEffect(() => {
     if (location.pathname.startsWith('/profile')) {
@@ -106,6 +123,10 @@ function Navigation(): JSX.Element {
     history.push('/admin/' + text);
   }
 
+  if (!siteRoleData || !siteRoleData?.user?.site_role) return <></>;
+
+  const isUser = siteRoleData.user.site_role === UserRole.USER;
+
   return (
     <Box
       py={1}
@@ -139,7 +160,8 @@ function Navigation(): JSX.Element {
         </Box>
       </Box>
       <Stack>
-        <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />
+        {!isUser && <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} />}
+        {/* <Tab icon={<MoreHoriz />} onClick={toggleDrawer(true)} /> */}
         <Tab aria-label="auth/logout" icon={<LogoutIcon />} onClick={logOut} />
       </Stack>
 
