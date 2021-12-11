@@ -179,7 +179,7 @@ export class UsersService {
       FROM
         ${env.database.schema}.user
       WHERE
-        id = ${+user_id}
+        id = ${+user_id};
     `);
 
     if (selectQuery.length === 1) return selectQuery[0].tfa_secret;

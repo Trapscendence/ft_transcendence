@@ -81,6 +81,7 @@ export class UsersResolver {
 
   @Query((returns) => Boolean)
   async isEnabledTfa(@UserID() user_id: string): Promise<Boolean> {
+    console.log(await this.usersService.getSecret(user_id));
     return !!(await this.usersService.getSecret(user_id));
   }
 
