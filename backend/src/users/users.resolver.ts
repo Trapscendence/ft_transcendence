@@ -37,8 +37,6 @@ import { env } from 'src/utils/envs';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  private readonly logger = new Logger(UsersResolver.name);
-
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
@@ -49,14 +47,10 @@ export class UsersResolver {
     const defaultAvatarReadStream = createReadStream(
       join(process.cwd(), 'src', env.defaultAvatar),
     );
-    if (
-      this.usersService.createDefaultAvatar(
-        defaultAvatarReadStream,
-        env.defaultAvatar,
-      )
-    )
-      this.logger.log(`Initialize default avatar to src/${env.defaultAvatar}`);
-    else this.logger.log(`Skip default avatar initialization`);
+    this.usersService.createDefaultAvatar(
+      defaultAvatarReadStream,
+      env.defaultAvatar,
+    );
   }
 
   /*
@@ -238,7 +232,7 @@ export class UsersResolver {
    ** ANCHOR: ResolveField
    */
 
-  @ResolveField('avatar', (returns) => String, { nullable: true })
+  @ResolveField('avatar', (returns) => String)
   async getAvatar(@Parent() user: User): Promise<string> {
     const { id } = user;
     return await this.usersService.getAvatar(id);

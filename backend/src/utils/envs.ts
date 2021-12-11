@@ -25,5 +25,5 @@ export const env = {
     host: process.env.STORAGE_HOST,
     port: process.env.STORAGE_PORT,
   },
-  defaultAvatar: 'default-avatar.jpg',
+  defaultAvatar: 'default-avatar.png',
 };
