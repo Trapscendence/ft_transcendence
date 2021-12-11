@@ -110,7 +110,8 @@ export class ChannelsService {
     `);
     if (
       channelPassword[0].password &&
-      !(await bcrypt.compare(password, channelPassword[0].password))
+      (!password ||
+        !(await bcrypt.compare(password, channelPassword[0].password)))
     ) {
       throw new ConflictException(
         `Wrong channel password (channel_id: ${channel_id})`,
