@@ -26,4 +26,5 @@ export const env = {
     port: process.env.STORAGE_PORT,
   },
   defaultAvatar: 'default-avatar.png',
+  defaultAmazingPicture: 'default-amazing-picture.jpg',
 };

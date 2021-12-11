@@ -18,6 +18,7 @@ import { StatusService } from './status/status.service';
 import { graphqlFactory } from './utils/factories/graphql.factory';
 import { ArticleModule } from './article/article.module';
 import { StorageModule } from './storage/storage.module';
+import { AmazingPictureModule } from './amazing_picture/amazing_picture.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { StorageModule } from './storage/storage.module';
     PubSubModule,
     AuthModule,
     ArticleModule,
+    AmazingPictureModule,
     StorageModule,
   ],
   controllers: [AppController],
