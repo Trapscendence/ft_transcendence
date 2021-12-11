@@ -183,7 +183,10 @@ export class UsersService {
   }
 
   async updateAvatar(user_id: string, file: FileUpload) {
-    const fileUrl = await this.storageService.post(file);
+    const fileUrl = await this.storageService.post(
+      file.createReadStream(),
+      file.filename,
+    );
     const updatedId = (
       await this.databaseService.executeQuery(
         `UPDATE ${
@@ -224,12 +227,12 @@ export class UsersService {
     ).at(0)?.url;
   }
 
-  async createDefaultAvatar(file: FileUpload) {
-    const filename = await this.storageService.post(file);
-    await this.databaseService.executeQuery(
-      `INSERT ${env.database.schema}.storage_url VALUES('default_avatar', '${filename}');`,
+  async createDefaultAvatar(fileStream, filename) {
+    const url = await this.storageService.post(fileStream, filename);
+    const result = await this.databaseService.executeQuery(
+      `INSERT ${env.database.schema}.storage_url VALUES('default_avatar', '${url}') ON CONFLICT DO NOTHING RETURNING url;`,
     );
-    return true;
+    return result.length === 1;
   }
 
   async deleteDefaultAvatar() {

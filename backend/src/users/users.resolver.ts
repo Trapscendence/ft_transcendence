@@ -2,6 +2,7 @@ import {
   forwardRef,
   Inject,
   InternalServerErrorException,
+  Logger,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -30,16 +31,33 @@ import { AchievementsService } from 'src/acheivements/achievements.service';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 import { SiteRoleGuard } from './guards/site-role.guard';
 import { SiteRoles } from './decorators/site-roles.decorator';
+import { createReadStream, readFileSync } from 'fs';
+import { join } from 'path';
+import { env } from 'src/utils/envs';
 
 @Resolver((of) => User)
 export class UsersResolver {
+  private readonly logger = new Logger(UsersResolver.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly statusService: StatusService,
     @Inject(forwardRef(() => GamesService)) private gamesService: GamesService,
     @Inject(PUB_SUB) private readonly pubSub: PubSub,
     private readonly achievementsService: AchievementsService,
-  ) {}
+  ) {
+    const defaultAvatarReadStream = createReadStream(
+      join(process.cwd(), 'src', env.defaultAvatar),
+    );
+    if (
+      this.usersService.createDefaultAvatar(
+        defaultAvatarReadStream,
+        env.defaultAvatar,
+      )
+    )
+      this.logger.log(`Initialize default avatar to src/${env.defaultAvatar}`);
+    else this.logger.log(`Skip default avatar initialization`);
+  }
 
   /*
    ** ANCHOR: User
@@ -100,7 +118,10 @@ export class UsersResolver {
   ) {
     return (
       (await this.usersService.deleteDefaultAvatar()) &&
-      (await this.usersService.createDefaultAvatar(file))
+      (await this.usersService.createDefaultAvatar(
+        file.createReadStream(),
+        file.filename,
+      ))
     );
   }
 
