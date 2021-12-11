@@ -26,20 +26,21 @@ export default function AppRouters(): JSX.Element {
   const isNoUI = loginedButNoUI.find((val) => val === location.pathname);
 
   return (
-    <Switch>
+    <>
       {!userId && (
-        <>
+        <Switch>
           <Route exact path="/login/totp" component={LoginTotp} />
           <Route exact path="/login" component={Login} />
-        </>
+          <Redirect to="/login" />
+        </Switch>
       )}
 
       {userId && isNoUI && (
-        <>
+        <Switch>
           <Route exact path="/game" component={Game} />
           <Route exact path="/observe" component={ObserveGame} />
           <Route exact path="/register" component={Register} />
-        </>
+        </Switch>
       )}
 
       {userId && !isNoUI && (
@@ -54,20 +55,22 @@ export default function AppRouters(): JSX.Element {
               p: 3,
             }}
           >
-            <Route exact path="/" render={() => <Redirect to="/home" />} />
-            <Route exact path="/home" component={Home} />
-            <Route exact path="/channel" component={ChannelList} />
-            <Route exact path="/rank" component={Rank} />
-            <Route exact path="/setting" component={MyProfile} />
-            <Route exact path="/profile/:userid" component={Profile} />
-            <Route exact path="/admin/:prop" component={Admin} />
-            {/* <Redirect to="/home" /> */}
+            <Switch>
+              <Route exact path="/" render={() => <Redirect to="/home" />} />
+              <Route exact path="/home" component={Home} />
+              <Route exact path="/channel" component={ChannelList} />
+              <Route exact path="/rank" component={Rank} />
+              <Route exact path="/setting" component={MyProfile} />
+              <Route exact path="/profile/:userid" component={Profile} />
+              <Route exact path="/admin/:prop" component={Admin} />
+              <Redirect to="/home" />
+            </Switch>
           </Box>
           <DirectMessage />
           <SocialDrawer />
         </>
       )}
-    </Switch>
+    </>
   );
 }
 
