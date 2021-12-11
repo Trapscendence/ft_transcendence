@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { useMutation, useQuery } from '@apollo/client';
 import { CardActions } from '@material-ui/core';
 import {
@@ -11,6 +13,7 @@ import {
   TextField,
 } from '@mui/material';
 import axios from 'axios';
+import gql from 'graphql-tag';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
@@ -54,28 +57,22 @@ export default function Register(): JSX.Element {
   /*
    ** ANCHOR: functions
    */
+  const [updateAvatar] = useMutation(
+    gql`
+      mutation updateAvatar($file: Upload!) {
+        updateAvatar(file: $file)
+      }
+    `
+  );
 
   const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
     if (e.target.files) {
-      const uploadFile = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-
-      try {
-        await axios({
-          method: 'post',
-          url: '/upload/profile',
-          data: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        window.location.replace('/setting/');
-      } catch (e) {
-        console.log(e);
-      }
+      const file = e.target.files[0];
+      updateAvatar({ variables: { file } })
+        .then(() => window.location.replace('/register'))
+        .catch(() => console.log('변경 실패!'));
     }
   };
 
@@ -144,19 +141,20 @@ export default function Register(): JSX.Element {
                     {currentUser?.nickname[0]?.toUpperCase()}
                   </Avatar>
                 )}
-                <Button size="small" variant="contained">
-                  <form>
-                    <label htmlFor="profile-upload" />
+                <form>
+                  <label htmlFor="profile-upload">
                     <input
                       type="file"
                       id="profile-upload"
                       accept="image/*"
                       onChange={onChangeImg}
-                      hidden
+                      style={{ display: 'none' }}
                     />
-                  </form>
-                  upload
-                </Button>
+                    <Button variant="contained" component="span">
+                      아바타 변경
+                    </Button>
+                  </label>
+                </form>
               </Box>
             </Paper>
           </CardContent>

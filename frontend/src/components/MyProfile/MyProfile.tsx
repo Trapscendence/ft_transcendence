@@ -163,7 +163,7 @@ export default function MyProfileSetting(): JSX.Element {
     //     }).then(() => window.location.replace('/setting/'));
     //   }
 
-    const [updateAvatar, { error }] = useMutation(
+    const [updateAvatar] = useMutation(
       gql`
         mutation updateAvatar($file: Upload!) {
           updateAvatar(file: $file)

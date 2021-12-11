@@ -6,12 +6,10 @@ import gql from 'graphql-tag';
 
 function AmazingPicture(): JSX.Element {
   //TODO 권한 없을경우 권한이 없습니다. 띄우게하기
-  const [setAmazingPicture] = useMutation<{
-    amazing_picture: string;
-  }>(
+  const [updateAmazingPicture] = useMutation(
     gql`
-      mutation setAmazingPicture($amazing_picture: String!) {
-        setAmazingPicture(amazing_picture: $amazing_picture)
+      mutation updateAmazingPicture($file: Upload!) {
+        updateAmazingPicture(file: $file)
       }
     `
   );
@@ -31,20 +29,19 @@ function AmazingPicture(): JSX.Element {
       const uploadFile = e.target.files[0];
       // const formData = new FormData();
       // formData.append('file', uploadFile);
-      //   const endpoint = `http://${process.env.REACT_APP_SERVER_HOST ?? ''}:${
-      //     process.env.REACT_APP_SERVER_PORT ?? ''
-      //   }/upload/profile`;
-      setAmazingPicture({ variables: { amazing_picture: uploadFile } })
+      updateAmazingPicture({ variables: { file: uploadFile } })
         .then(() => window.location.replace('/admin/AmazingPicture'))
         .catch(() => console.log('변경 실패!'));
     }
   };
-
   return (
     <div style={{ height: '90%', width: '100%' }}>
       <Stack spacing={1} alignItems="center">
         {AmazingPictureUri?.amazingPicture != null ? (
-          <img src={AmazingPictureUri.amazingPicture}></img>
+          <div>
+            <img src={AmazingPictureUri.amazingPicture}></img>
+            <div>AMAZING PICTURE!!!!!!!!!!!!!!!!!!!!!!!!!</div>
+          </div>
         ) : (
           <div />
         )}
