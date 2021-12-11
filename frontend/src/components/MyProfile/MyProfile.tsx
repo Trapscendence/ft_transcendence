@@ -329,28 +329,27 @@ export default function MyProfileSetting(): JSX.Element {
                   <Stack>
                     <img src={imageUrl} />
                   </Stack>
+                ) : isEnabledTfa?.isEnabledTfa ? (
+                  <Button
+                    sx={buttonStyle}
+                    variant="contained"
+                    onClick={() => {
+                      deleteTfa();
+                      setImageUrl('');
+                    }}
+                    disabled={!isEnabledTfa?.isEnabledTfa}
+                  >
+                    비활성화하기
+                  </Button>
                 ) : (
-                  <Stack>
-                    <Button
-                      variant="contained"
-                      sx={buttonStyle}
-                      onClick={() => createTfa()}
-                      disabled={isEnabledTfa?.isEnabledTfa}
-                    >
-                      활성화하기
-                    </Button>
-                    <Button
-                      sx={buttonStyle}
-                      variant="contained"
-                      onClick={() => {
-                        deleteTfa();
-                        setImageUrl('');
-                      }}
-                      disabled={!isEnabledTfa?.isEnabledTfa}
-                    >
-                      비활성화하기
-                    </Button>
-                  </Stack>
+                  <Button
+                    variant="contained"
+                    sx={buttonStyle}
+                    onClick={() => createTfa()}
+                    disabled={isEnabledTfa?.isEnabledTfa}
+                  >
+                    활성화하기
+                  </Button>
                 )}
               </Typography>
             </Paper>
