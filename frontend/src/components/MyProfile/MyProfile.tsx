@@ -128,7 +128,9 @@ export default function MyProfileSetting(): JSX.Element {
     createTfa: string;
   }>(CREATE_TFA);
   const [imageUrl, setImageUrl] = useState<string>();
-  const [deleteTfa] = useMutation(DELETE_TFA);
+  const [deleteTfa] = useMutation(DELETE_TFA, {
+    refetchQueries: ['isEnabledTfa'],
+  });
 
   useEffect(() => {
     // console.log(tfaUri);
@@ -243,7 +245,7 @@ export default function MyProfileSetting(): JSX.Element {
       }
     `
   );
-  console.log(isEnabledTfa?.isEnabledTfa);
+
   return (
     <Box
       sx={{
@@ -271,7 +273,7 @@ export default function MyProfileSetting(): JSX.Element {
         >
           <Grid item xs={12}>
             <Box sx={elementStyle}>
-              <Typography variant="h3">
+              <Typography component={'span'} variant="h3">
                 {currentUser?.nickname}님의
                 <br />
                 설정입니다.
@@ -323,7 +325,7 @@ export default function MyProfileSetting(): JSX.Element {
 
           <Grid item xs={12}>
             <Paper sx={elementStyle} variant="outlined">
-              <Typography variant="body2">
+              <Typography component={'span'} variant="body2">
                 2차 인증 <br />
                 {imageUrl ? (
                   <Stack>
@@ -337,7 +339,7 @@ export default function MyProfileSetting(): JSX.Element {
                       deleteTfa();
                       setImageUrl('');
                     }}
-                    disabled={!isEnabledTfa?.isEnabledTfa}
+                    // disabled={!isEnabledTfa?.isEnabledTfa}
                   >
                     비활성화하기
                   </Button>
@@ -346,7 +348,7 @@ export default function MyProfileSetting(): JSX.Element {
                     variant="contained"
                     sx={buttonStyle}
                     onClick={() => createTfa()}
-                    disabled={isEnabledTfa?.isEnabledTfa}
+                    // disabled={isEnabledTfa?.isEnabledTfa}
                   >
                     활성화하기
                   </Button>
@@ -390,8 +392,6 @@ export default function MyProfileSetting(): JSX.Element {
                 )}
                 <Box>
                   {blacklistData?.user ? (
-                    <Box />
-                  ) : (
                     <Box>
                       블랙리스트 목록 <Divider />
                       {blacklistData?.user?.blacklist?.map((blackUser) => (
@@ -418,6 +418,8 @@ export default function MyProfileSetting(): JSX.Element {
                         </Box>
                       ))}
                     </Box>
+                  ) : (
+                    <Box />
                   )}
                 </Box>
               </Stack>

@@ -44,7 +44,7 @@ export default function UseSearchUser({
       setButtonActive(false);
       setInputSpace(data?.user);
     } else setButtonActive(true);
-  }, []);
+  }, [data]);
 
   return (
     <Autocomplete
