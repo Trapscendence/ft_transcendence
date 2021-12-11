@@ -49,7 +49,8 @@ export class AmazingPictureService {
         `DELETE FROM ${env.database.schema}.storage_url WHERE filename = 'amazing_picture' RETURNING "url";`,
       )
     ).at(0)?.url;
-    await this.storageService.delete(filename);
+    if (filename)
+      await this.storageService.delete(filename);
     return true;
   }
 }

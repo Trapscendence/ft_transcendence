@@ -3,6 +3,7 @@
 import { useMutation, useQuery } from '@apollo/client';
 import { Avatar, Box, Button, Stack } from '@mui/material';
 import gql from 'graphql-tag';
+import { useEffect, useState } from 'react';
 
 function AmazingPicture(): JSX.Element {
   //TODO 권한 없을경우 권한이 없습니다. 띄우게하기
@@ -21,6 +22,11 @@ function AmazingPicture(): JSX.Element {
       }
     `
   );
+  const [amazingPicture, setAmazingPicture] = useState<string>('');
+  useEffect(() => {
+    if (AmazingPictureUri?.amazingPicture)
+      setAmazingPicture(AmazingPictureUri?.amazingPicture);
+  }, [AmazingPictureUri]);
 
   const onChangeImg = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -34,12 +40,13 @@ function AmazingPicture(): JSX.Element {
         .catch(() => console.log('변경 실패!'));
     }
   };
+
   return (
     <div style={{ height: '90%', width: '100%' }}>
       <Stack spacing={1} alignItems="center">
         {AmazingPictureUri?.amazingPicture != null ? (
           <div>
-            <img src={AmazingPictureUri.amazingPicture}></img>
+            <img src={'/storage/' + AmazingPictureUri.amazingPicture}></img>
             <div>AMAZING PICTURE!!!!!!!!!!!!!!!!!!!!!!!!!</div>
           </div>
         ) : (
