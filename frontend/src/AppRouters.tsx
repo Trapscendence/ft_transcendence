@@ -10,6 +10,7 @@ import Game from './components/Game';
 import ObserveGame from './components/Game/ObserveGame';
 import Home from './components/Home';
 import Login from './components/Login';
+import LoginTotp from './components/LoginTotp';
 import MyProfile from './components/MyProfile';
 import Navigation from './components/Navigation';
 import Profile from './components/Profile';
@@ -28,8 +29,8 @@ export default function AppRouters(): JSX.Element {
     <Switch>
       {!userId && (
         <>
+          <Route exact path="/login/totp" component={LoginTotp} />
           <Route exact path="/login" component={Login} />
-          <Redirect to="/login" />
         </>
       )}
 
