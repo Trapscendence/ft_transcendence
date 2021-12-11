@@ -5,8 +5,6 @@ import {
   InMemoryCache,
   makeVar,
   split,
-  // useQuery,
-  // gql,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
 import { WebSocketLink } from '@apollo/client/link/ws';
@@ -87,12 +85,15 @@ const client = new ApolloClient({
   }),
   defaultOptions: {
     watchQuery: {
+      fetchPolicy: 'network-only',
       errorPolicy: 'all',
     },
     query: {
+      fetchPolicy: 'network-only',
       errorPolicy: 'all',
     },
     mutate: {
+      fetchPolicy: 'network-only',
       errorPolicy: 'all',
     },
   },
