@@ -128,7 +128,9 @@ export default function MyProfileSetting(): JSX.Element {
     createTfa: string;
   }>(CREATE_TFA);
   const [imageUrl, setImageUrl] = useState<string>();
-  const [deleteTfa] = useMutation(DELETE_TFA);
+  const [deleteTfa] = useMutation(DELETE_TFA, {
+    refetchQueries: ['isEnabledTfa'],
+  });
 
   useEffect(() => {
     // console.log(tfaUri);
@@ -243,7 +245,7 @@ export default function MyProfileSetting(): JSX.Element {
       }
     `
   );
-  console.log(isEnabledTfa?.isEnabledTfa);
+
   return (
     <Box
       sx={{
@@ -337,7 +339,7 @@ export default function MyProfileSetting(): JSX.Element {
                       deleteTfa();
                       setImageUrl('');
                     }}
-                    disabled={!isEnabledTfa?.isEnabledTfa}
+                    // disabled={!isEnabledTfa?.isEnabledTfa}
                   >
                     비활성화하기
                   </Button>
@@ -346,7 +348,7 @@ export default function MyProfileSetting(): JSX.Element {
                     variant="contained"
                     sx={buttonStyle}
                     onClick={() => createTfa()}
-                    disabled={isEnabledTfa?.isEnabledTfa}
+                    // disabled={isEnabledTfa?.isEnabledTfa}
                   >
                     활성화하기
                   </Button>
