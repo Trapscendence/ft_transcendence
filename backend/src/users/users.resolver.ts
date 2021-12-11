@@ -79,6 +79,11 @@ export class UsersResolver {
     return await this.usersService.getUsers(ladder, offset, limit); // NOTE 임시
   }
 
+  @Query((returns) => Boolean)
+  async isEnabledTfa(@UserID() user_id: string): Promise<Boolean> {
+    return !!(await this.usersService.getSecret(user_id));
+  }
+
   @Mutation((returns) => Boolean)
   async updateAvatar(
     @Args('file', { type: () => GraphQLUpload }) file: FileUpload,
