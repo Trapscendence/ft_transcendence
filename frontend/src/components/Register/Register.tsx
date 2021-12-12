@@ -45,7 +45,7 @@ export default function Register(): JSX.Element {
    ** ANCHOR: Apollo
    */
 
-  const { data: currentUserData } = useQuery<UserData>(GET_USER);
+  const { data: currentUserData , refetch: userRefetch} = useQuery<UserData>(GET_USER);
 
   const [changeNickname, { error: changeNicknameError }] =
     useMutation<{ changeNickname: boolean }>(CHANGE_NICKNAME);
@@ -71,7 +71,7 @@ export default function Register(): JSX.Element {
     if (e.target.files) {
       const file = e.target.files[0];
       updateAvatar({ variables: { file } })
-        .then(() => window.location.replace('/register'))
+        .then(() => userRefetch())
         .catch(() => console.log('변경 실패!'));
     }
   };

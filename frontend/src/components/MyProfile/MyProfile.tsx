@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import qrcode from 'qrcode';
 import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
 
 import UseSearchUser from '../../hooks/useSearchUser';
 import {
@@ -245,6 +246,7 @@ export default function MyProfileSetting(): JSX.Element {
       }
     `
   );
+  const history = useHistory();
 
   return (
     <Box
@@ -300,8 +302,8 @@ export default function MyProfileSetting(): JSX.Element {
                       }).catch(() => setErrorMessage('변경 실패!'));
                       console.log(changeNicknameError);
 
-                      window.location.replace('/setting/');
-                    }
+                      userRefetch();
+                                                          }
                   }}
                 >
                   <input
