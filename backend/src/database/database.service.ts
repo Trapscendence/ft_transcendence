@@ -7,10 +7,10 @@ export class DatabaseService {
 
   constructor(@Inject('DATABASE_POOL') private pool: Pool) {}
 
-  executeQuery(queryText: string, values: any[] = []): Promise<any[]> {
-    this.logger.debug(`Executing query: ${queryText} (${values})`);
+  async executeQuery(queryText: string, values: any[] = []): Promise<any[]> {
+    // this.logger.debug(`Executing query: ${queryText} (${values})`);
     return this.pool.query(queryText, values).then((result: QueryResult) => {
-      this.logger.debug(`Executed query, result size ${result.rows.length}`);
+      // this.logger.debug(`Executed query, result size ${result.rows?.length}`);
       return result.rows;
     });
   }

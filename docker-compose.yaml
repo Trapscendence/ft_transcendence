@@ -1,11 +1,20 @@
-version: "3"
+version: "3.3"
 
 services:
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
+  # certbot:
+  #   environment:
+  #     SERVER_HOST: ${SERVER_HOST}
+  #   build:
+  #     context: ./certbot
+  #   networks:
+  #     - default
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - /etc/localtime:/etc/localtime:ro
+  #     - ./certbot/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./certbot/certs:/etc/letsencrypt
+  #     - ./certbot/log:/var/log/letsencrypt
 
   database:
     environment:
@@ -16,26 +25,140 @@ services:
       context: ./database
       dockerfile: Dockerfile
       args:
+        # SERVER_HOST: ${SERVER_HOST}
+        # SERVER_PORT: ${SERVER_PORT}
+        DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
         DB_PASSWORD: ${DB_PASSWORD}
-        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-        PGDATA: /var/lib/postgresql/data
-        DB_NAME: ${DB_NAME}
+        # DB_SCHEMA: ${DB_SCHEMA}
+        BACKEND_DB_USER: ${BACKEND_DB_USER}
+        BACKEND_DB_PASSWORD: ${BACKEND_DB_PASSWORD}
+        STORAGE_DB_USER: ${STORAGE_DB_USER}
+        STORAGE_DB_PASSWORD: ${STORAGE_DB_PASSWORD}
+        # POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - default
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - db_data:/var/lib/postgresql/data
+
+  migration:
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - BACKEND_DB_USER=${BACKEND_DB_USER}
+      - BACKEND_DB_PASSWORD=${BACKEND_DB_PASSWORD}
+      - STORAGE_DB_USER=${STORAGE_DB_USER}
+      - STORAGE_DB_PASSWORD=${STORAGE_DB_PASSWORD}
+    build:
+      context: ./migration
+    networks:
+      - default
+    depends_on:
+      - database
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./migration/migrations:/migrations
+
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: root
+  #   networks:
+  #     - default
+  #   ports:
+  #     - "5050:80"
+  #   depends_on:
+  #     - database
+
+  frontend:
+    environment:
+      - REACT_APP_SERVER_HOST=${SERVER_HOST}
+      - REACT_APP_SERVER_PORT=${SERVER_PORT}
+    build:
+      context: ./frontend
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./frontend/src:/app/src
 
   backend:
     environment:
-      - POSTGRES_HOST=db
+      - POSTGRES_HOST=database
       - POSTGRES_LOCAL_PORT=5432
       - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${BACKEND_DB_USER}
+      - POSTGRES_PASSWORD=${BACKEND_DB_PASSWORD}
+      - DB_SCHEMA=${DB_SCHEMA}
+      - FORTYTWO_APP_ID=${FORTYTWO_APP_ID}
+      - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET}
+      - FORTYTWO_REDIRECT_URI=${FORTYTWO_REDIRECT_URI}
+      - GOOGLE_APP_ID=${GOOGLE_APP_ID}
+      - GOOGLE_APP_SECRET=${GOOGLE_APP_SECRET}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
+      - SERVER_HOST=${SERVER_HOST}
+      - SERVER_PORT=${SERVER_PORT}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=3000
     build: ./backend
-    ports:
-      - "5000:5000"
+    networks:
+      - default
+    depends_on:
+      # - certbot
+      - database
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ./backend/src:/app/src
+      - ./certbot/certs:/certs
+
+  storage:
+    build:
+      context: ./storage
+    networks:
+      - default
+    depends_on:
+      - database
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./storage/src:/app/src
+      - ./storage/public:/app/public
+
+  proxy:
+    environment:
+      - NGINX_HOST=${SERVER_HOST}
+      - NGINX_PORT=80
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=3000
+      - FRONTEND_HOST=frontend
+      - FRONTEND_PORT=3000
+      - STORAGE_HOST=storage
+      - STORAGE_PORT=3000
+    image: nginx:1.21.4-alpine
+    networks:
+      - default
+    ports:
+      - "${SERVER_PORT}:80"
+    depends_on:
+      - frontend
+      - backend
+      - storage
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./proxy/default.conf:/etc/nginx/templates/default.conf.template:ro
 
 volumes:
   db_data:
+  storage_data:
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/16

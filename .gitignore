@@ -1,7 +1,12 @@
 dist
 node_modules
+db-migrate
+db-migrate-pg
+log
+certs
+schema.gql*
+storage/public
 
 .env
-db/data
-
+.DS_Store
 _*
