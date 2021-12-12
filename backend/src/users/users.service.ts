@@ -138,7 +138,7 @@ export class UsersService {
         ) rank
       FROM
         ${env.database.schema}.user
-      ${ladder ? 'ORDER BY rank_score DESC' : ''}
+      ${ladder ? 'ORDER BY rank_score DESC' : 'ORDER BY id'}
       ${limit ? `LIMIT ${limit} ${offset ? `OFFSET ${offset}` : ''}` : ''}
     `);
   }
